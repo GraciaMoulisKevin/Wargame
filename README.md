@@ -12,3 +12,20 @@
 ## Installer l'environnement de développement
 
 ### NodeJS
+
+Le développement de *Dordighol* requiert NodeJS **v12.14.1**.
+
+Ubuntu
+---
+```bash
+sudo apt update
+sudo apt -y upgrade
+sudo apt update
+sudo apt -y install curl dirmngr apt-transport-https lsb-release ca-certificates
+curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+sudo apt -y install nodejs
+sudo apt -y  install gcc g++ make
+```
+Windows
+---
+Utilisez les liens de téléchargement à partir du [site officiel](https://nodejs.org/en/download/).
