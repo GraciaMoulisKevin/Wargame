@@ -28,4 +28,13 @@ sudo apt -y  install gcc g++ make
 ```
 Windows
 ---
-Utilisez les liens de téléchargement à partir du [site officiel](https://nodejs.org/en/download/).
+Utiliser les liens de téléchargement à partir du [site officiel](https://nodejs.org/en/download/).
+
+---
+
+Cloner ce répertoire git et mettre à jour les dépendances
+```bash
+git clone git@github.com:GraciaMoulisKevin/Wargame.git
+cd Wargame/
+npm install
+```
