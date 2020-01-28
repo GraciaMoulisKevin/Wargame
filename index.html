@@ -7,6 +7,7 @@
     <script>
         var socket = io();            
         socket.on('files', function(data) {
+            document.getElementById('roomindex').innerHTML = null;
             data.forEach(element => {
                 document.getElementById('roomindex').innerHTML += "<a class='list-group-item list-group-item-action' href='/room/" + element.slice(0,-5) + "'>" + element.slice(0,-5) + "</a>";
             });

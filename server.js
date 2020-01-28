@@ -23,7 +23,13 @@ app.get('/room/*', (req,res) => {
 })
 
 app.post('/', (req,res) => {
-    res.redirect('/room/' + req.body.roomname);
+    fs.copyFile(__dirname + '/template.html',__dirname + '/room/'+req.body.roomname + '.html', (err) => {
+        if(err) throw err;
+        const files = fs.readdirSync(__dirname + '/room/');
+        io.sockets.emit('files',files);
+        res.redirect('/room/' + req.body.roomname);
+    })
+    
 })
 
 io.on('connection', function(socket){
