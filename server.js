@@ -6,8 +6,8 @@ const bodyParser = require('body-parser')
 const fs = require('fs') // filesystem
 const template = __dirname + '/template.html'; //Raccourci vers le template
 
-if(!fs.existsSync('/room/')){
-    fs.mkdirSync('/room/')
+if(!fs.existsSync('/room')){
+    fs.mkdirSync('/room')
 }
 
 app.use(bodyParser.json());       // to support JSON-encoded bodies
