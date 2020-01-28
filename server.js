@@ -6,7 +6,7 @@ const bodyParser = require('body-parser')
 const fs = require('fs') // filesystem
 const template = __dirname + '/template.html'; //Raccourci vers le template
 
-if(!fs.existsSync(__dirname +'/room')){
+if(!fs.existsSync(__dirname +'/room')){ // Créer le dossier room (Si il n'existe pas)
     fs.mkdirSync(__dirname + '/room')
 }
 
@@ -28,16 +28,16 @@ app.get('/room/*', (req,res) => {
 })
 
 app.post('/', (req,res) => {
-    let roomname = req.body.roomname.replace(/[^a-zA-Z0-9]/g, '');
-    let roompath = __dirname + '/room/' + roomname + '.html';
-    if(fs.existsSync(roompath)){
-        res.redirect('/room/' + roomname);
+    let roomName = req.body.roomName.replace(/[^a-zA-Z0-9]/g, '');
+    let roomPath = __dirname + '/room/' + roomName + '.html';
+    if(fs.existsSync(roomPath)){
+        res.redirect('/room/' + roomName);
     } else {
-        fs.copyFile(template, roompath , (err) => {
+        fs.copyFile(template, roomPath , (err) => {
             if(err) throw err;
             const files = fs.readdirSync(__dirname + '/room/');
             io.sockets.emit('files',files);
-            res.redirect('/room/' + roomname);
+            res.redirect('/room/' + roomName);
         })
     }
 })

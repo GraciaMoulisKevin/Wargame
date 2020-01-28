@@ -7,9 +7,9 @@
     <script>
         var socket = io();            
         socket.on('files', function(data) {
-            document.getElementById('roomindex').innerHTML = null;
+            document.getElementById('roomIndex').innerHTML = null;
             data.forEach(element => {
-                document.getElementById('roomindex').innerHTML += "<a class='list-group-item list-group-item-action' href='/room/" + element.slice(0,-5) + "'>" + element.slice(0,-5) + "</a>";
+                document.getElementById('roomIndex').innerHTML += "<a class='list-group-item list-group-item-action' href='/room/" + element.slice(0,-5) + "'>" + element.slice(0,-5) + "</a>";
             });
         })
     </script>
@@ -18,13 +18,13 @@
     
     <div class="container">
         <h1>Dordighol</h1>
-        <div class="list-group" id="roomindex">
+        <div class="list-group" id="roomIndex">
 
         </div>
 
         <form class="form-inline mt-3" method="post">
-            <input type="text" class="form-control" placeholder="Lobby name" name="roomname">
-            <button type="submit" class="btn btn-primary">Create Lobby</button>  
+            <input type="text" class="form-control" placeholder="Lobby name" name="roomName">
+            <button type="submit" class="btn btn-primary">Create/Join Lobby</button>  
         </form>
     </div>
     
