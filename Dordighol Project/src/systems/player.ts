@@ -1,15 +1,18 @@
 import { Color } from "./color";
-import { GraphicElement } from "./graphicelement";
+import { Entity } from "./entity";
+import { Structure } from "./structure";
 
 export class Player {
 	username : String;
 	color : Color;
-	elements : Array<GraphicElement>;
+	entitys : Array<Entity>;
+	structures : Array<Structure>;
 
 	constructor(user : String, c : Color){
 		this.username = user;
 		this.color = c;
-		this.elements = new Array<GraphicElement>();
+		this.entitys = new Array<Entity>();
+		this.structures = new Array<Structure>();
 	}
 
 	getUsername():String{
@@ -20,8 +23,12 @@ export class Player {
 		return this.color;
 	}
 
-	getElements():Array<GraphicElement>{
-		return this.elements; 
+	getEntitys():Array<Entity>{
+		return this.entitys; 
+	}
+	
+	getStructures():Array<Structure>{
+		return this.structures; 
 	}
 	
 }
