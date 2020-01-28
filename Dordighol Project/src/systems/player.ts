@@ -1,5 +1,5 @@
 import { Color } from "./color";
-import { GraphicElement } from "../ClassesEntites/graphicelement";
+import { GraphicElement } from "./graphicelement";
 
 export class Player {
 	username : String;
