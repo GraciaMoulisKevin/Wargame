@@ -20,7 +20,7 @@ class Hexagon{
     
     constructor(coordonates){ 
         this.x = coordonates.x;
-        this.y = coordonates.y;
+        this.y = coordonates.y; // '-' to simplify in my head
         this.z = coordonates.z;
         this.createHexagon();
     }
@@ -29,25 +29,42 @@ class Hexagon{
 
         let points = new Array(), 
         diameter = RADIUS*2,
-        x_spacement = (Math.sqrt(3) / 2) * RADIUS * 2,
-        y_spacement = (3/4)*diameter, 
-        angle;
+        spacement = (Math.sqrt(3) / 2) * RADIUS,
+        z_spacement = (3/4)*diameter,
+        angle,
+        temp_x,
+        temp_y;
 
         for ( let i = 0; i < 6; i++ ){
+            
             angle = degToRadian(60*(i+1));
             let pt_x = Math.sin(angle)*RADIUS;
             let pt_y = -Math.cos(angle)*RADIUS;
-            
-            pt_x = Math.round(pt_x*100)/100 + CENTER_X + this.x * x_spacement + this.z * RADIUS/2;
-            pt_y = Math.round(pt_y*100)/100 + CENTER_Y + this.y * y_spacement + this.z * RADIUS/2;
-            
-            if ( this.y%2 != 0 ){ pt_x -= x_spacement/2;}
+
+            pt_x = ((pt_x*100)/100) + CENTER_X;
+            pt_y = ((pt_y*100)/100) + CENTER_Y + this.z * z_spacement ;
+
+            if (this.x != 0 || this.y != 0){
+                if( this.x != 0){
+                    pt_x += this.x * spacement;
+                }
+                if( this.y != 0 ){
+                    pt_x += -this.y * spacement;
+                }
+            }
+
             points.push(new Array(pt_x,pt_y));
+
+            if ( i == 3 ) {
+                temp_x = pt_x;
+                temp_y = pt_y
+            }
         }
 
         d3.select("#map > svg")
         .append("polygon")
-        .attr("points", function(d,i){
+        .attr("id", this.x + "x" + -this.y + "x" + this.z)
+        .attr("points", function(d){
             let attr_points = "";
             for ( let pts of points){
                 attr_points += pts[0]+","+pts[1]+" ";
@@ -55,13 +72,14 @@ class Hexagon{
             return attr_points;
         })
         .style("stroke", "black")
-        .style("fill", "white")
-        .append("svg").attr("width", 20).attr("height", 20)
-        .append("text")
-        .attr("x", points[0][0])
-        .attr("y", points[0][1])
+        .style("fill", "white");
+    
+        d3.select("#map > svg").append("text")
+        .attr("x", temp_x)
+        .attr("y", temp_y)
         .attr("fill", "red")
-        .text("ALLO ?");
+        .html("&nbsp; x=" + this.x + " y=" + this.y + " z=" + this.z);
+
     }
 }
 
