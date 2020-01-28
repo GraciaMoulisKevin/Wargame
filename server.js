@@ -4,6 +4,7 @@ const io = require('socket.io')(server)
 const port = 3000
 const bodyParser = require('body-parser')
 const fs = require('fs') // filesystem
+const template = __dirname + '/template.html'; //Raccourci vers le template
 
 app.use(bodyParser.json());       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
@@ -23,13 +24,18 @@ app.get('/room/*', (req,res) => {
 })
 
 app.post('/', (req,res) => {
-    fs.copyFile(__dirname + '/template.html',__dirname + '/room/'+req.body.roomname + '.html', (err) => {
-        if(err) throw err;
-        const files = fs.readdirSync(__dirname + '/room/');
-        io.sockets.emit('files',files);
-        res.redirect('/room/' + req.body.roomname);
-    })
-    
+    let roomname = req.body.roomname.replace(/[^a-zA-Z0-9]/g, '');
+    let roompath = __dirname + '/room/' + roomname + '.html';
+    if(fs.existsSync(roompath)){
+        res.redirect('/room/' + roomname);
+    } else {
+        fs.copyFile(template, roompath , (err) => {
+            if(err) throw err;
+            const files = fs.readdirSync(__dirname + '/room/');
+            io.sockets.emit('files',files);
+            res.redirect('/room/' + roomname);
+        })
+    }
 })
 
 io.on('connection', function(socket){
