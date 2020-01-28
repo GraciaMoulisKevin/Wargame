@@ -1,28 +1,28 @@
 TODO
 Class :
-Entity
-Structure
-DamageableStructure
-ActionStructure
-Fortress
-Sensor
-Damageable
-DamageableEntity
-Explosive
-Projectile
-Bomb
-Unit
-Digger
-Builder
+ Entity
+ Structure
+ DamageableStructure
+ ActionStructure
+ Fortress
+ Sensor
+ Damageable
+ DamageableEntity
+ Explosive
+ Projectile
+ Bomb
+ Unit
+ Digger
+ Builder
 
 DOING
 Class :
-Game
-Player
-Board
-Hexagon
-GraphicElement
-Location
+ Game
+ Player
+ Board
+ Hexagon
+ GraphicElement
+ Location
 
 
 ToCHECK
