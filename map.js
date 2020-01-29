@@ -10,76 +10,90 @@
  * MACROS
  */
 RADIUS = 0;
-CENTER_X = 0;
-CENTER_Y = 0;
+WIDTH = 0;
+HEIGHT = 0;
 
 /**
  * Classes
  */
 class Hexagon{
     
-    constructor(coordonates){ 
-        this.x = coordonates.x;
-        this.y = coordonates.y; // '-' to simplify in my head
-        this.z = coordonates.z;
-        this.createHexagon();
+    constructor(data){ 
+        this.x = data.x;
+        this.y = data.y;
+        this.z = data.z;
+        this.type = data.type;
+        if ( this.correctCoord(this.x, this.y, this.z) ) {
+            this.createHexagon();
+        }else{
+            log_messages( {"type":"war", "message":"Invalid coordonate ("+this.x+", "+this.y+", "+this.z+")"} );
+        }
+    }
+
+    correctCoord(x, y ,z){ 
+        return ( (x + y + z) == 0 ); 
     }
 
     createHexagon(){
 
-        let points = new Array(), 
+        let center_x = WIDTH/2,
+        center_y = HEIGHT/2,
         diameter = RADIUS*2,
-        spacement = (Math.sqrt(3) / 2) * RADIUS,
+        spacement = (Math.sqrt(3) / 2) * RADIUS, // radius of the inscribed circle
         z_spacement = (3/4)*diameter,
-        angle,
+        points = new Array(),
+        can_create = true,
         temp_x,
         temp_y;
 
-        for ( let i = 0; i < 6; i++ ){
+        let i = 0; while ( i < 6 && can_create == true ){
             
-            angle = degToRadian(60*(i+1));
-            let pt_x = Math.sin(angle)*RADIUS;
-            let pt_y = -Math.cos(angle)*RADIUS;
+            let angle = degToRadian(60*(i+1)),
+            pt_x = Math.sin(angle)*RADIUS,
+            pt_y = -Math.cos(angle)*RADIUS;
 
-            pt_x = ((pt_x*100)/100) + CENTER_X;
-            pt_y = ((pt_y*100)/100) + CENTER_Y + this.z * z_spacement ;
+            pt_x = ((pt_x*100)/100) + center_x;
+            pt_y = ((pt_y*100)/100) + center_y + this.z * z_spacement ;
 
-            if (this.x != 0 || this.y != 0){
-                if( this.x != 0){
-                    pt_x += this.x * spacement;
-                }
-                if( this.y != 0 ){
-                    pt_x += -this.y * spacement;
-                }
+            // add correct spacement
+            if( this.x != 0){ pt_x += this.x * spacement; }
+            if( this.y != 0 ){ pt_x += -this.y * spacement; }
+
+            // last verification to make sure pt_x && pt_y can be in the svg
+            if ( pt_x <= WIDTH && pt_x >= 0 && pt_y <= HEIGHT && pt_y >= 0 ){
+                points.push(new Array(pt_x,pt_y));
+            }else {
+                can_create = false; points = null;
+                log_messages( {"type":"war", "message":"Invalid coordonate ("+this.x+", "+this.y+", "+this.z+")"} );
             }
 
-            points.push(new Array(pt_x,pt_y));
+            // [ TEMPORARY ] Allowed to print coord on each hexa
+            if ( i == 3 ) { temp_x = pt_x; temp_y = pt_y }
 
-            if ( i == 3 ) {
-                temp_x = pt_x;
-                temp_y = pt_y
-            }
+            i++;
         }
 
-        d3.select("#map > svg")
-        .append("polygon")
-        .attr("id", this.x + "x" + -this.y + "x" + this.z)
-        .attr("points", function(d){
-            let attr_points = "";
-            for ( let pts of points){
-                attr_points += pts[0]+","+pts[1]+" ";
-            }
-            return attr_points;
-        })
-        .style("stroke", "black")
-        .style("fill", "white");
-    
-        d3.select("#map > svg").append("text")
-        .attr("x", temp_x)
-        .attr("y", temp_y)
-        .attr("fill", "red")
-        .html("&nbsp; x=" + this.x + " y=" + this.y + " z=" + this.z);
-
+        if ( can_create ){
+            d3.select("#map > svg")
+            .append("polygon")
+            .attr("id", this.x + "x" + -this.y + "x" + this.z)
+            .attr("points", function(d){
+                let attr_points = "";
+                for ( let pts of points){
+                    attr_points += pts[0]+","+pts[1]+" ";
+                }
+                return attr_points;
+            })
+            .style("stroke", "black")
+            .style("fill", this.type);
+        
+            // [ TEMPORARY ] Print coord on each hexa
+            d3.select("#map > svg").append("text")
+            .attr("x", temp_x)
+            .attr("y", temp_y)
+            .attr("fill", "red")
+            .html("&nbsp; x=" + this.x + " y=" + this.y + " z=" + this.z);
+        }
     }
 }
 
@@ -92,6 +106,51 @@ function degToRadian(deg){
 }
 
 /**
+ * Send message on the console
+ * @param {*} object 
+ */
+function log_messages(object){
+
+    let succ_style = [
+        'background: #332B00'
+        , 'line-height: 20px'
+        , 'color: #EDCD90'
+        , 'text-align: center'
+        , 'font-weight: bold'
+    ].join(';');
+
+    let war_style = [
+        'background: #332B00'
+        , 'line-height: 20px'
+        , 'color: #EDCD90'
+        , 'text-align: center'
+        , 'font-weight: bold'
+    ].join(';');
+
+    let err_style = [
+        'background: #290000'
+        , 'line-height: 20px'
+        , 'color: #DF6D6D'
+        , 'text-align: center'
+        , 'font-weight: bold'
+    ].join(';');
+
+    switch (object.type) {
+        case "suc":
+            console.log("%c [ SUCCESS ] %s " , succ_style, object.message);
+            break;
+        case "war":
+            console.log("%c [ WARNING ] %s " , war_style, object.message);
+            break;
+        case "err":
+            console.log("%c [ ERROR ] %s " , err_style, object.message);
+            break;
+        default: 
+            break;
+    }   
+}
+
+/**
  * Read map JSON data when the page is ready
  */
 $().ready(function(){
@@ -99,8 +158,8 @@ $().ready(function(){
         RADIUS = data["radius"];
     });
     d3.json("map.json").then(function(data){
-        CENTER_X = data["width"] / 2;
-        CENTER_Y = data["height"] / 2;
+        WIDTH = data["width"];
+        HEIGHT = data["height"];
         loadMap(data);
     });
 });
@@ -112,17 +171,12 @@ $().ready(function(){
 function loadMap(data){
     d3.select("#map")
     .append("svg")
+    .attr("id", "map_svg")
     .attr("width", data["width"])
     .attr("height", data["height"])
-    .attr("id", "map_svg")
-    .style("background-color", "lightgray");
+    .style("background-color", data["background-color"]);
     
     for ( coord of data["hexagons"]){
         let hexa = new Hexagon(coord);
     }  
-
-
-
 }
-
-// (sqrt(3)/2) * r => espacement à utilser entre les hexagones
