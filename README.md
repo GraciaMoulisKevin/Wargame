@@ -1,6 +1,5 @@
 > # <span style="line-height : 60px"> Functions </span>
 ---
-<div>
 ## log_messages( <span style="color:orange;font-style:italic"> object </span> )</span>
 
 > Description
@@ -8,7 +7,7 @@
 Print specific type of message (success / warning / error ) in the navigator console
 
 > Usage
-``` javascript
+```javascript
 let object = {"type": _type, "message": "your message"}
 ```
 
@@ -18,7 +17,8 @@ let object = {"type": _type, "message": "your message"}
     <li style="font-size:90%;"> "war" <span style="font-size:70%; font-style:italic"> (warning) </span> </li>
     <li style="font-size:90%;"> "err" <span style="font-size:70%; font-style:italic"> (error) </span> </li>
 </ul>
-``` javascript
+
+```javascript
 log_messages( object );
 ```
 ---
