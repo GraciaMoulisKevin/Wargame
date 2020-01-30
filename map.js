@@ -31,10 +31,6 @@ class Hexagon{
         }
     }
 
-    getId(){
-        return this.id;
-        //return (this.x + "x" + -this.y + "x" + this.z);
-    }
     correctCoord(x, y ,z){ 
         return ( (x + y + z) == 0 ); 
     }
@@ -85,7 +81,6 @@ class Hexagon{
         if ( can_create ){
             d3.select("#map > svg")
             .append("polygon")
-            .attr("id", this.getId())
             .attr("points", function(d){
                 let attr_points = "";
                 for ( let pts of points){
@@ -97,9 +92,8 @@ class Hexagon{
             .style("fill", this.type)
             .on("click", function(){
                 let color = d3.select(this).style("fill");
-                console.log(color);
                 if ( color == "red" ){
-                    d3.select(this).style("fill", "blue");
+                    d3.select(this).style("fill", "rgba(0,0,0,0");
                 }else{
                     d3.select(this).style("fill", "red");
                 }
@@ -125,6 +119,7 @@ $().ready(function(){
         WIDTH = data["width"];
         HEIGHT = data["height"];
         loadMap(data);
+        path();
     });
 });
 
@@ -193,32 +188,47 @@ function loadMap(data){
     .attr("height", data["height"])
     .style("background-color", data["background-color"]);
 
-    d3.select("#map > svg")
-    .append("polygon")
-    .attr("id", "test0")
-    .attr("points", function(d){
-        points = [ [10,10], [50,10], [60,60], [10,60] ];
-        let attr_points = "";
-        for ( let pts of points){
-            attr_points += pts[0]+","+pts[1]+" ";
-        }
-        return attr_points;
-    })
-    .style("fill", "green")
-    .style("stroke", "black")
-    .on("click", function(d){
-        let color = d3.select(this).style("fill");
-        console.log(color);
-        if ( color == "red" ){
-            d3.select(this).style("fill", "blue");
-        }else{
-            d3.select(this).style("fill", "red");
-        }
-    });
-
     let i = 0;
     for ( coord of data["hexagons"]){
-        let hexa = new Hexagon(coord, "poly_"+i);
+        let hexa = new Hexagon(coord);
     }
     log_messages( {"type" : "war", "message" : "Fin de création des hexagones"});
+}
+
+function path(){
+
+    let center_x = WIDTH/2,
+    center_y = HEIGHT/2,
+    diameter = RADIUS*2,
+    spacement = (Math.sqrt(3) / 2) * RADIUS, // radius of the inscribed circle
+    z_spacement = (3/4)*diameter;
+
+    let coord1 = {"x" : 0, "y" : 0, "z" : 0};
+    let coord2 = {"x" : 2, "y" : 0, "z" : -2};
+
+    ptx1 = (coord1.x * RADIUS) + center_x;
+    pty1 = (coord1.y * RADIUS) + center_y;
+    console.log(ptx1 + ", " + pty1);
+
+    ptx2 = center_x + (coord2.x * spacement) + (-coord2.y * spacement);
+    pty2 = center_y + (coord2.z * z_spacement);
+
+    console.log(ptx2 + ", " + pty2);
+
+    d3.select("#map_svg")
+    .append("circle")
+    .attr("cx", ptx1)
+    .attr("cy", pty1)
+    .attr("r", 10)
+    .style("fill", "red")
+    .style("strole", "block");
+
+    d3.select("#map_svg")
+    .append("circle")
+    .attr("cx", ptx2)
+    .attr("cy", pty2)
+    .attr("r", 10)
+    .style("fill", "red")
+    .style("strole", "block");
+
 }
