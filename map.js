@@ -18,10 +18,11 @@ HEIGHT = 0;
  */
 class Hexagon{
     
-    constructor(data){ 
+    constructor(data, id){ 
         this.x = data.x;
         this.y = data.y;
         this.z = data.z;
+        this.id = id;
         this.type = data.type;
         if ( this.correctCoord(this.x, this.y, this.z) ) {
             this.createHexagon();
@@ -30,8 +31,16 @@ class Hexagon{
         }
     }
 
+    getId(){
+        return this.id;
+        //return (this.x + "x" + -this.y + "x" + this.z);
+    }
     correctCoord(x, y ,z){ 
         return ( (x + y + z) == 0 ); 
+    }
+
+    getCoord(){
+        return {"x" : this.x, "y" : this.y, "z" : this.z }
     }
 
     createHexagon(){
@@ -68,7 +77,7 @@ class Hexagon{
             }
 
             // [ TEMPORARY ] Allowed to print coord on each hexa
-            if ( i == 3 ) { temp_x = pt_x; temp_y = pt_y }
+            // if ( i == 3 ) { temp_x = pt_x; temp_y = pt_y }
 
             i++;
         }
@@ -76,7 +85,7 @@ class Hexagon{
         if ( can_create ){
             d3.select("#map > svg")
             .append("polygon")
-            .attr("id", this.x + "x" + -this.y + "x" + this.z)
+            .attr("id", this.getId())
             .attr("points", function(d){
                 let attr_points = "";
                 for ( let pts of points){
@@ -85,17 +94,39 @@ class Hexagon{
                 return attr_points;
             })
             .style("stroke", "black")
-            .style("fill", this.type);
-        
+            .style("fill", this.type)
+            .on("click", function(){
+                let color = d3.select(this).style("fill");
+                console.log(color);
+                if ( color == "red" ){
+                    d3.select(this).style("fill", "blue");
+                }else{
+                    d3.select(this).style("fill", "red");
+                }
+            });
             // [ TEMPORARY ] Print coord on each hexa
-            d3.select("#map > svg").append("text")
-            .attr("x", temp_x)
-            .attr("y", temp_y)
-            .attr("fill", "red")
-            .html("&nbsp; x=" + this.x + " y=" + this.y + " z=" + this.z);
+            // d3.select("#map > svg").append("text")
+            // .attr("x", temp_x)
+            // .attr("y", temp_y)
+            // .attr("fill", "red")
+            // .html("&nbsp; x=" + this.x + " y=" + this.y + " z=" + this.z);
         }
     }
 }
+
+/**
+ * Read map JSON data when the page is ready
+ */
+$().ready(function(){
+    d3.json("settings.json").then(function(data){
+        RADIUS = data["radius"];
+    });
+    d3.json("map.json").then(function(data){
+        WIDTH = data["width"];
+        HEIGHT = data["height"];
+        loadMap(data);
+    });
+});
 
 /**
  * Transform degrees to radian
@@ -151,20 +182,6 @@ function log_messages(object){
 }
 
 /**
- * Read map JSON data when the page is ready
- */
-$().ready(function(){
-    d3.json("settings.json").then(function(data){
-        RADIUS = data["radius"];
-    });
-    d3.json("map.json").then(function(data){
-        WIDTH = data["width"];
-        HEIGHT = data["height"];
-        loadMap(data);
-    });
-});
-
-/**
  * Load the map
  * @param {*} data 
  */
@@ -175,8 +192,33 @@ function loadMap(data){
     .attr("width", data["width"])
     .attr("height", data["height"])
     .style("background-color", data["background-color"]);
-    
+
+    d3.select("#map > svg")
+    .append("polygon")
+    .attr("id", "test0")
+    .attr("points", function(d){
+        points = [ [10,10], [50,10], [60,60], [10,60] ];
+        let attr_points = "";
+        for ( let pts of points){
+            attr_points += pts[0]+","+pts[1]+" ";
+        }
+        return attr_points;
+    })
+    .style("fill", "green")
+    .style("stroke", "black")
+    .on("click", function(d){
+        let color = d3.select(this).style("fill");
+        console.log(color);
+        if ( color == "red" ){
+            d3.select(this).style("fill", "blue");
+        }else{
+            d3.select(this).style("fill", "red");
+        }
+    });
+
+    let i = 0;
     for ( coord of data["hexagons"]){
-        let hexa = new Hexagon(coord);
-    }  
+        let hexa = new Hexagon(coord, "poly_"+i);
+    }
+    log_messages( {"type" : "war", "message" : "Fin de création des hexagones"});
 }
