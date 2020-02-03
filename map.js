@@ -31,13 +31,7 @@ class Hexagon{
         }
     }
 
-    correctCoord(x, y ,z){ 
-        return ( (x + y + z) == 0 ); 
-    }
-
-    getCoord(){
-        return {"x" : this.x, "y" : this.y, "z" : this.z }
-    }
+    correctCoord(x, y ,z){ return ( (x + y + z) == 0 ); }
 
     createHexagon(){
 
@@ -73,7 +67,7 @@ class Hexagon{
             }
 
             // [ TEMPORARY ] Allowed to print coord on each hexa
-            // if ( i == 3 ) { temp_x = pt_x; temp_y = pt_y }
+            if ( i == 3 ) { temp_x = pt_x; temp_y = pt_y }
 
             i++;
         }
@@ -81,6 +75,7 @@ class Hexagon{
         if ( can_create ){
             d3.select("#map > svg")
             .append("polygon")
+            .attr("id", this.id)
             .attr("points", function(d){
                 let attr_points = "";
                 for ( let pts of points){
@@ -97,31 +92,18 @@ class Hexagon{
                 }else{
                     d3.select(this).style("fill", "red");
                 }
+                let id = d3.select(this).attr("id")
+                console.log(getPointsOfHexaById(id));
             });
             // [ TEMPORARY ] Print coord on each hexa
-            // d3.select("#map > svg").append("text")
-            // .attr("x", temp_x)
-            // .attr("y", temp_y)
-            // .attr("fill", "red")
-            // .html("&nbsp; x=" + this.x + " y=" + this.y + " z=" + this.z);
+            d3.select("#map > svg").append("text")
+            .attr("x", temp_x)
+            .attr("y", temp_y)
+            .attr("fill", "red")
+            .html("&nbsp; x=" + this.x + " y=" + this.y + " z=" + this.z);
         }
     }
 }
-
-/**
- * Read map JSON data when the page is ready
- */
-$().ready(function(){
-    d3.json("settings.json").then(function(data){
-        RADIUS = data["radius"];
-    });
-    d3.json("map.json").then(function(data){
-        WIDTH = data["width"];
-        HEIGHT = data["height"];
-        loadMap(data);
-        path();
-    });
-});
 
 /**
  * Transform degrees to radian
@@ -188,47 +170,104 @@ function loadMap(data){
     .attr("height", data["height"])
     .style("background-color", data["background-color"]);
 
-    let i = 0;
-    for ( coord of data["hexagons"]){
-        let hexa = new Hexagon(coord);
+    // [ TO KEEP VERSION ]
+    // for ( coord of data["hexagons"]){
+    //     let id = "x" + coord.x + "y" + coord.y + "z" + coord.z;
+    //     let hexa = new Hexagon(coord, id);
+    // }
+
+    // [ BLACK MAGIC VERSION ]
+    for ( let x = -3; x <= 3; x++ ){
+        for ( let y = -3; y <= 3; y++ ){
+            for ( let z = -3; z <= 3; z++ ){
+                if ( x + y + z == 0 ){
+                    id = "";
+                    coord = {"x" : x, "y" : y, "z" : z, "type" : "rgba(0,0,0,0)"};
+                    id += "x" + x + "y" + y + "z" + z;
+                    let hexa = new Hexagon(coord, id);
+                }
+            }
+        }
     }
+    
     log_messages( {"type" : "war", "message" : "Fin de création des hexagones"});
 }
 
 function path(){
+    let coord1 = getCenterCoordsOfHexaById("x-3y3z0");
+    let coord2 = getCenterCoordsOfHexaById("x2y0z-2");
+    let coord3 = getCenterCoordsOfHexaById("x2y1z-3");
 
-    let center_x = WIDTH/2,
+    d3.select("#map_svg").append("circle").attr("cx", coord1.x).attr("cy", coord1.y).attr("r", 10).style("fill", "green").style("strole", "block");
+    d3.select("#map_svg").append("circle").attr("cx", coord2.x).attr("cy", coord2.y).attr("r", 10).style("fill", "green").style("strole", "block");
+    d3.select("#map_svg").append("circle").attr("cx", coord3.x).attr("cy", coord3.y).attr("r", 10).style("fill", "green").style("strole", "block");
+
+    let path1 = "M" + coord1.x+","+coord1.y + " " + coord2.x + "," + coord2.y;
+    d3.select("#map_svg").append("path").attr("d", path1).style("stroke", "green").style("stroke-width", 5);
+
+    let path2 = "M" + coord1.x+","+coord1.y + " " + coord3.x + "," + coord3.y;
+    d3.select("#map_svg").append("path").attr("d", path2).style("stroke", "green").style("stroke-width", 5);
+}
+
+function hexaIdParser(id){
+    let points = "";
+    if ( (/x(-?[0-9]{1,2})y(-?[0-9]{1,2})z(-?[0-9]{1,2})/.test(id) )){
+        data = (/x(-?[0-9]{1,2})y(-?[0-9]{1,2})z(-?[0-9]{1,2})/.exec(id));
+        points = { "x" : data[1], "y" : data[2], "z" : data[3] };
+    }
+    return points;
+}
+
+function getCenterCoordsOfHexaById(id){
+    let data = hexaIdParser(id),
+    center_x = WIDTH/2,
     center_y = HEIGHT/2,
     diameter = RADIUS*2,
     spacement = (Math.sqrt(3) / 2) * RADIUS, // radius of the inscribed circle
     z_spacement = (3/4)*diameter;
 
-    let coord1 = {"x" : 0, "y" : 0, "z" : 0};
-    let coord2 = {"x" : 2, "y" : 0, "z" : -2};
+    x = center_x + (data.x * spacement) + (-data.y * spacement);
+    y = center_y + (data.z * z_spacement);
 
-    ptx1 = (coord1.x * RADIUS) + center_x;
-    pty1 = (coord1.y * RADIUS) + center_y;
-    console.log(ptx1 + ", " + pty1);
-
-    ptx2 = center_x + (coord2.x * spacement) + (-coord2.y * spacement);
-    pty2 = center_y + (coord2.z * z_spacement);
-
-    console.log(ptx2 + ", " + pty2);
-
-    d3.select("#map_svg")
-    .append("circle")
-    .attr("cx", ptx1)
-    .attr("cy", pty1)
-    .attr("r", 10)
-    .style("fill", "red")
-    .style("strole", "block");
-
-    d3.select("#map_svg")
-    .append("circle")
-    .attr("cx", ptx2)
-    .attr("cy", pty2)
-    .attr("r", 10)
-    .style("fill", "red")
-    .style("strole", "block");
-
+    let coordonnate = {"x" : x, "y" : y};
+    return coordonnate;
 }
+
+function getPointsOfHexaById(id){
+    let data = hexaIdParser(id),
+    center_x = WIDTH/2,
+    center_y = HEIGHT/2,
+    diameter = RADIUS*2,
+    spacement = (Math.sqrt(3) / 2) * RADIUS, // radius of the inscribed circle
+    z_spacement = (3/4)*diameter,
+    points = new Array();
+
+    for( let i=0; i < 6; i++ ){
+
+        let angle = degToRadian(60*(i+1)),
+        pt_x = Math.sin(angle)*RADIUS,
+        pt_y = -Math.cos(angle)*RADIUS;
+
+        pt_x = ((pt_x*100)/100) + center_x + data.x * spacement + -data.y * spacement ;
+        pt_y = ((pt_y*100)/100) + center_y + data.z * z_spacement ;
+
+        points.push(new Array(pt_x,pt_y));
+    }
+
+    return points;
+}
+
+/**
+ * Read map JSON data when the page is ready
+ */
+$().ready(function(){
+    d3.json("settings.json").then(function(data){
+        RADIUS = data["radius"];
+    });
+    d3.json("map.json").then(function(data){
+        WIDTH = data["width"];
+        HEIGHT = data["height"];
+        loadMap(data);
+        path();
+    });
+});
