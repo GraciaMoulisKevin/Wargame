@@ -1,9 +1,3 @@
-import Entity from "./Entity";
-import Component from "./Component";
-import EventHandler from "./EventHandler";
-import System from "./System";
-
-
 export default class Manager {
 
     private componentTypes = [];
