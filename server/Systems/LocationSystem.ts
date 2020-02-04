@@ -21,7 +21,7 @@ export default class LocationSystem extends System {
             }
 
             if(data.state.y <= 0 || data.state.y >= 800-30) {
-                data.state.test_y *= -0.9;
+                data.state.test_y *= -0.99;
             }
 
             if(data.state.y < 800-30) {

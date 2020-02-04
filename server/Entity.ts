@@ -6,7 +6,7 @@ export default class Entity {
 
     constructor() {
 
-        // Unique ID
+        // Unique ID yo
         this.id = nextId++;
 
     }
