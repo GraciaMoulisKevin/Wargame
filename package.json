@@ -1,0 +1,30 @@
+{
+  "name": "dordhigol",
+  "version": "1.0.0",
+  "description": "Wargame for L3 2020 TER",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently --kill-others \"npx watchify client/main.js -d -o client/bundle.js -v\" \"npx nodemon index.js\"",
+    "build": "npx browserify .\\client\\main.js -o .\\client\\bundle.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GraciaMoulisKevin/Wargame.git"
+  },
+  "author": "Dordhigogoles",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GraciaMoulisKevin/Wargame/issues"
+  },
+  "homepage": "https://github.com/GraciaMoulisKevin/Wargame#readme",
+  "devDependencies": {
+    "@types/node": "^13.5.0",
+    "browserify": "^16.5.0",
+    "concurrently": "^5.1.0",
+    "d3": "^5.15.0",
+    "express": "^4.17.1",
+    "socket.io": "^2.3.0",
+    "watchify": "^3.11.1"
+  }
+}
