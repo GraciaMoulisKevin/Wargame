@@ -1,99 +1,34 @@
-import Entity from "./Entity";
-import Component from "./Component";
-import EventHandler from "./EventHandler";
-import System from "./System";
-
-
 export default class Manager {
 
-    private componentTypes = [];
+    private defaultComponents: object;
 
-    private components = {};
+    private componentsData: object;
 
-    private entities = [];
+    private lastId: number;
+    private deleteEntities: [number];
 
-    private readonly eventHandler = new EventHandler();
+    private getNextId(): number {
+        if(this.deleteEntities.length > 0) return this.deleteEntities.pop();
 
-    private systems = [];
+        return this.lastId++;
+    }
 
-    public addComponentType(component: Component) {
+    public createEntity(components: [string]): number {
+        const entityId = this.getNextId();
 
-        const componentName = component.getName();
-
-        if(!this.componentTypes.some(componentType => componentType.name === componentName)) {
-            this.componentTypes.push({name: componentName, component: component})
-
-            if(!this.components[componentName])
-                this.components[componentName] = [];
-
-        } else {
-            console.log(`Le component ${component.getName()} existe déjà.`);
+        for(const component of components) {
+            this.componentsData[component][entityId] = this.defaultComponents[component];
         }
 
+        return entityId;
     }
 
-    public addComponentsToEntity(entityId: number, components: [string]) {
-        components.forEach(component => {
-            if(this.componentTypes.some(componentType => componentType.name === component)) {
-
-                this.components[component].push({entityId: entityId, state: { ...this.componentTypes.filter(c => c.name === component)[0].component.getState()} });
-
-                console.log(`L'entité id : ${entityId} reçoit le composant ${component}.`);
-
-            } else {
-                console.log(`Le composant ${component} n'existe pas. L'entité ${entityId} ne reçoit ce composant.`);
-            }
-        });
-    }
-
-    public removeComponentsToEntity(entityId: number, components: [string]) {
-        components.forEach(component => {
-            if(this.componentTypes.some(componentType => componentType.name === component)) {
-
-                this.components[component] = this.components[component].filter(c => c.entityId !== entityId);
-
-                console.log(`L'entité id : ${entityId} perd le composant ${component}.`);
-
-            } else {
-                console.log(`Le composant ${component} n'existe pas. L'entité ${entityId} ne va pas perdre ce composant.`);
-            }
-        });
-    }
-
-    public createEntity(components?: [string]) {
-
-        let entity = new Entity();
-
-        console.log(`L'entité id : ${entity.id} a été créée.`);
-
-        if(components.length > 0)
-            this.addComponentsToEntity(entity.id, components);
-
-        this.entities.push(entity);
-    }
-
-    public getEntitiesAndDataComposedBy(components: [string]) {
-        let entitiesAndData = [];
-
-        components.forEach(componentName => {
-            entitiesAndData = this.components[componentName];
-        });
-
-        return entitiesAndData;
-    }
-
-    public getEventHandler(): EventHandler {
-        return this.eventHandler;
-    }
-
-    public addSystem(system: System): void {
-        this.systems.push(system);
-    }
-
-    public update(): void {
-        for(const system of this.systems) {
-            system.update();
+    public deleteEntity(entityId: number) {
+        this.deleteEntities.push(entityId);
+        for(const component of Object.keys(this.componentsData)) {
+            this.componentsData[component][entityId] = undefined;
         }
     }
+
 
 }
