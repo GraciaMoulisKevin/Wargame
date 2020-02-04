@@ -194,32 +194,81 @@ function loadMap(data){
     log_messages( {"type" : "war", "message" : "Fin de création des hexagones"});
 }
 
-function path(){
-    let coord1 = getCenterCoordsOfHexaById("x-3y3z0");
-    let coord2 = getCenterCoordsOfHexaById("x2y0z-2");
-    let coord3 = getCenterCoordsOfHexaById("x2y1z-3");
-
-    console.log(getHexaDistanceById("x-3y3z0", "x2y0z-2"));
-
-    d3.select("#map_svg").append("circle").attr("cx", coord1.x).attr("cy", coord1.y).attr("r", 10).style("fill", "green").style("strole", "block");
-    d3.select("#map_svg").append("circle").attr("cx", coord2.x).attr("cy", coord2.y).attr("r", 10).style("fill", "green").style("strole", "block");
-    d3.select("#map_svg").append("circle").attr("cx", coord3.x).attr("cy", coord3.y).attr("r", 10).style("fill", "green").style("strole", "block");
-
-    let path1 = "M" + coord1.x+","+coord1.y + " " + coord2.x + "," + coord2.y;
-    d3.select("#map_svg").append("path").attr("d", path1).style("stroke", "green").style("stroke-width", 5);
-
-    let path2 = "M" + coord1.x+","+coord1.y + " " + coord3.x + "," + coord3.y;
-    d3.select("#map_svg").append("path").attr("d", path2).style("stroke", "green").style("stroke-width", 5);
-}
-
+/**
+ * Parse the id of an hexagon to extract coordonate
+ * @param {String} id 
+ */
 function hexaIdParser(id){
     let points = "";
     if ( (/x(-?[0-9]{1,2})y(-?[0-9]{1,2})z(-?[0-9]{1,2})/.test(id) )){
         data = (/x(-?[0-9]{1,2})y(-?[0-9]{1,2})z(-?[0-9]{1,2})/.exec(id));
-        points = { "x" : data[1], "y" : data[2], "z" : data[3] };
+        points = { "x" : parseInt(data[1]), "y" : parseInt(data[2]), "z" : parseInt(data[3]) };
     }
     return points;
 }
+
+/**
+ * Get the number of hexagons needed to reach an hexagon
+ * @param {Object} id1 
+ * @param {Object} id2 
+ */
+function getHexaDistanceById(coordA, coordB){
+    return ( Math.abs(coordA.x - coordB.x) + Math.abs(coordA.y - coordB.y) + Math.abs(coordA.z - coordB.z))/2;
+}
+
+/**
+ * Linear interpolation
+ * @param {int} a 
+ * @param {int} b 
+ * @param {float} t 
+ */
+function lerp(a, b, t){
+    return Math.round(a + (b-a) * t);
+}
+
+/**
+ * Get the next hexagons where the units as to run
+ * @param {Object} a 
+ * @param {Object} b 
+ * @param {float} t
+ */
+function getNextHexa(a, b, t){
+    return [lerp(a.x, b.x, t), lerp(a.y, b.y, t), lerp(a.z, b.z, t)];
+}
+
+/**
+ * 
+ * @param {String} idA 
+ * @param {String} idB 
+ */
+function pathfinder(idA, idB){
+
+    let coordA = hexaIdParser(idA);
+    let coordB = hexaIdParser(idB);
+
+    let n = getHexaDistanceById(coordA, coordB);
+
+    for ( let i=0; i <= n; i++){
+        console.log(getNextHexa(coordA, coordB, (1/n * i)));
+    }
+}
+
+/**
+ * Read map JSON data when the page is ready
+ */
+$().ready(function(){
+    d3.json("settings.json").then(function(data){
+        RADIUS = data["radius"];
+    });
+    d3.json("map.json").then(function(data){
+        WIDTH = data["width"];
+        HEIGHT = data["height"];
+        loadMap(data);
+        createLine();
+        pathfinder("x-3y3z0", "x2y0z-2");
+    });
+});
+
 
 function getCenterCoordsOfHexaById(id){
     let data = hexaIdParser(id),
@@ -260,23 +309,18 @@ function getPointsOfHexaById(id){
     return points;
 }
 
-function getHexaDistanceById(id1, id2){
-    let data1 = hexaIdParser(id1);
-    let data2 = hexaIdParser(id2);
+function createLine(){
+    let coord1 = getCenterCoordsOfHexaById("x-3y3z0");
+    let coord2 = getCenterCoordsOfHexaById("x2y0z-2");
+    let coord3 = getCenterCoordsOfHexaById("x2y1z-3");
 
-    return ( Math.abs(data1.x - data2.x) + Math.abs(data1.y - data2.y) + Math.abs(data1.z - data2.z))/2;
+    d3.select("#map_svg").append("circle").attr("cx", coord1.x).attr("cy", coord1.y).attr("r", 10).style("fill", "green").style("strole", "block");
+    d3.select("#map_svg").append("circle").attr("cx", coord2.x).attr("cy", coord2.y).attr("r", 10).style("fill", "green").style("strole", "block");
+    d3.select("#map_svg").append("circle").attr("cx", coord3.x).attr("cy", coord3.y).attr("r", 10).style("fill", "green").style("strole", "block");
+
+    let path1 = "M" + coord1.x+","+coord1.y + " " + coord2.x + "," + coord2.y;
+    d3.select("#map_svg").append("path").attr("d", path1).style("stroke", "green").style("stroke-width", 5);
+
+    let path2 = "M" + coord1.x+","+coord1.y + " " + coord3.x + "," + coord3.y;
+    d3.select("#map_svg").append("path").attr("d", path2).style("stroke", "green").style("stroke-width", 5);
 }
-/**
- * Read map JSON data when the page is ready
- */
-$().ready(function(){
-    d3.json("settings.json").then(function(data){
-        RADIUS = data["radius"];
-    });
-    d3.json("map.json").then(function(data){
-        WIDTH = data["width"];
-        HEIGHT = data["height"];
-        loadMap(data);
-        path();
-    });
-});
