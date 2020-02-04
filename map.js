@@ -95,6 +95,7 @@ class Hexagon{
                 let id = d3.select(this).attr("id")
                 console.log(getPointsOfHexaById(id));
             });
+
             // [ TEMPORARY ] Print coord on each hexa
             d3.select("#map > svg").append("text")
             .attr("x", temp_x)
@@ -198,6 +199,8 @@ function path(){
     let coord2 = getCenterCoordsOfHexaById("x2y0z-2");
     let coord3 = getCenterCoordsOfHexaById("x2y1z-3");
 
+    console.log(getHexaDistanceById("x-3y3z0", "x2y0z-2"));
+
     d3.select("#map_svg").append("circle").attr("cx", coord1.x).attr("cy", coord1.y).attr("r", 10).style("fill", "green").style("strole", "block");
     d3.select("#map_svg").append("circle").attr("cx", coord2.x).attr("cy", coord2.y).attr("r", 10).style("fill", "green").style("strole", "block");
     d3.select("#map_svg").append("circle").attr("cx", coord3.x).attr("cy", coord3.y).attr("r", 10).style("fill", "green").style("strole", "block");
@@ -257,6 +260,12 @@ function getPointsOfHexaById(id){
     return points;
 }
 
+function getHexaDistanceById(id1, id2){
+    let data1 = hexaIdParser(id1);
+    let data2 = hexaIdParser(id2);
+
+    return ( Math.abs(data1.x - data2.x) + Math.abs(data1.y - data2.y) + Math.abs(data1.z - data2.z))/2;
+}
 /**
  * Read map JSON data when the page is ready
  */
