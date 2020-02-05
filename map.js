@@ -7,6 +7,11 @@
  */
 
 /**
+ * onload of the document execute start();
+ */
+window.onload = start;
+
+/**
  * MACROS
  */
 RADIUS = 0;
@@ -76,6 +81,7 @@ class Hexagon{
             d3.select("#map > svg")
             .append("polygon")
             .attr("id", this.id)
+            .attr("class", "hexagon")
             .attr("points", function(d){
                 let attr_points = "";
                 for ( let pts of points){
@@ -90,10 +96,10 @@ class Hexagon{
                 if ( color == "red" ){
                     d3.select(this).style("fill", "rgba(0,0,0,0");
                 }else{
-                    d3.select(this).style("fill", "red");
+                    d3.select(this).style("fill", "rgba(121,123,255,0.7)");
                 }
                 let id = d3.select(this).attr("id")
-                console.log(getPointsOfHexaById(id));
+                pathfinder("x-3y3z0", id);
             });
 
             // [ TEMPORARY ] Print coord on each hexa
@@ -121,9 +127,9 @@ function degToRadian(deg){
 function log_messages(object){
 
     let succ_style = [
-        'background: #332B00'
+        'background: #044F06'
         , 'line-height: 20px'
-        , 'color: #EDCD90'
+        , 'color: #B8EBAD'
         , 'text-align: center'
         , 'font-weight: bold'
     ].join(';');
@@ -178,9 +184,10 @@ function loadMap(data){
     // }
 
     // [ BLACK MAGIC VERSION ]
-    for ( let x = -3; x <= 3; x++ ){
-        for ( let y = -3; y <= 3; y++ ){
-            for ( let z = -3; z <= 3; z++ ){
+    let n = 3;
+    for ( let x = -n; x <= n; x++ ){
+        for ( let y = -n; y <= n; y++ ){
+            for ( let z = -n; z <= n; z++ ){
                 if ( x + y + z == 0 ){
                     id = "";
                     coord = {"x" : x, "y" : y, "z" : z, "type" : "rgba(0,0,0,0)"};
@@ -191,7 +198,7 @@ function loadMap(data){
         }
     }
     
-    log_messages( {"type" : "war", "message" : "Fin de création des hexagones"});
+    log_messages( {"type" : "suc", "message" : "map has been created"});
 }
 
 /**
@@ -236,6 +243,25 @@ function getNextHexa(a, b, t){
     return [lerp(a.x, b.x, t), lerp(a.y, b.y, t), lerp(a.z, b.z, t)];
 }
 
+// function roundHexaCoord(data){
+//     var rx = round(data.x)
+//     var ry = round(data.y)
+//     var rz = round(data.z)
+
+//     var x_diff = abs(rx - data.x)
+//     var y_diff = abs(ry - data.y)
+//     var z_diff = abs(rz - data.z)
+
+//     if x_diff > y_diff and x_diff > z_diff:
+//         rx = -ry-rz
+//     else if y_diff > z_diff:
+//         ry = -rx-rz
+//     else:
+//         rz = -rx-ry
+
+//     return Cube(rx, ry, rz)
+// }
+
 /**
  * 
  * @param {String} idA 
@@ -249,78 +275,27 @@ function pathfinder(idA, idB){
     let n = getHexaDistanceById(coordA, coordB);
 
     for ( let i=0; i <= n; i++){
-        console.log(getNextHexa(coordA, coordB, (1/n * i)));
+        let data = (getNextHexa(coordA, coordB, (1/n * i)));
+        
+        console.log(data);
+        d3.select("#x"+data[0]+"y"+data[1]+"z"+data[2]).style("fill", "rgba(121,123,255,0.7)");
     }
 }
 
-/**
- * Read map JSON data when the page is ready
- */
-$().ready(function(){
-    d3.json("settings.json").then(function(data){
-        RADIUS = data["radius"];
+function start(){
+
+    /**
+     * Read map JSON data when the page is ready
+     */
+    $().ready(function(){
+        d3.json("settings.json").then(function(data){
+            RADIUS = data["radius"];
+        });
+        d3.json("map.json").then(function(data){
+            WIDTH = data["width"];
+            HEIGHT = data["height"];
+            loadMap(data);
+        });
     });
-    d3.json("map.json").then(function(data){
-        WIDTH = data["width"];
-        HEIGHT = data["height"];
-        loadMap(data);
-        createLine();
-        pathfinder("x-3y3z0", "x2y0z-2");
-    });
-});
 
-
-function getCenterCoordsOfHexaById(id){
-    let data = hexaIdParser(id),
-    center_x = WIDTH/2,
-    center_y = HEIGHT/2,
-    diameter = RADIUS*2,
-    spacement = (Math.sqrt(3) / 2) * RADIUS, // radius of the inscribed circle
-    z_spacement = (3/4)*diameter;
-
-    x = center_x + (data.x * spacement) + (-data.y * spacement);
-    y = center_y + (data.z * z_spacement);
-
-    let coordonnate = {"x" : x, "y" : y};
-    return coordonnate;
-}
-
-function getPointsOfHexaById(id){
-    let data = hexaIdParser(id),
-    center_x = WIDTH/2,
-    center_y = HEIGHT/2,
-    diameter = RADIUS*2,
-    spacement = (Math.sqrt(3) / 2) * RADIUS, // radius of the inscribed circle
-    z_spacement = (3/4)*diameter,
-    points = new Array();
-
-    for( let i=0; i < 6; i++ ){
-
-        let angle = degToRadian(60*(i+1)),
-        pt_x = Math.sin(angle)*RADIUS,
-        pt_y = -Math.cos(angle)*RADIUS;
-
-        pt_x = ((pt_x*100)/100) + center_x + data.x * spacement + -data.y * spacement ;
-        pt_y = ((pt_y*100)/100) + center_y + data.z * z_spacement ;
-
-        points.push(new Array(pt_x,pt_y));
-    }
-
-    return points;
-}
-
-function createLine(){
-    let coord1 = getCenterCoordsOfHexaById("x-3y3z0");
-    let coord2 = getCenterCoordsOfHexaById("x2y0z-2");
-    let coord3 = getCenterCoordsOfHexaById("x2y1z-3");
-
-    d3.select("#map_svg").append("circle").attr("cx", coord1.x).attr("cy", coord1.y).attr("r", 10).style("fill", "green").style("strole", "block");
-    d3.select("#map_svg").append("circle").attr("cx", coord2.x).attr("cy", coord2.y).attr("r", 10).style("fill", "green").style("strole", "block");
-    d3.select("#map_svg").append("circle").attr("cx", coord3.x).attr("cy", coord3.y).attr("r", 10).style("fill", "green").style("strole", "block");
-
-    let path1 = "M" + coord1.x+","+coord1.y + " " + coord2.x + "," + coord2.y;
-    d3.select("#map_svg").append("path").attr("d", path1).style("stroke", "green").style("stroke-width", 5);
-
-    let path2 = "M" + coord1.x+","+coord1.y + " " + coord3.x + "," + coord3.y;
-    d3.select("#map_svg").append("path").attr("d", path2).style("stroke", "green").style("stroke-width", 5);
 }
