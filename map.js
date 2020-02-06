@@ -32,7 +32,7 @@ class Hexagon{
         if ( this.correctCoord(this.x, this.y, this.z) ) {
             this.createHexagon();
         }else{
-            log_messages( {"type":"war", "message":"Invalid coordinate ("+this.x+", "+this.y+", "+this.z+")"} );
+            log_messages( {"type":"war", "message":" Hexagon::Constructor() : Invalid coordinate ("+this.x+", "+this.y+", "+this.z+")"} );
         }
     }
 
@@ -68,7 +68,7 @@ class Hexagon{
                 points.push(new Array(pt_x,pt_y));
             }else {
                 can_create = false; points = null;
-                log_messages( {"type":"war", "message":"Invalid coordinate ("+this.x+", "+this.y+", "+this.z+")"} );
+                log_messages( {"type":"war", "message":"Hexagon::createHexagon() : Invalid coordinate ("+this.x+", "+this.y+", "+this.z+")"} );
             }
 
             // [ TEMPORARY ] Allowed to print coord on each hexa
@@ -92,14 +92,16 @@ class Hexagon{
             .style("stroke", "black")
             .style("fill", this.type)
             .on("click", function(){
-                let color = d3.select(this).style("fill");
-                if ( color == "red" ){
-                    d3.select(this).style("fill", "rgba(0,0,0,0");
-                }else{
-                    d3.select(this).style("fill", "rgba(121,123,255,0.7)");
-                }
-                let id = d3.select(this).attr("id")
-                pathfinder("x2y-2z0", id);
+                let id = d3.select(this).attr("id");
+
+                // [ TEMP CALL ]
+                //pathfinder("x0y0z0", id);
+                // let color = d3.select(this).style("fill");
+                // if ( color == "rgba(121,123,255,0.7)" ){
+                //     d3.select(this).style("fill", "rgba(0,0,0,0)");
+                // }else{
+                //     d3.select(this).style("fill", "rgba(121,123,255,0.7)");
+                // }
             });
 
             // [ TEMPORARY ] Print coord on each hexa
@@ -114,7 +116,7 @@ class Hexagon{
 
 /**
  * Transform degrees to radian
- * @param {int} deg 
+ * @param {Int} deg 
  */
 function degToRadian(deg){
     return Math.PI*deg/180;
@@ -128,7 +130,7 @@ function log_messages(object){
 
     let succ_style = ['background: #044F06', 'line-height: 20px', 'color: #B8EBAD', 'text-align: center', 'font-weight: bold'].join(';');
     let war_style = ['background: #332B00', 'line-height: 20px', 'color: #EDCD90', 'text-align: center', 'font-weight: bold'].join(';');
-    let err_style = ['background: #290000', 'line-height: 20px', 'color: #DF6D6D', 'text-align: center', 'font-weight: bold'].join(';');
+    let err_style = ['background: #690000', 'line-height: 20px', 'color: #FF7074', 'text-align: center', 'font-weight: bold'].join(';');
 
     switch (object.type) {
         case "suc":
@@ -146,52 +148,16 @@ function log_messages(object){
 }
 
 /**
- * Load the map
- * @param {*} data 
- */
-function loadMap(data){
-    d3.select("#map")
-    .append("svg")
-    .attr("id", "map_svg")
-    .attr("width", data["width"])
-    .attr("height", data["height"])
-    .style("background-color", data["background-color"]);
-
-    // [ TO KEEP ]
-    for ( coord of data["hexagons"]){
-        let id = "x" + coord.x + "y" + coord.y + "z" + coord.z;
-        let hexa = new Hexagon(coord, id);
-    }
-
-    // [ BLACK MAGIC VERSION ]
-    // let n = 3;
-    // for ( let x = -n; x <= n; x++ ){
-    //     for ( let y = -n; y <= n; y++ ){
-    //         for ( let z = -n; z <= n; z++ ){
-    //             if ( x + y + z == 0 ){
-    //                 id = "";
-    //                 coord = {"x" : x, "y" : y, "z" : z, "type" : "rgba(0,0,0,0)"};
-    //                 id += "x" + x + "y" + y + "z" + z;
-    //                 let hexa = new Hexagon(coord, id);
-    //             }
-    //         }
-    //     }
-    // }
-
-    log_messages( {"type" : "suc", "message" : "map has been created"});
-}
-
-/**
  * Parse the id of an hexagon to extract coordinate
  * @param {String} id 
  */
 function hexaIdParser(id){
-    let points = "";
+    let points;
     if ( (/x(-?[0-9]{1,2})y(-?[0-9]{1,2})z(-?[0-9]{1,2})/.test(id) )){
         data = (/x(-?[0-9]{1,2})y(-?[0-9]{1,2})z(-?[0-9]{1,2})/.exec(id));
         points = { "x" : parseInt(data[1]), "y" : parseInt(data[2]), "z" : parseInt(data[3]) };
     }else{
-        log_messages({ "type": "err", "message" : "Incorrect id give to hexaIdParser(id)"});
+        log_messages({ "type": "err", "message" : "hexaIdParser( :string ) : Incorrect id type of hexagon \n id = " + id});
     }
     return points;
 }
@@ -207,8 +173,8 @@ function getHexaDistanceById(coordA, coordB){
 
 /**
  * Linear interpolation
- * @param {int} a 
- * @param {int} b 
+ * @param {Int} a 
+ * @param {Int} b 
  * @param {float} t 
  */
 function lerp(a, b, t){
@@ -231,13 +197,13 @@ function getNextHexa(a, b, t){
  */
 function roundHexaCoord(data){
 
-    var x = Math.round(data.x)
-    var y = Math.round(data.y)
-    var z = Math.round(data.z)
+    let x = Math.round(data.x)
+    let y = Math.round(data.y)
+    let z = Math.round(data.z)
 
-    var x_diff = Math.abs(x - data.x)
-    var y_diff = Math.abs(y - data.y)
-    var z_diff = Math.abs(z - data.z)
+    let x_diff = Math.abs(x - data.x)
+    let y_diff = Math.abs(y - data.y)
+    let z_diff = Math.abs(z - data.z)
 
     if ( (x_diff >= y_diff) && (x_diff >= z_diff) ){
         x = -y-z;
@@ -268,6 +234,34 @@ function pathfinder(idA, idB){
     }
 }
 
+/**
+ * 
+ * @param {Int} mp 
+ * @param {String} id 
+ */
+function getReachableHexa(mp, id){
+
+}
+/**
+ * Load the map
+ * @param {*} data 
+ */
+function loadMap(data){
+    d3.select("#map")
+    .append("svg")
+    .attr("id", "map_svg")
+    .attr("width", data["width"])
+    .attr("height", data["height"])
+    .style("background-color", data["background-color"]);
+
+    for ( coord of data["hexagons"]){
+        let id = "x" + coord.x + "y" + coord.y + "z" + coord.z;
+        let hexa = new Hexagon(coord, id);
+    }
+
+    log_messages( {"type" : "suc", "message" : "loadMap() : map has been created"});
+}
+
 function start(){
 
     /**
@@ -283,5 +277,60 @@ function start(){
             loadMap(data);
         });
     });
-
 }
+
+
+function getCenterCoordsOfHexaById(id){
+    let data = hexaIdParser(id),
+    center_x = WIDTH/2,
+    center_y = HEIGHT/2,
+    diameter = RADIUS*2,
+    spacement = (Math.sqrt(3) / 2) * RADIUS, // radius of the inscribed circle
+    z_spacement = (3/4)*diameter;
+
+    x = center_x + (data.x * spacement) + (-data.y * spacement);
+    y = center_y + (data.z * z_spacement);
+
+    let coordonnate = {"x" : x, "y" : y};
+    return coordonnate;
+}
+
+function getPointsOfHexaById(id){
+    let data = hexaIdParser(id),
+    center_x = WIDTH/2,
+    center_y = HEIGHT/2,
+    diameter = RADIUS*2,
+    spacement = (Math.sqrt(3) / 2) * RADIUS, // radius of the inscribed circle
+    z_spacement = (3/4)*diameter,
+    points = new Array();
+
+    for( let i=0; i < 6; i++ ){
+
+        let angle = degToRadian(60*(i+1)),
+        pt_x = Math.sin(angle)*RADIUS,
+        pt_y = -Math.cos(angle)*RADIUS;
+
+        pt_x = ((pt_x*100)/100) + center_x + data.x * spacement + -data.y * spacement ;
+        pt_y = ((pt_y*100)/100) + center_y + data.z * z_spacement ;
+
+        points.push(new Array(pt_x,pt_y));
+    }
+
+    return points;
+}
+
+
+//[ BLACK MAGIC VERSION ]
+// let n = 3;
+// for ( let x = -n; x <= n; x++ ){
+//     for ( let y = -n; y <= n; y++ ){
+//         for ( let z = -n; z <= n; z++ ){
+//             if ( x + y + z == 0 ){
+//                 id = "";
+//                 coord = {"x" : x, "y" : y, "z" : z, "type" : "rgba(0,0,0,0)"};
+//                 id += "x" + x + "y" + y + "z" + z;
+//                 let hexa = new Hexagon(coord, id);
+//             }
+//         }
+//     }
+// }
