@@ -38,3 +38,8 @@ git clone git@github.com:GraciaMoulisKevin/Wargame.git
 cd Wargame/
 npm install
 ```
+
+## Lancer l'environnement de développement
+```bash
+npm run dev
+```

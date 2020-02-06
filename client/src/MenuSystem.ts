@@ -13,8 +13,6 @@ export default class MenuSystem extends System {
             const menuState = this.game.manager.getComponentDataByEntity(entityId, 'Menu');
             if(!menuState.active) return;
 
-            let myData = ["Hello World!"];
-
             d3.select('body')
                 .append('div')
                 .attr('class', 'menu')
@@ -23,10 +21,7 @@ export default class MenuSystem extends System {
                 .style('left', `${menuState.x}px`)
                 .style('width', `${menuState.width}px`)
                 .style('height', `${menuState.height}px`)
-                .data(myData)
-                .text(function (d) {
-                    return d;
-                });
+                .data([{entityid: entityId}]);
 
             console.log(d3.select('.menu').data());
         }
