@@ -12,9 +12,9 @@ window.addEventListener('load', function () {
     game.manager.registerComponent('Menu', {x: 0, y: 0, width: 0, height: 0, active: false});
     const menuPrincipal = game.manager.createEntity(['Menu']);
     const menuPrincipalState = {
-        x: window.innerWidth-200/2,
-        y: window.innerHeight-500/2,
-        width: 200,
+        x: (window.innerWidth-600)/2,
+        y: (window.innerHeight-500)/2,
+        width: 600,
         height: 500,
         active: true
     };

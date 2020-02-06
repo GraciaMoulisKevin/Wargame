@@ -23,7 +23,7 @@ const server = app.listen(3000, () => {
     game.manager.createEntity(['Transform']);
     const id = game.manager.createEntity(['Location', 'Transform']);
 
-    //Game.manager.deleteEntity(id);
+    //game.manager.deleteEntity(id);
     game.manager.createEntity(['Location']);
 
     console.log(game.manager.getComponentDataByEntity(1, 'Transform'));
