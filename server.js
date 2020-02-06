@@ -71,7 +71,6 @@ io.on('connection', function(socket){
         
     })
     socket.on('buttonPressed',function(room){
-        console.log("Salut");
         io.sockets.to(room).emit('systemMessage','Un mec a appuyé sur le bouton!');
     })
 })
