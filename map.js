@@ -94,10 +94,12 @@ class Hexagon{
             .style("stroke", "black")
             .style("fill", this.type)
             .on("click", function(){
-                let x = d3.select(this).attr("data-x"),
-                y = d3.select(this).attr("data-y"),
-                z = d3.select(this).attr("data-z");
-                pathfinder({"x": 0, "y": 0, "z": 0}, {"x": x, "y": y, "z": z});
+                let dataset = $(this).data(),
+                x = dataset.x,
+                y = dataset.y,
+                z = dataset.z;
+
+                moveUnityTo(0, {"x" : x, "y" : y, "z" : z});
                 console.log(`coord : x(${x}) y(${y}) z(${z})`);
             });
 
@@ -206,11 +208,15 @@ function roundHexaCoord(data){
 function pathfinder(hexagonCoordA, hexagonCoordB){
 
     let n = getHexaDistanceById(hexagonCoordA, hexagonCoordB);
+    let path = [];
 
     for ( let i=0; i <= n; i++){
         let data = roundHexaCoord(getNextHexa(hexagonCoordA, hexagonCoordB, (1/n * i)));
         d3.select(`.hexagon[data-x="${data.x}"][data-y="${data.y}"][data-z="${data.z}"]`).style("fill", "rgba(121,123,255,0.7)");
+        path.push({"x" : data.x, "y" : data.y, "z" : data.z});
     }
+
+    return path;
 }
 
 /**
@@ -270,8 +276,8 @@ function start(){
 
 function createUnity(){
 
-    let start
-    let coord = getCenterCoordsOfHexaById("x0y0z0"), cx = coord.x, cy = coord.y, r = 10;
+    let startCoord = {"x" : -3, "y" : 1, "z" : 2};
+    let coord = getCenterCoordinateOfHexagons(startCoord), cx = coord.x, cy = coord.y, r = 10;
 
     d3.select("#map_svg")
     .append("circle")
@@ -280,27 +286,43 @@ function createUnity(){
     .attr("cy", cy)
     .attr("r", r)
     .style("fill", "red");
+}
 
-    d3.select("#lerond").attr("cx", cx + 50).attr("cy", cy + 20);
+function moveUnityTo(i, coord){
+
+    i++;
+    let circle = d3.select("#lerond");
+    let path = pathfinder({"x": -3, "y": 1, "z": 2}, {"x": coord.x, "y": coord.y, "z": coord.z});
+    
+    if ( i < path.length ){
+        var timer = setTimeout(function(){
+            let center = getCenterCoordinateOfHexagons(path[i]);
+            console.log(center);
+            d3.select("#lerond").transition().attr("cx", center.x).attr("cy", center.y);
+            moveUnityTo(i, coord);
+        }, 700);
+    }else{
+        log_messages({"type" : "suc", "message" : "moveUnityTo() : Unit done movement"})
+        return null;
+    }
 }
 
 /**
  * 
  * @param {String} id 
  */
-function getCenterCoordsOfHexaById(id){
-    let data = hexaIdParser(id),
-    center_x = WIDTH/2,
+function getCenterCoordinateOfHexagons(coord){
+    let center_x = WIDTH/2,
     center_y = HEIGHT/2,
     diameter = RADIUS*2,
     spacement = (Math.sqrt(3) / 2) * RADIUS, // radius of the inscribed circle
     z_spacement = (3/4)*diameter;
 
-    x = center_x + (data.x * spacement) + (-data.y * spacement);
-    y = center_y + (data.z * z_spacement);
+    x = center_x + (coord.x * spacement) + (-coord.y * spacement);
+    y = center_y + (coord.z * z_spacement);
 
-    let coordonnate = {"x" : x, "y" : y};
-    return coordonnate;
+    let coordinate = {"x" : x, "y" : y};
+    return coordinate;
 }
 
 /**
