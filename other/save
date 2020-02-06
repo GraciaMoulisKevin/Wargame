@@ -1,40 +1,74 @@
 
+/**
+ * 
+ * @param {String} id 
+ */
+function getCenterCoordsOfHexaById(id){
+    let data = hexaIdParser(id),
+    center_x = WIDTH/2,
+    center_y = HEIGHT/2,
+    diameter = RADIUS*2,
+    spacement = (Math.sqrt(3) / 2) * RADIUS, // radius of the inscribed circle
+    z_spacement = (3/4)*diameter;
 
-// function getCenterCoordsOfHexaById(id){
-//     let data = hexaIdParser(id),
-//     center_x = WIDTH/2,
-//     center_y = HEIGHT/2,
-//     diameter = RADIUS*2,
-//     spacement = (Math.sqrt(3) / 2) * RADIUS, // radius of the inscribed circle
-//     z_spacement = (3/4)*diameter;
+    x = center_x + (data.x * spacement) + (-data.y * spacement);
+    y = center_y + (data.z * z_spacement);
 
-//     x = center_x + (data.x * spacement) + (-data.y * spacement);
-//     y = center_y + (data.z * z_spacement);
+    let coordonnate = {"x" : x, "y" : y};
+    return coordonnate;
+}
 
-//     let coordonnate = {"x" : x, "y" : y};
-//     return coordonnate;
-// }
+function getPointsOfHexaById(id){
+    let data = hexaIdParser(id),
+    center_x = WIDTH/2,
+    center_y = HEIGHT/2,
+    diameter = RADIUS*2,
+    spacement = (Math.sqrt(3) / 2) * RADIUS, // radius of the inscribed circle
+    z_spacement = (3/4)*diameter,
+    points = new Array();
 
-// function getPointsOfHexaById(id){
-//     let data = hexaIdParser(id),
-//     center_x = WIDTH/2,
-//     center_y = HEIGHT/2,
-//     diameter = RADIUS*2,
-//     spacement = (Math.sqrt(3) / 2) * RADIUS, // radius of the inscribed circle
-//     z_spacement = (3/4)*diameter,
-//     points = new Array();
+    for( let i=0; i < 6; i++ ){
 
-//     for( let i=0; i < 6; i++ ){
+        let angle = degToRadian(60*(i+1)),
+        pt_x = Math.sin(angle)*RADIUS,
+        pt_y = -Math.cos(angle)*RADIUS;
 
-//         let angle = degToRadian(60*(i+1)),
-//         pt_x = Math.sin(angle)*RADIUS,
-//         pt_y = -Math.cos(angle)*RADIUS;
+        pt_x = ((pt_x*100)/100) + center_x + data.x * spacement + -data.y * spacement ;
+        pt_y = ((pt_y*100)/100) + center_y + data.z * z_spacement ;
 
-//         pt_x = ((pt_x*100)/100) + center_x + data.x * spacement + -data.y * spacement ;
-//         pt_y = ((pt_y*100)/100) + center_y + data.z * z_spacement ;
+        points.push(new Array(pt_x,pt_y));
+    }
 
-//         points.push(new Array(pt_x,pt_y));
+    return points;
+}
+
+//[ BLACK MAGIC VERSION ]
+// let n = 3;
+// for ( let x = -n; x <= n; x++ ){
+//     for ( let y = -n; y <= n; y++ ){
+//         for ( let z = -n; z <= n; z++ ){
+//             if ( x + y + z == 0 ){
+//                 id = "";
+//                 coord = {"x" : x, "y" : y, "z" : z, "type" : "rgba(0,0,0,0)"};
+//                 id += "x" + x + "y" + y + "z" + z;
+//                 let hexa = new Hexagon(coord, id);
+//             }
+//         }
 //     }
-
-//     return points;
 // }
+
+
+/**
+ * Parse the id of an hexagon to extract coordinate
+ * @param {String} id 
+ */
+function hexaIdParser(id){
+    let points;
+    if ( (/x(-?[0-9]{1,2})y(-?[0-9]{1,2})z(-?[0-9]{1,2})/.test(id) )){
+        data = (/x(-?[0-9]{1,2})y(-?[0-9]{1,2})z(-?[0-9]{1,2})/.exec(id));
+        points = { "x" : parseInt(data[1]), "y" : parseInt(data[2]), "z" : parseInt(data[3]) };
+    }else{
+        log_messages({ "type": "err", "message" : "hexaIdParser( :string ) : Incorrect id type of hexagon \n id = " + id});
+    }
+    return points;
+}

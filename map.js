@@ -80,8 +80,10 @@ class Hexagon{
         if ( can_create ){
             d3.select("#map > svg")
             .append("polygon")
-            .attr("id", this.id)
             .attr("class", "hexagon")
+            .attr("data-x", this.x)
+            .attr("data-y", this.y)
+            .attr("data-z", this.z)
             .attr("points", function(d){
                 let attr_points = "";
                 for ( let pts of points){
@@ -92,16 +94,11 @@ class Hexagon{
             .style("stroke", "black")
             .style("fill", this.type)
             .on("click", function(){
-                let id = d3.select(this).attr("id");
-
-                // [ TEMP CALL ]
-                //pathfinder("x0y0z0", id);
-                // let color = d3.select(this).style("fill");
-                // if ( color == "rgba(121,123,255,0.7)" ){
-                //     d3.select(this).style("fill", "rgba(0,0,0,0)");
-                // }else{
-                //     d3.select(this).style("fill", "rgba(121,123,255,0.7)");
-                // }
+                let x = d3.select(this).attr("data-x"),
+                y = d3.select(this).attr("data-y"),
+                z = d3.select(this).attr("data-z");
+                pathfinder({"x": 0, "y": 0, "z": 0}, {"x": x, "y": y, "z": z});
+                console.log(`coord : x(${x}) y(${y}) z(${z})`);
             });
 
             // [ TEMPORARY ] Print coord on each hexa
@@ -148,21 +145,6 @@ function log_messages(object){
 }
 
 /**
- * Parse the id of an hexagon to extract coordinate
- * @param {String} id 
- */
-function hexaIdParser(id){
-    let points;
-    if ( (/x(-?[0-9]{1,2})y(-?[0-9]{1,2})z(-?[0-9]{1,2})/.test(id) )){
-        data = (/x(-?[0-9]{1,2})y(-?[0-9]{1,2})z(-?[0-9]{1,2})/.exec(id));
-        points = { "x" : parseInt(data[1]), "y" : parseInt(data[2]), "z" : parseInt(data[3]) };
-    }else{
-        log_messages({ "type": "err", "message" : "hexaIdParser( :string ) : Incorrect id type of hexagon \n id = " + id});
-    }
-    return points;
-}
-
-/**
  * Get the number of hexagons needed to reach an hexagon
  * @param {Object} id1 
  * @param {Object} id2 
@@ -173,9 +155,9 @@ function getHexaDistanceById(coordA, coordB){
 
 /**
  * Linear interpolation
- * @param {Int} a 
- * @param {Int} b 
- * @param {float} t 
+ * @param {Number} a 
+ * @param {Number} b 
+ * @param {Number} t
  */
 function lerp(a, b, t){
     return (a + (b-a) * t);
@@ -183,17 +165,17 @@ function lerp(a, b, t){
 
 /**
  * Get the next hexagons where the units as to run
- * @param {Object} a 
- * @param {Object} b 
- * @param {float} t
+ * @param {Object} coordA
+ * @param {Object} coordB
+ * @param {Number} t
  */
-function getNextHexa(a, b, t){
-    return {"x" : lerp(a.x, b.x, t), "y" : lerp(a.y, b.y, t), "z" :lerp(a.z, b.z, t)};
+function getNextHexa(coordA, coordB, t){
+    return {"x" : lerp(coordA.x, coordB.x, t), "y" : lerp(coordA.y, coordB.y, t), "z" :lerp(coordA.z, coordB.z, t)};
 }
 
 /**
  * round data to get proper coordinate
- * @param {Object} coord 
+ * @param {Object} data
  */
 function roundHexaCoord(data){
 
@@ -218,33 +200,22 @@ function roundHexaCoord(data){
 
 /**
  * Create a path from idA to idB
- * @param {String} idA 
- * @param {String} idB 
+ * @param {String} hexagonCoordA 
+ * @param {String} hexagonCoordB 
  */
-function pathfinder(idA, idB){
+function pathfinder(hexagonCoordA, hexagonCoordB){
 
-    let coordA = hexaIdParser(idA);
-    let coordB = hexaIdParser(idB);
-
-    let n = getHexaDistanceById(coordA, coordB);
+    let n = getHexaDistanceById(hexagonCoordA, hexagonCoordB);
 
     for ( let i=0; i <= n; i++){
-        let data = roundHexaCoord(getNextHexa(coordA, coordB, (1/n * i)));
-        d3.select("#x"+data.x+"y"+data.y+"z"+data.z).style("fill", "rgba(121,123,255,0.7)");
+        let data = roundHexaCoord(getNextHexa(hexagonCoordA, hexagonCoordB, (1/n * i)));
+        d3.select(`.hexagon[data-x="${data.x}"][data-y="${data.y}"][data-z="${data.z}"]`).style("fill", "rgba(121,123,255,0.7)");
     }
 }
 
 /**
- * 
- * @param {Int} mp 
- * @param {String} id 
- */
-function getReachableHexa(mp, id){
-
-}
-/**
  * Load the map
- * @param {*} data 
+ * @param {Object} data 
  */
 function loadMap(data){
     d3.select("#map")
@@ -255,13 +226,30 @@ function loadMap(data){
     .style("background-color", data["background-color"]);
 
     for ( coord of data["hexagons"]){
-        let id = "x" + coord.x + "y" + coord.y + "z" + coord.z;
-        let hexa = new Hexagon(coord, id);
+        let hexa = new Hexagon(coord);
     }
-
+    
     log_messages( {"type" : "suc", "message" : "loadMap() : map has been created"});
+
+    //[ BLACK MAGIC VERSION ]
+    // let n = 3; for ( let x = -n; x <= n; x++ ){
+    //     for ( let y = -n; y <= n; y++ ){
+    //         for ( let z = -n; z <= n; z++ ){
+    //             if ( x + y + z == 0 ){
+    //                 id = "";
+    //                 coord = {"x" : x, "y" : y, "z" : z, "type" : "rgba(0,0,0,0)"};
+    //                 id += "x" + x + "y" + y + "z" + z;
+    //                 let hexa = new Hexagon(coord, id);
+    //             }
+    //         }
+    //     }
+    // }
+    
 }
 
+/**
+ * Start function when document start
+ */
 function start(){
 
     /**
@@ -275,11 +263,31 @@ function start(){
             WIDTH = data["width"];
             HEIGHT = data["height"];
             loadMap(data);
+            createUnity();
         });
     });
 }
 
+function createUnity(){
 
+    let start
+    let coord = getCenterCoordsOfHexaById("x0y0z0"), cx = coord.x, cy = coord.y, r = 10;
+
+    d3.select("#map_svg")
+    .append("circle")
+    .attr("id", "lerond")
+    .attr("cx", cx)
+    .attr("cy", cy)
+    .attr("r", r)
+    .style("fill", "red");
+
+    d3.select("#lerond").attr("cx", cx + 50).attr("cy", cy + 20);
+}
+
+/**
+ * 
+ * @param {String} id 
+ */
 function getCenterCoordsOfHexaById(id){
     let data = hexaIdParser(id),
     center_x = WIDTH/2,
@@ -295,42 +303,17 @@ function getCenterCoordsOfHexaById(id){
     return coordonnate;
 }
 
-function getPointsOfHexaById(id){
-    let data = hexaIdParser(id),
-    center_x = WIDTH/2,
-    center_y = HEIGHT/2,
-    diameter = RADIUS*2,
-    spacement = (Math.sqrt(3) / 2) * RADIUS, // radius of the inscribed circle
-    z_spacement = (3/4)*diameter,
-    points = new Array();
-
-    for( let i=0; i < 6; i++ ){
-
-        let angle = degToRadian(60*(i+1)),
-        pt_x = Math.sin(angle)*RADIUS,
-        pt_y = -Math.cos(angle)*RADIUS;
-
-        pt_x = ((pt_x*100)/100) + center_x + data.x * spacement + -data.y * spacement ;
-        pt_y = ((pt_y*100)/100) + center_y + data.z * z_spacement ;
-
-        points.push(new Array(pt_x,pt_y));
+/**
+ * Parse the id of an hexagon to extract coordinate
+ * @param {String} id 
+ */
+function hexaIdParser(id){
+    let points;
+    if ( (/x(-?[0-9]{1,2})y(-?[0-9]{1,2})z(-?[0-9]{1,2})/.test(id) )){
+        data = (/x(-?[0-9]{1,2})y(-?[0-9]{1,2})z(-?[0-9]{1,2})/.exec(id));
+        points = { "x" : parseInt(data[1]), "y" : parseInt(data[2]), "z" : parseInt(data[3]) };
+    }else{
+        log_messages({ "type": "err", "message" : "hexaIdParser( :string ) : Incorrect id type of hexagon \n id = " + id});
     }
-
     return points;
 }
-
-
-//[ BLACK MAGIC VERSION ]
-// let n = 3;
-// for ( let x = -n; x <= n; x++ ){
-//     for ( let y = -n; y <= n; y++ ){
-//         for ( let z = -n; z <= n; z++ ){
-//             if ( x + y + z == 0 ){
-//                 id = "";
-//                 coord = {"x" : x, "y" : y, "z" : z, "type" : "rgba(0,0,0,0)"};
-//                 id += "x" + x + "y" + y + "z" + z;
-//                 let hexa = new Hexagon(coord, id);
-//             }
-//         }
-//     }
-// }
