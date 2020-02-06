@@ -1,19 +1,19 @@
 import Manager from "./Manager";
 
-class Game {
+export default class Game {
 
     public readonly manager: Manager;
     public io;
 
     constructor() {
 
-        this.manager = new Manager();
+        this.manager = new Manager(this);
 
     }
 
     public update(): void {
         setTimeout(() => {
-            //this.manager.update();
+            this.manager.update();
             this.update();
         }, 1000/60);
     }
@@ -25,4 +25,3 @@ class Game {
 
 }
 
-export default new Game();

@@ -14,7 +14,7 @@ export default class EventHandler {
 
     public callEvents(events: [string], eventData?: {}) {
         events.forEach(event => {
-           this.listeners[event].cb(eventData);
+           this.listeners[event].forEach(cb => cb(eventData));
         });
     }
 

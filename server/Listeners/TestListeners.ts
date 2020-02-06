@@ -1,5 +1,14 @@
-import Game from "../Game";
+import Game from "../../ecs/Game";
+import Listener from "../../ecs/Listener";
 
-Game.manager.eventHandler.registerListener('EntityMoves', function (eventData: any) {
-    console.log(eventData.entity + " has moved.");
-});
+export default class TestListeners implements Listener {
+
+    public register(game: Game): void {
+
+        game.manager.eventHandler.registerListener('EntityMoves', function (eventData: any) {
+
+        });
+
+    }
+
+}
