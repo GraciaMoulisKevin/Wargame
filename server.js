@@ -70,9 +70,6 @@ io.on('connection', function(socket){
         socket.join(roomName);
         
     })
-    socket.on('buttonPressed',function(room){
-        io.sockets.to(room).emit('systemMessage','Un mec a appuyé sur le bouton!');
-    })
     socket.on('sendChatMessage', function(message,room){
         io.sockets.to(room).emit('chatMessage',message);
     })
