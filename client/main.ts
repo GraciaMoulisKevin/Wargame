@@ -4,26 +4,33 @@ import Game from "../ecs/Game";
 import MenuSystem from "./src/MenuSystem";
 
 const socket = io();
+const game: Game = new Game();
 
 window.addEventListener('load', function () {
 
-    const game: Game = new Game();
-
-    game.manager.registerComponent('Menu', {x: 0, y: 0, width: 0, height: 0, active: false});
-    const menuPrincipal = game.manager.createEntity(['Menu']);
-    const menuPrincipalState = {
-        x: (window.innerWidth-600)/2,
-        y: (window.innerHeight-500)/2,
-        width: 600,
-        height: 500,
-        active: true
-    };
-
-    game.manager.setComponentDataForEntities([menuPrincipal], 'Menu', menuPrincipalState);
-
-    game.manager.registerSystem('MenuSystem', new MenuSystem(game));
-    game.manager.enableSystem('MenuSystem');
+    registerComponents();
 
     game.start(socket);
 
 });
+
+function registerComponents() {
+    const componentsToAdd: {name, state}[] = [];
+
+    componentsToAdd.push({
+        name: 'TransformComponent',
+        state: {
+            x: 0,
+            y: 0,
+            width: 0,
+            height: 0,
+            angle: 0
+        }
+    });
+
+    for(const component of componentsToAdd) {
+        game.manager.registerComponent(component.name, component.state);
+    }
+}
+
+
