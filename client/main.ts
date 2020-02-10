@@ -1,24 +1,29 @@
 import * as io from 'socket.io-client';
 import * as d3 from 'd3';
+import Game from "../ecs/Game";
+import MenuSystem from "./src/MenuSystem";
 
 const socket = io();
 
-//Make an SVG Container
-let svgContainer = d3.select("body").append("svg")
-    .attr("width", 800)
-    .attr("height", 800)
-    .style("border", "1px solid black");
+window.addEventListener('load', function () {
 
-//Draw the Circle
-let circle = svgContainer.append("circle")
-                         .attr("cx", 30)
-                         .attr("cy", 30)
-                         .attr("r", 20);
+    const game: Game = new Game();
 
-socket.on('test', function (state) {
+    game.manager.registerComponent('Menu', {x: 0, y: 0, width: 0, height: 0, active: false});
+    const menuPrincipal = game.manager.createEntity(['Menu']);
+    const menuPrincipalState = {
+        x: (window.innerWidth-600)/2,
+        y: (window.innerHeight-500)/2,
+        width: 600,
+        height: 500,
+        active: true
+    };
 
-    d3.select("circle").attr("cx", state.x);
-    d3.select("circle").attr("cy", state.y);
+    game.manager.setComponentDataForEntities([menuPrincipal], 'Menu', menuPrincipalState);
+
+    game.manager.registerSystem('MenuSystem', new MenuSystem(game));
+    game.manager.enableSystem('MenuSystem');
+
+    game.start(socket);
 
 });
-

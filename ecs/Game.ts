@@ -1,18 +1,14 @@
 import Manager from "./Manager";
 
-class Game {
+export default class Game {
 
-    private readonly manager: Manager;
+    public readonly manager: Manager;
     public io;
 
     constructor() {
 
-        this.manager = new Manager();
+        this.manager = new Manager(this);
 
-    }
-
-    public getManager() {
-        return this.manager;
     }
 
     public update(): void {
@@ -29,4 +25,3 @@ class Game {
 
 }
 
-export default new Game();

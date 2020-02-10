@@ -1,35 +1,34 @@
-import System from "../System";
-import Game from "../Game";
-
+import System from "../../ecs/System";
+import Game from "../../ecs/Game";
 
 export default class LocationSystem extends System {
 
-    public update() {
+    public onDisable(): void {
 
-        const locationEntitiesAndData = Game.getManager().getEntitiesAndDataComposedBy(['Location']);
+    }
 
-        for(let data of locationEntitiesAndData) {
-            data.state.x += data.state.test_x;
-            data.state.y += data.state.test_y;
+    public onEnable(): void {
 
-            if(data.state.x <= 0 || data.state.x >= 800) {
-                data.state.test_x *= -1;
+    }
+
+    public onUpdate(): void {
+
+        const entities = this.game.manager.getEntitiesByComponents(['Location']);
+
+        for(const entityId of entities) {
+            let locationState = this.game.manager.getComponentDataByEntity(entityId, 'Location');
+
+            const baseLocation = {x: locationState['x'], y: locationState['y']};
+
+            locationState['x'] += locationState['test_x'];
+            locationState['y'] += locationState['test_y'];
+
+            if(locationState['x'] !== baseLocation.x || locationState['y'] !== baseLocation.y) {
+                this.game.manager.eventHandler.callEvents(['EntityMoves'], {entityId: entityId, baseLocation: baseLocation, newLocation:locationState});
             }
-
-            if(data.state.test_x > 0) {
-                data.state.test_x *= 0.999;
-            }
-
-            if(data.state.y <= 0 || data.state.y >= 800-30) {
-                data.state.test_y *= -0.9;
-            }
-
-            if(data.state.y < 800-30) {
-                data.state.test_y += 0.2;
-            }
-
-            if(Game.io) Game.io.emit('test', data.state);
         }
 
     }
+
+
 }
