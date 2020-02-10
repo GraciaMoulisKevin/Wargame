@@ -1,3 +1,24 @@
 * {
     margin : 0;
 }
+
+#container-menu{
+    position: fixed;
+    margin : auto;
+    z-index : 1;
+    top : 25%;
+    left : 0;
+    right : 0;
+}
+
+#title {
+    font-size: 200%;
+    padding: 2%;
+}
+
+.btn-menu{
+    width: 90%;
+    height: 90px;
+    margin : auto;
+    margin-bottom: 3%;
+}
