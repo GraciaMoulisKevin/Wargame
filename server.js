@@ -45,6 +45,13 @@ app.post('/', (req,res) => {
 io.on('connection', function(socket){
     const files = fs.readdirSync(__dirname + '/room/');
     socket.emit('files',files);
+
+    
+
+    socket.on('button press', (room) => {
+        console.log(room)
+        socket.to(room).emit('check', room)
+    })
 })
 
 server.listen(port, () => {
