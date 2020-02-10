@@ -71,7 +71,7 @@ io.on('connection', function(socket){
         
     })
     socket.on('sendChatMessage', function(message,pseudo,room){
-        io.sockets.to(room).emit('chatMessage',pseudo + " :  " + message);
+        io.sockets.to(room).emit('chatMessage',message,pseudo);
     })
 })
 
