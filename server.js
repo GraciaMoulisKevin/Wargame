@@ -5,6 +5,7 @@ const port = 3000
 const bodyParser = require('body-parser')
 const fs = require('fs') // filesystem
 const template = __dirname + '/template.html'; // Template shortcut
+const history = {};
 
 /**
  * Create room folder (server)
@@ -47,6 +48,7 @@ app.post('/', (req,res) => {
     if(fs.existsSync(roomPath)){
         res.redirect('/room/' + roomName);
     } else {
+        history[roomName] = [];
         fs.copyFile(template, roomPath , (err) => {
             if(err) throw err;
             const files = fs.readdirSync(__dirname + '/room/');
@@ -68,9 +70,11 @@ io.on('connection', function(socket){
     })
     socket.on('room', function(roomName){
         socket.join(roomName);
-        
+        socket.emit('messageHistory',history[roomName]);
     })
+    
     socket.on('sendChatMessage', function(message,pseudo,room){
+        history[room].push({message : message, pseudo : pseudo});
         io.sockets.to(room).emit('chatMessage',message,pseudo);
     })
 })
