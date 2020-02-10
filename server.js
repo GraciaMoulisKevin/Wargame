@@ -75,6 +75,11 @@ io.on('connection', function(socket){
     
     socket.on('sendChatMessage', function(message,pseudo,room){
         history[room].push({message : message, pseudo : pseudo});
+        let historyLength = history[room].length;
+        let maxHistoryNumber = 20;
+        if(historyLength > maxHistoryNumber){
+            history[room].splice(0, historyLength - maxHistoryNumber)
+        }
         io.sockets.to(room).emit('chatMessage',message,pseudo);
     })
 })
