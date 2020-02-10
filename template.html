@@ -6,13 +6,33 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
 </head>
 <body>
+
+    <div class="modal fade" id="modalWindowPseudo" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalCenterTitle">Enter username</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <input type="text" id="modalPseudo">
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" onclick="closeModal()">Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     <div class="container border fixed-bottom mr-1 mb-1 w-25 h-50">
-        <div id="messageContainer">
+        <div id="messageContainer" class="overflow-auto" style="height: 85%;margin-top: 2%;">
 
         </div>
-        <form id="sendContainer" class="form-group position-absolute fixed-bottom mr-1 ml-1">
+        <form id="sendContainer" autocomplete="off" class="form-group position-absolute fixed-bottom mr-1 ml-1">
             <div class="input-group">
-                <input type="text" id="messageInput" class="form-control" >
+                <input type="text"  id="messageInput" class="form-control" >
                 <div class="input-group-append">
                     <button type="submit" class="btn btn-primary" id="sendButton">Send</button>
                 </div>
@@ -29,11 +49,16 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     
     <script>
+        window.onload = function(){
+            $('#modalWindowPseudo').modal('show');
+        };
         let socket = io();
         let roomName = window.location.pathname.slice(6);
+        let pseudo = "guest";
         const messageForm = document.getElementById("sendContainer");
         const messageInput = document.getElementById("messageInput");
         const messageContainer = document.getElementById("messageContainer");
+        const modalWindow = document.getElementById("modalWindowPseudo");
 
         console.log("roomName : " + roomName)
         socket.on('connect', function(data){
@@ -45,18 +70,24 @@
         socket.on('chatMessage', function(data){
             appendMessage(data);
         })
-        
+
         messageForm.addEventListener('submit', function(e){
             e.preventDefault();
             const message = messageInput.value;
-            socket.emit('sendChatMessage', message, roomName );
+            socket.emit('sendChatMessage', message, pseudo, roomName );
             messageInput.value = ''
         })
+
+        function closeModal(){
+            pseudo = $('#modalPseudo').val();
+            $('#modalWindowPseudo').modal('hide');
+        }
 
         function appendMessage(message){
             const messageElement = document.createElement('div');
             messageElement.innerText = message;
             messageContainer.append(messageElement);
+            messageContainer.scrollTo(0,messageContainer.scrollHeight);
         }
     </script>
 </body>

@@ -70,8 +70,8 @@ io.on('connection', function(socket){
         socket.join(roomName);
         
     })
-    socket.on('sendChatMessage', function(message,room){
-        io.sockets.to(room).emit('chatMessage',message);
+    socket.on('sendChatMessage', function(message,pseudo,room){
+        io.sockets.to(room).emit('chatMessage',pseudo + " :  " + message);
     })
 })
 
