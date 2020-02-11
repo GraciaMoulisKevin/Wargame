@@ -18,7 +18,7 @@
                 </div>
                 <div class="modal-body">
                     <form id="modalForm">
-                        <input type="text" id="modalPseudo">
+                        <input type="text" id="modalPseudo" maxlength="15">
                         <button type="submit" class="btn btn-primary" onclick="closeModal()">Save</button>
                     </form>
                 </div>
@@ -27,7 +27,7 @@
     </div>
     
     <div class="container border fixed-bottom mr-1 mb-1 w-25 h-50">
-        <div id="messageContainer" class="overflow-auto" style="height: 85%;margin-top: 2%;">
+        <div id="messageContainer" class="overflow-auto" style="height: 85%;margin-top: 2%;width: 100%;word-wrap: break-word;">
             
         </div>
         <form id="sendContainer" autocomplete="off" class="form-group position-absolute fixed-bottom mr-1 ml-1">

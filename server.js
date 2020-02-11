@@ -80,6 +80,9 @@ io.on('connection', function(socket){
         if(historyLength > maxHistoryNumber){
             history[room].splice(0, historyLength - maxHistoryNumber)
         }
+        if(message.length > 100){
+            message = message.slice(0,100);
+        }
         io.sockets.to(room).emit('chatMessage',message,pseudo);
     })
 })
