@@ -111,17 +111,11 @@ class Hexagon {
                 .style("stroke", "black")
                 .style("fill", this.type)
                 .on("click", function () {
-                    let dataset = $(this).data(),
+                    let dataset = getHexagonDataset(this),
                         x = dataset.x,
                         y = dataset.y,
                         z = dataset.z;
-
-                    moveUnityTo(0, {
-                        "x": x,
-                        "y": y,
-                        "z": z
-                    });
-                    console.log(`coord : x(${x}) y(${y}) z(${z})`);
+                    showAllowedMovement(this, 4);
                 });
 
             // [ TEMPORARY ] Print coordinate on each hexagon
@@ -310,13 +304,53 @@ function start() {
     });
 }
 
+/**
+ * 
+ * @param {Node} polygon 
+ */
+function showAllowedMovement(polygon, movement_points){
+    let coordinate = getHexagonDataset(polygon);
+    for ( let x = coordinate.x-movement_points; x <= coordinate.x+movement_points; x++){
+        for ( let y = coordinate.y-movement_points; y <= coordinate.y+movement_points; y++){
+            for ( let z = coordinate.z-movement_points; z <= coordinate.z+movement_points; z++){
+                if ( (x + y + z) == 0 ){
+                    d3.select(`.hexagon[data-x="${x}"][data-y="${y}"][data-z="${z}"]`).style("fill", "rgba(121,123,255,0.7)");
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Return all data attribute (data-x, data-y ...)
+ * @param {Node} polygon 
+ */
+function getHexagonDataset(polygon){
+    return $(polygon).data();
+}
+// function getDataHexagonAttributs(){
+
+//     let data = d3.selectAll("polygon");
+//     let node = data["_groups"][0];
+
+//     for ( polygon of node ){
+//         console.log(polygon.attributes);
+//     }
+// }
+
 function createUnity() {
 
+    // let startCoordinate = {
+    //     "x": -3,
+    //     "y": 1,
+    //     "z": 2
+    // };
     let startCoordinate = {
-        "x": -3,
-        "y": 1,
-        "z": 2
+        "x": 0,
+        "y": 0,
+        "z": 0
     };
+
     let coord = getCenterCoordinateOfHexagons(startCoordinate),
         cx = coord.x,
         cy = coord.y,
@@ -348,7 +382,6 @@ function moveUnityTo(i, coord) {
     if (i < path.length) {
         var timer = setTimeout(function () {
             let center = getCenterCoordinateOfHexagons(path[i]);
-            console.log(center);
             d3.select("#lerond").transition().attr("cx", center.x).attr("cy", center.y);
             moveUnityTo(i, coord);
         }, 700);
