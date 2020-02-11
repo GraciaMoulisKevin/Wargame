@@ -6,7 +6,7 @@ const bodyParser = require('body-parser')
 const fs = require('fs') // filesystem
 const template = __dirname + '/template.html'; // Template shortcut
 const history = {};
-
+const playerList = {};
 /**
  * Create room folder (server)
  */
@@ -49,6 +49,7 @@ app.post('/', (req,res) => {
         res.redirect('/room/' + roomName);
     } else {
         history[roomName] = [];
+        playerList[roomName] = [];
         fs.copyFile(template, roomPath , (err) => {
             if(err) throw err;
             const files = fs.readdirSync(__dirname + '/room/');
@@ -84,6 +85,19 @@ io.on('connection', function(socket){
             message = message.slice(0,100);
         }
         io.sockets.to(room).emit('chatMessage',message,pseudo);
+    })
+
+    socket.on('registerUser', function(pseudo, room){
+        playerList[room].push({id: socket.id,pseudo: pseudo});
+        io.sockets.to(room).emit('playerList', playerList[room].map(player => player.pseudo));
+    })
+    socket.on('disconnect', function(reason){
+        let disconnectedRoom = socket.request.headers.referer.split("/").pop();
+        if(disconnectedRoom != ""){
+            playerList[disconnectedRoom].splice(playerList[disconnectedRoom].indexOf(socket.id), 1);
+            console.log(playerList[disconnectedRoom]);
+            io.sockets.to(disconnectedRoom).emit('playerList', playerList[disconnectedRoom].map(player => player.pseudo));
+        }
     })
 })
 

@@ -12,7 +12,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalCenterTitle">Enter username</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeModal()">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -26,19 +26,28 @@
         </div>
     </div>
     
-    <div class="container border fixed-bottom mr-1 mb-1 w-25 h-50">
-        <div id="messageContainer" class="overflow-auto" style="height: 85%;margin-top: 2%;width: 100%;word-wrap: break-word;">
+    <div class="container fixed-top mr-1 mt-1 mb-1 w-25 h-100">
+        <div id="playerListContainer" class="container border h-25">
+
+        </div>
+        <div id="activeUnitsContainer" class="container border h-25">
             
         </div>
-        <form id="sendContainer" autocomplete="off" class="form-group position-absolute fixed-bottom mr-1 ml-1">
-            <div class="input-group">
-                <input type="text"  id="messageInput" class="form-control" >
-                <div class="input-group-append">
-                    <button type="submit" class="btn btn-primary" id="sendButton">Send</button>
-                </div>
+        <div id="chatContainer" class="container border h-50">
+            <div id="messageContainer" class="overflow-auto" style="word-wrap: break-word;">
+                
             </div>
-        </form>
+            <form id="sendContainer" autocomplete="off" class="form-group fixed-bottom position-absolute" style="width: 90%; margin-left: 5%; margin-right: 5%;">
+                <div class="input-group">
+                    <input type="text"  id="messageInput" class="form-control" maxlength="100">
+                    <div class="input-group-append">
+                        <button type="submit" class="btn btn-primary" id="sendButton">Send</button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
+    
     <div>
         <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>a
     </div>
@@ -52,7 +61,7 @@
         window.onload = function(){
             $('#modalWindowPseudo').modal('show');
         };
-
+        
         let socket = io();
         let roomName = window.location.pathname.slice(6);
         let pseudo = "guest";
@@ -60,7 +69,8 @@
         const messageInput = document.getElementById("messageInput");
         const messageContainer = document.getElementById("messageContainer");
         const modalForm = document.getElementById("modalForm");
-
+        const playerListContainer = document.getElementById("playerListContainer")
+        
         socket.on('connect', function(data){
             socket.emit('room',roomName);
         })
@@ -75,7 +85,13 @@
                 appendMessage(objMessage.message,objMessage.pseudo);
             }
         })
-
+        socket.on('playerList',function(data){
+            playerListContainer.innerText = "";
+            for(const objUser of data){
+                appendUser(objUser);
+            }
+        })
+        
         
         messageForm.addEventListener('submit', function(e){
             e.preventDefault();
@@ -87,10 +103,14 @@
         modalForm.addEventListener('submit',function(e){
             e.preventDefault();
         });
-
+        
         function closeModal(){
             pseudo = $('#modalPseudo').val();
+            if(pseudo == ""){
+                pseudo = "guest" + (Math.floor(Math.random() * 999999999));
+            }
             $('#modalWindowPseudo').modal('hide');
+            socket.emit('registerUser', pseudo, roomName);
         }
         
         function appendMessage(message,pseudo){
@@ -99,7 +119,12 @@
             messageContainer.append(messageElement);
             messageContainer.scrollTo(0,messageContainer.scrollHeight);
         }
-
+        function appendUser(pseudo){
+            const userElement = document.createElement('div');
+            userElement.innerText = pseudo;
+            playerListContainer.append(userElement);
+        }
+        
     </script>
 </body>
 </html>
