@@ -94,7 +94,6 @@ io.on('connection', function(socket){
         } else {
             playerList[room].push({id: socket.id,pseudo: pseudo, leader: true});
         }
-        // console.log(playerList[room])
         io.sockets.to(room).emit('playerList', playerList[room].map(player => {
             return {
                 pseudo: player.pseudo,
@@ -108,8 +107,13 @@ io.on('connection', function(socket){
             if(playerList[disconnectedRoom] == null){
                 return;
             }
-            playerList[disconnectedRoom].splice(playerList[disconnectedRoom].indexOf(socket.id), 1);
-            io.sockets.to(disconnectedRoom).emit('playerList', playerList[disconnectedRoom].map(player => player.pseudo));
+            playerList[disconnectedRoom].splice(getPlayerNumberDisconnect(playerList[disconnectedRoom],socket.id), 1);
+            io.sockets.to(disconnectedRoom).emit('playerList', playerList[disconnectedRoom].map(player => {
+                return {
+                    pseudo: player.pseudo,
+                    leader: player.leader
+                }
+            }));
         }
     })
 })
@@ -148,4 +152,12 @@ function getUserPseudo(array,id){
         }
     }
     return null;
+}
+
+function getPlayerNumberDisconnect(array,id){
+    for(let i = 0; i < array.length; i++){
+        if(array[i].id == id){
+            return i;
+        }
+    }
 }
