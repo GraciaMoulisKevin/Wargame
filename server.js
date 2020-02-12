@@ -108,6 +108,9 @@ io.on('connection', function(socket){
                 return;
             }
             playerList[disconnectedRoom].splice(getPlayerNumberDisconnect(playerList[disconnectedRoom],socket.id), 1);
+            if(!hasLeader(playerList[disconnectedRoom]) && playerList[disconnectedRoom][0] != undefined){
+                playerList[disconnectedRoom][0].leader = true;
+            }
             io.sockets.to(disconnectedRoom).emit('playerList', playerList[disconnectedRoom].map(player => {
                 return {
                     pseudo: player.pseudo,
