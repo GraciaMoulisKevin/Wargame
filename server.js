@@ -74,7 +74,8 @@ io.on('connection', function(socket){
         socket.emit('messageHistory',history[roomName]);
     })
     
-    socket.on('sendChatMessage', function(message,pseudo,room){
+    socket.on('sendChatMessage', function(message,room){
+        let pseudo = getUserPseudo(playerList[room],socket.id);
         history[room].push({message : message, pseudo : pseudo});
         let historyLength = history[room].length;
         let maxHistoryNumber = 20;
@@ -88,14 +89,26 @@ io.on('connection', function(socket){
     })
 
     socket.on('registerUser', function(pseudo, room){
-        playerList[room].push({id: socket.id,pseudo: pseudo});
-        io.sockets.to(room).emit('playerList', playerList[room].map(player => player.pseudo));
+        if(hasLeader(playerList[room])){
+            playerList[room].push({id: socket.id,pseudo: pseudo, leader: false});
+        } else {
+            playerList[room].push({id: socket.id,pseudo: pseudo, leader: true});
+        }
+        // console.log(playerList[room])
+        io.sockets.to(room).emit('playerList', playerList[room].map(player => {
+            return {
+                pseudo: player.pseudo,
+                leader: player.leader
+            }
+        }));
     })
     socket.on('disconnect', function(reason){
         let disconnectedRoom = socket.request.headers.referer.split("/").pop();
         if(disconnectedRoom != ""){
+            if(playerList[disconnectedRoom] == null){
+                return;
+            }
             playerList[disconnectedRoom].splice(playerList[disconnectedRoom].indexOf(socket.id), 1);
-            console.log(playerList[disconnectedRoom]);
             io.sockets.to(disconnectedRoom).emit('playerList', playerList[disconnectedRoom].map(player => player.pseudo));
         }
     })
@@ -107,5 +120,32 @@ io.on('connection', function(socket){
  * Listening node.js
  */
 server.listen(port, () => {
-    console.log(`Running on ${port}!`)
+    let files = fs.readdirSync(__dirname + '/room/').map(room => room.slice(0,-5));
+    for(let room of files){
+        playerList[room] = [];
+        history[room] = [];
+    }
+    console.log(`Running on ${port}! with rooms : ${files}`)
 })
+
+function hasLeader(roomArray){
+    let flag = false;
+    if(roomArray == null){
+        return flag;
+    }
+    for(objUser of roomArray){
+        if(objUser.leader){
+            flag = true;
+        }
+    }
+    return flag;
+}
+
+function getUserPseudo(array,id){
+    for(obj of array){
+        if(obj.id == id){
+            return obj.pseudo
+        }
+    }
+    return null;
+}

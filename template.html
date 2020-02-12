@@ -81,6 +81,9 @@
             appendMessage(message,pseudo);
         })
         socket.on('messageHistory',function(data){
+            if(data == null){
+                return;
+            }
             for(const objMessage of data){
                 appendMessage(objMessage.message,objMessage.pseudo);
             }
@@ -88,7 +91,11 @@
         socket.on('playerList',function(data){
             playerListContainer.innerText = "";
             for(const objUser of data){
-                appendUser(objUser);
+                if(objUser.leader){
+                    appendUser("♛" + objUser.pseudo)
+                } else {
+                    appendUser(objUser.pseudo);
+                }
             }
         })
         
@@ -96,7 +103,7 @@
         messageForm.addEventListener('submit', function(e){
             e.preventDefault();
             const message = messageInput.value;
-            socket.emit('sendChatMessage', message, pseudo, roomName );
+            socket.emit('sendChatMessage', message, roomName );
             messageInput.value = ''
         })
         
