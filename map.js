@@ -6,22 +6,18 @@
  * Copyright : 2020 Ⓒ
  */
 
-/**
- * onload of the document execute start();
- */
+// ________ ONLOAD ________
 window.onload = start;
 
-/**
- * MACROS
- */
+// ________ MACROS ________
+
 RADIUS = 0;
 WIDTH = 0;
 HEIGHT = 0;
 PREVIOUS_CLICKED_HEXAGON = 0;
 
-/**
- * Classes
- */
+// ________ CLASSES ________
+
 class Hexagon {
 
     constructor(data, id) {
@@ -124,6 +120,8 @@ class Hexagon {
     }
 }
 
+// ________ HELPFULL ________
+
 /**
  * Transform degrees to radian
  * @param {Number} deg 
@@ -158,15 +156,19 @@ function logMessage(object) {
 }
 
 /**
- * Get the number of hexagons needed to reach an hexagon
- * @param {Node} hexagonA 
- * @param {Node} hexagonB
+ * 
+ * @param {Number} x 
+ * @param {Number} y 
+ * @param {Number} z
  */
-function getDistanceBetweenHexagon(hexagonA, hexagonB) {
-    let coordA = getHexagonDataset(hexagonA),
-        coordB = getHexagonDataset(hexagonB);
-    return (Math.abs(coordA.x - coordB.x) + Math.abs(coordA.y - coordB.y) + Math.abs(coordA.z - coordB.z)) / 2;
+function createCoordinate(x, y, z) {
+    return {
+        "x": x,
+        "y": y,
+        "z": z
+    };
 }
+
 
 /**
  * Linear interpolation
@@ -176,22 +178,6 @@ function getDistanceBetweenHexagon(hexagonA, hexagonB) {
  */
 function linearInterpolation(a, b, t) {
     return (a + (b - a) * t);
-}
-
-/**
- * Get the next hexagons where the units as to run
- * @param {Object} hexagonA
- * @param {Object} hexagonB
- * @param {Number} t
- */
-function getNextHexagonCoordinate(hexagonA, hexagonB, t) {
-    let coordA = getHexagonDataset(hexagonA),
-        coordB = getHexagonDataset(hexagonB);
-    return {
-        "x": linearInterpolation(coordA.x, coordB.x, t),
-        "y": linearInterpolation(coordA.y, coordB.y, t),
-        "z": linearInterpolation(coordA.z, coordB.z, t)
-    };
 }
 
 /**
@@ -223,175 +209,14 @@ function roundHexagonCoordinate(data) {
     };
 }
 
-/**
- * Create a path from idA to idB
- * @param {Node} hexagonA 
- * @param {Node} hexagonB 
- */
-function pathfinder(hexagonA, hexagonB) {
-
-    let n = getDistanceBetweenHexagon(hexagonA, hexagonB);
-    let path = [];
-
-    for (let i = 0; i <= n; i++) {
-        let data = roundHexagonCoordinate(getNextHexagonCoordinate(hexagonA, hexagonB, (1 / n * i)));
-        d3.select(`.hexagon[data-x="${data.x}"][data-y="${data.y}"][data-z="${data.z}"]`).style("fill", "rgba(121,123,255,0.7)");
-        path.push({
-            "x": data.x,
-            "y": data.y,
-            "z": data.z
-        });
-    }
-
-    return path;
-}
-
-/**
- * 
- * @param {Node} hexagon 
- */
-function test(hexagon){
-
-    if ( PREVIOUS_CLICKED_HEXAGON != 0 ){
-        if ( PREVIOUS_CLICKED_HEXAGON.isEqualNode(hexagon) ){
-            console.log("ta cliquer sur le même mongolo");
-        }else{
-            pathfinder(PREVIOUS_CLICKED_HEXAGON, hexagon);
-            moveUnity(0, PREVIOUS_CLICKED_HEXAGON, hexagon);
-
-            PREVIOUS_CLICKED_HEXAGON = hexagon;
-        }
-        
-    }else{
-        PREVIOUS_CLICKED_HEXAGON = hexagon;
-        showAllowedMovement(hexagon, 1);
-    }
-}
-
-/**
- * Load the map
- * @param {Object} data 
- */
-function loadMap(data) {
-    d3.select("#map")
-        .append("svg")
-        .attr("id", "map_svg")
-        .attr("width", data["width"])
-        .attr("height", data["height"])
-        .style("background-color", data["background-color"]);
-
-    for (coordinate of data["hexagons"]) {
-        let hexagon = new Hexagon(coordinate);
-    }
-
-    logMessage({
-        "type": "suc",
-        "message": "loadMap() : map has been created"
-    });
-
-    //[ BLACK MAGIC VERSION ]
-    // let n = 3; for ( let x = -n; x <= n; x++ ){
-    //     for ( let y = -n; y <= n; y++ ){
-    //         for ( let z = -n; z <= n; z++ ){
-    //             if ( x + y + z == 0 ){
-    //                 id = "";
-    //                 coordinate = {"x" : x, "y" : y, "z" : z, "type" : "rgba(0,0,0,0)"};
-    //                 id += "x" + x + "y" + y + "z" + z;
-    //                 let hexagon = new Hexagon(coord, id);
-    //             }
-    //         }
-    //     }
-    // }
-
-}
-
-/**
- * Start function when document start
- */
-function start() {
-
-    /**
-     * Read map JSON data when the page is ready
-     */
-    $().ready(function () {
-        d3.json("settings.json").then(function (data) {
-            RADIUS = data["radius"];
-        });
-        d3.json("map.json").then(function (data) {
-            WIDTH = data["width"];
-            HEIGHT = data["height"];
-            loadMap(data);
-            createUnity();
-        });
-    });
-}
-
-/**
- * 
- * @param {Node} polygon 
- */
-function showAllowedMovement(polygon, movement_points){
-    let coordinate = getHexagonDataset(polygon);
-    for ( let x = coordinate.x-movement_points; x <= coordinate.x+movement_points; x++){
-        for ( let y = coordinate.y-movement_points; y <= coordinate.y+movement_points; y++){
-            for ( let z = coordinate.z-movement_points; z <= coordinate.z+movement_points; z++){
-                if ( (x + y + z) == 0 ){
-                    d3.select(`.hexagon[data-x="${x}"][data-y="${y}"][data-z="${z}"]`).style("fill", "rgba(121,123,255,0.7)");
-                }
-            }
-        }
-    }
-}
+// ________ GET ________
 
 /**
  * Return all data attribute (data-x, data-y ...)
- * @param {Node} polygon 
+ * @param {Node} hexagon 
  */
-function getHexagonDataset(polygon){
-    return $(polygon).data();
-}
-
-function createUnity() {
-
-    let startCoordinate = {
-        "x": 0,
-        "y": 0,
-        "z": 0
-    };
-
-    let coord = getCenterCoordinateOfHexagons(startCoordinate),
-        cx = coord.x,
-        cy = coord.y,
-        r = 10;
-
-    d3.select("#map_svg")
-        .append("circle")
-        .attr("id", "lerond")
-        .attr("cx", cx)
-        .attr("cy", cy)
-        .attr("r", r)
-        .style("fill", "red");
-}
-
-
-function moveUnity(i, hexagonA, hexagonB) {
-
-    i++;
-
-    let path = pathfinder(hexagonA, hexagonB);
-    console.log(path);
-    if (i < path.length) {
-        var timer = setTimeout(function () {
-            let center = getCenterCoordinateOfHexagons(path[i]);
-            d3.select("#lerond").transition().attr("cx", center.x).attr("cy", center.y);
-            moveUnity(i, hexagonA, hexagonB);
-        }, 700);
-    } else {
-        logMessage({
-            "type": "suc",
-            "message": "moveUnityTo() : Unit done movement"
-        });
-    }
+function getHexagonDataset(hexagon) {
+    return $(hexagon).data();
 }
 
 /**
@@ -416,18 +241,193 @@ function getCenterCoordinateOfHexagons(coord) {
 }
 
 /**
- * 
- * @param {Number} x 
- * @param {Number} y 
- * @param {Number} z
+ * Get the number of hexagons needed to reach an hexagon
+ * @param {Node} hexagonA 
+ * @param {Node} hexagonB
  */
-function createCoordinateObject(x, y, z) {
+function getDistanceBetweenHexagon(hexagonA, hexagonB) {
+    let coordA = getHexagonDataset(hexagonA),
+        coordB = getHexagonDataset(hexagonB);
+    return (Math.abs(coordA.x - coordB.x) + Math.abs(coordA.y - coordB.y) + Math.abs(coordA.z - coordB.z)) / 2;
+}
+
+/**
+ * Get the next hexagons where the units as to run
+ * @param {Object} hexagonA
+ * @param {Object} hexagonB
+ * @param {Number} t
+ */
+function getNextHexagonCoordinate(hexagonA, hexagonB, t) {
+    let coordA = getHexagonDataset(hexagonA),
+        coordB = getHexagonDataset(hexagonB);
     return {
-        "x": x,
-        "y": y,
-        "z": z
+        "x": linearInterpolation(coordA.x, coordB.x, t),
+        "y": linearInterpolation(coordA.y, coordB.y, t),
+        "z": linearInterpolation(coordA.z, coordB.z, t)
     };
 }
+
+// ________ MAIN ________
+
+/**
+ * Create a path from idA to idB
+ * @param {Node} hexagonA 
+ * @param {Node} hexagonB 
+ */
+function pathfinder(hexagonA, hexagonB) {
+
+    let n = getDistanceBetweenHexagon(hexagonA, hexagonB);
+    let path = [];
+
+    for (let i = 0; i <= n; i++) {
+        let data = roundHexagonCoordinate(getNextHexagonCoordinate(hexagonA, hexagonB, (1 / n * i)));
+        d3.select(`.hexagon[data-x="${data.x}"][data-y="${data.y}"][data-z="${data.z}"]`)
+            .classed("colored", true)
+            .style("fill", "rgba(150,150,255,0.4)");
+
+        path.push({
+            "x": data.x,
+            "y": data.y,
+            "z": data.z
+        });
+    }
+
+    return path;
+}
+
+/**
+ * 
+ * @param {Node} hexagon 
+ */
+function showAllowedMovement(hexagon, movement_points) {
+
+    let coord = getHexagonDataset(hexagon);
+
+    for (let x = coord.x - movement_points; x <= coord.x + movement_points; x++) {
+        for (let y = coord.y - movement_points; y <= coord.y + movement_points; y++) {
+            for (let z = coord.z - movement_points; z <= coord.z + movement_points; z++) {
+                if (x + y + z == 0) {
+                    d3.select(`.hexagon[data-x="${x}"][data-y="${y}"][data-z="${z}"]`)
+                        .classed("colored", true)
+                        .style("fill", "rgba(150,150,255,0.4)");
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Load the map
+ * @param {Object} data 
+ */
+function loadMap(data) {
+    d3.select("#map")
+        .append("svg")
+        .attr("id", "map_svg")
+        .attr("width", data["width"])
+        .attr("height", data["height"])
+        .style("background-color", data["background-color"]);
+
+    for (coordinate of data["hexagons"]) {
+        let hexagon = new Hexagon(coordinate);
+    }
+
+    logMessage({
+        "type": "suc",
+        "message": "loadMap() : map has been created"
+    });
+}
+
+/**
+ * 
+ * @param {Node} hexagon 
+ */
+function test(hexagon) {
+
+    if (PREVIOUS_CLICKED_HEXAGON != 0) {
+        if (PREVIOUS_CLICKED_HEXAGON.isEqualNode(hexagon)) {
+            console.log("test(:Node) : same hexagon clicked");
+        }else {
+            d3.selectAll(".colored")
+                .classed("colored", false)
+                .style("fill", "rgba(0,0,0,0)");
+
+            pathfinder(PREVIOUS_CLICKED_HEXAGON, hexagon);
+            moveUnity(0, PREVIOUS_CLICKED_HEXAGON, hexagon);
+
+            PREVIOUS_CLICKED_HEXAGON = hexagon;
+        }
+        PREVIOUS_CLICKED_HEXAGON = 0;
+    }else {
+        PREVIOUS_CLICKED_HEXAGON = hexagon;
+        showAllowedMovement(hexagon, 1);
+    }
+}
+
+/**
+ * Start function when document start
+ */
+function start() {
+
+    /**
+     * Read map JSON data when the page is ready
+     */
+    $().ready(function () {
+        d3.json("settings.json").then(function (data) {
+            RADIUS = data["radius"];
+        });
+        d3.json("map.json").then(function (data) {
+            WIDTH = data["width"];
+            HEIGHT = data["height"];
+            loadMap(data);
+            createUnit();
+        });
+    });
+}
+
+// ________ TEMPORARY ________
+
+function createUnit() {
+
+    let startCoordinate = createCoordinate(0, 0, 0);
+
+    let coord = getCenterCoordinateOfHexagons(startCoordinate),
+        cx = coord.x,
+        cy = coord.y,
+        r = 10;
+
+    d3.select("#map_svg")
+        .append("circle")
+        .attr("id", "lerond")
+        .attr("cx", cx)
+        .attr("cy", cy)
+        .attr("r", r)
+        .style("fill", "red");
+}
+
+function moveUnity(i, hexagonA, hexagonB) {
+
+    i++;
+
+    let path = pathfinder(hexagonA, hexagonB);
+
+    if (i < path.length) {
+        var timer = setTimeout(function () {
+            let center = getCenterCoordinateOfHexagons(path[i]);
+            d3.select("#lerond").transition().attr("cx", center.x).attr("cy", center.y);
+            moveUnity(i, hexagonA, hexagonB);
+        }, 700);
+    } else {
+        logMessage({
+            "type": "suc",
+            "message": "moveUnityTo() : Unit done movement"
+        });
+    }
+}
+
+
+
+
 
 
 
@@ -437,9 +437,9 @@ function createCoordinateObject(x, y, z) {
 
 // ################################## ARCHIVE ############################### //
 /**
- * Parse the id of an hexagon to extract coordinate
- * @param {String} id 
- */
+//  * Parse the id of an hexagon to extract coordinate
+//  * @param {String} id 
+//  */
 // function hexagonIdParser(id) {
 //     let points;
 //     if ((/x(-?[0-9]{1,2})y(-?[0-9]{1,2})z(-?[0-9]{1,2})/.test(id))) {
@@ -460,10 +460,24 @@ function createCoordinateObject(x, y, z) {
 
 // function getDataHexagonAttributs(){
 
-//     let data = d3.selectAll("polygon");
+//     let data = d3.selectAll("hexagon");
 //     let node = data["_groups"][0];
 
-//     for ( polygon of node ){
-//         console.log(polygon.attributes);
+//     for ( hexagon of node ){
+//         console.log(hexagon.attributes);
+//     }
+// }
+
+//[ BLACK MAGIC VERSION ]
+// let n = 3; for ( let x = -n; x <= n; x++ ){
+//     for ( let y = -n; y <= n; y++ ){
+//         for ( let z = -n; z <= n; z++ ){
+//             if ( x + y + z == 0 ){
+//                 id = "";
+//                 coordinate = {"x" : x, "y" : y, "z" : z, "type" : "rgba(0,0,0,0)"};
+//                 id += "x" + x + "y" + y + "z" + z;
+//                 let hexagon = new Hexagon(coord, id);
+//             }
+//         }
 //     }
 // }

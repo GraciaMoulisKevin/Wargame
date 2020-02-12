@@ -22,3 +22,7 @@
     margin : auto;
     margin-bottom: 3%;
 }
+
+.colored{
+    fill: "rgba(150,150,255,0.4)";
+}
