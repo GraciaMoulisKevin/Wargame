@@ -14,6 +14,8 @@ export default class Manager {
 
     private systems: object = {};
 
+    private factories: object = {};
+
     public readonly eventHandler: EventHandler = new EventHandler();
 
     public readonly game: Game;
@@ -92,6 +94,10 @@ export default class Manager {
         for(const system of Object.keys(this.systems)) {
             this.systems[system].update();
         }
+    }
+
+    public createFactory(entityName: string, components: {}) {
+        this.factories[entityName] = components;
     }
 
 }
