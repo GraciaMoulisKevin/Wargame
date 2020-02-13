@@ -7,7 +7,7 @@
 </head>
 <body>
     
-    <div class="modal fade" id="modalWindowPseudo" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal fade" id="modalWindowPseudo" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
@@ -27,8 +27,13 @@
     </div>
     
     <div class="container fixed-top mr-1 mt-1 mb-1 w-25 h-100">
-        <div id="playerListContainer" class="container border h-25">
+        <div id="playerContainer" class="container border h-25">
+            <div class="h-75" id="playerListContainer">
 
+            </div> 
+            <div class="input-group h-25">
+                <input class="w-100 h-100 btn btn-danger" id="readyButton" type="button" value="Ready">
+            </div>
         </div>
         <div id="activeUnitsContainer" class="container border h-25">
             

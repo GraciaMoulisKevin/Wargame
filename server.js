@@ -107,7 +107,9 @@ io.on('connection', function(socket){
             if(playerList[disconnectedRoom] == null){
                 return;
             }
-            playerList[disconnectedRoom].splice(getPlayerNumberDisconnect(playerList[disconnectedRoom],socket.id), 1);
+            let playerNumber = getPlayerNumberDisconnect(playerList[disconnectedRoom],socket.id)
+            if(playerNumber == undefined) return;
+            playerList[disconnectedRoom].splice(getPlayerNumberDisconnect(playerNumber), 1);
             if(!hasLeader(playerList[disconnectedRoom]) && playerList[disconnectedRoom][0] != undefined){
                 playerList[disconnectedRoom][0].leader = true;
             }
@@ -154,7 +156,7 @@ function getUserPseudo(array,id){
             return obj.pseudo
         }
     }
-    return null;
+    return undefined;
 }
 
 function getPlayerNumberDisconnect(array,id){
