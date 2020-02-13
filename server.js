@@ -7,6 +7,7 @@ const fs = require('fs') // filesystem
 const template = __dirname + '/template.html'; // Template shortcut
 const history = {};
 const playerList = {};
+const roomData = {};
 /**
  * Create room folder (server)
  */
@@ -49,7 +50,9 @@ app.post('/', (req,res) => {
         res.redirect('/room/' + roomName);
     } else {
         history[roomName] = [];
-        playerList[roomName] = [];
+        playerList[roomName] = [];        
+        roomData[roomName] = {ready: 0, max:2};
+
         fs.copyFile(template, roomPath , (err) => {
             if(err) throw err;
             const files = fs.readdirSync(__dirname + '/room/');
@@ -90,16 +93,11 @@ io.on('connection', function(socket){
 
     socket.on('registerUser', function(pseudo, room){
         if(hasLeader(playerList[room])){
-            playerList[room].push({id: socket.id,pseudo: pseudo, leader: false});
+            playerList[room].push({id: socket.id,pseudo: pseudo, leader: false, ready: false});
         } else {
-            playerList[room].push({id: socket.id,pseudo: pseudo, leader: true});
+            playerList[room].push({id: socket.id,pseudo: pseudo, leader: true, ready: false});
         }
-        io.sockets.to(room).emit('playerList', playerList[room].map(player => {
-            return {
-                pseudo: player.pseudo,
-                leader: player.leader
-            }
-        }));
+        sendUserList(room);
     })
     socket.on('disconnect', function(reason){
         let disconnectedRoom = socket.request.headers.referer.split("/").pop();
@@ -107,19 +105,36 @@ io.on('connection', function(socket){
             if(playerList[disconnectedRoom] == null){
                 return;
             }
-            let playerNumber = getPlayerNumberDisconnect(playerList[disconnectedRoom],socket.id)
+            let playerNumber = getPlayerNumber(playerList[disconnectedRoom],socket.id)
             if(playerNumber == undefined) return;
-            playerList[disconnectedRoom].splice(getPlayerNumberDisconnect(playerNumber), 1);
+            playerList[disconnectedRoom].splice(getPlayerNumber(playerNumber), 1);
             if(!hasLeader(playerList[disconnectedRoom]) && playerList[disconnectedRoom][0] != undefined){
                 playerList[disconnectedRoom][0].leader = true;
             }
-            io.sockets.to(disconnectedRoom).emit('playerList', playerList[disconnectedRoom].map(player => {
-                return {
-                    pseudo: player.pseudo,
-                    leader: player.leader
-                }
-            }));
+            sendUserList(disconnectedRoom);
         }
+    })
+    socket.on('readyUp', function (ready, room){
+        if(roomData[room].ready == roomData[room].max){
+            console.log("game already launched");
+            return;
+        }
+        if(ready && roomData[room].ready == roomData[room].max - 1){
+            playerList[room][getPlayerNumber(playerList[room],socket.id)].ready = ready;
+            sendUserList(room);
+            roomData[room].ready++;
+            console.log("launch game");
+        } else {
+            if(ready){
+                roomData[room].ready++;
+            playerList[room][getPlayerNumber(playerList[room],socket.id)].ready = true;
+        } else {
+                roomData[room].ready--;
+            playerList[room][getPlayerNumber(playerList[room],socket.id)].ready = false;
+        }
+            sendUserList(room);
+        }
+        console.log(roomData[room]);
     })
 })
 
@@ -133,6 +148,7 @@ server.listen(port, () => {
     for(let room of files){
         playerList[room] = [];
         history[room] = [];
+        roomData[room] = {ready: 0, max:2};
     }
     console.log(`Running on ${port}! with rooms : ${files}`)
 })
@@ -159,10 +175,19 @@ function getUserPseudo(array,id){
     return undefined;
 }
 
-function getPlayerNumberDisconnect(array,id){
+function getPlayerNumber(array,id){
     for(let i = 0; i < array.length; i++){
         if(array[i].id == id){
             return i;
         }
     }
+}
+function sendUserList(room){
+    io.sockets.to(room).emit('playerList', playerList[room].map(player => {
+        return {
+            pseudo: player.pseudo,
+            leader: player.leader,
+            ready: player.ready
+        }
+    }))
 }

@@ -28,11 +28,11 @@
     
     <div class="container fixed-top mr-1 mt-1 mb-1 w-25 h-100">
         <div id="playerContainer" class="container border h-25">
-            <div class="h-75" id="playerListContainer">
+            <div class="h-75 overflow-auto" id="playerListContainer">
 
             </div> 
-            <div class="input-group h-25">
-                <input class="w-100 h-100 btn btn-danger" id="readyButton" type="button" value="Ready">
+            <div class="input-group h-25 mb-1">
+                <input class="w-100 h-100 btn btn-danger" id="readyButton" type="button" value="Ready" onclick="readyUp()">
             </div>
         </div>
         <div id="activeUnitsContainer" class="container border h-25">
@@ -97,9 +97,15 @@
             playerListContainer.innerText = "";
             for(const objUser of data){
                 if(objUser.leader){
-                    appendUser("♛" + objUser.pseudo)
+                    appendUser("♛" + objUser.pseudo, objUser.ready)
                 } else {
-                    appendUser(objUser.pseudo);
+                    appendUser(objUser.pseudo, objUser.ready);
+                }
+                let button = $('#readyButton');
+                if(objUser.ready){
+                    button.removeClass("btn-danger").addClass("btn-success");
+                } else {
+                    button.removeClass("btn-success").addClass("btn-danger");
                 }
             }
         })
@@ -131,10 +137,27 @@
             messageContainer.append(messageElement);
             messageContainer.scrollTo(0,messageContainer.scrollHeight);
         }
-        function appendUser(pseudo){
+        function appendUser(pseudo,ready){
+            let color = ""
+            if(ready){
+                color = "green"
+            } else {
+                color = "red"
+            }
             const userElement = document.createElement('div');
             userElement.innerText = pseudo;
+            userElement.style = "color:" + color;
             playerListContainer.append(userElement);
+        }
+        function readyUp(){
+            let button = $('#readyButton');
+            let rdy;
+            if(button.hasClass("btn-danger")){
+                rdy = true;
+            } else {
+                rdy = false;
+            }
+            socket.emit('readyUp',rdy, roomName);
         }
         
     </script>
