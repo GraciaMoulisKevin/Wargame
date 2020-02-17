@@ -83,17 +83,21 @@ class Hexagon {
             }
 
             // [ TEMPORARY ] Allowed to print coordinate on each hexagon
-            if (i == 3) {
-                temp_x = pt_x;
-                temp_y = pt_y
-            }
+            // if (i == 3) {
+            //     temp_x = pt_x;
+            //     temp_y = pt_y
+            // }
+
             i++;
         }
 
         if (can_create) {
-            d3.select("#map > svg")
+
+            
+            d3.select("#foreground-map")
                 .append("polygon")
-                .attr("class", "hexagon")
+                .attr("class", "foreground-hexagon")
+                .attr("data-scale", "foreground")
                 .attr("data-x", this.x)
                 .attr("data-y", this.y)
                 .attr("data-z", this.z)
@@ -105,17 +109,38 @@ class Hexagon {
                     return attr_points;
                 })
                 .style("stroke", "black")
-                .style("fill", this.type)
+                .style("fill", "lightgreen")
                 .on("click", function () {
                     test(this);
                 });
 
+            d3.select("#underground-map")
+                .append("polygon")
+                .attr("class", "underground-hexagon")
+                .attr("data-scale", "underground")
+                .attr("data-x", this.x)
+                .attr("data-y", this.y)
+                .attr("data-z", this.z)
+                .attr("points", function (d) {
+                    let attr_points = "";
+                    for (let pts of points) {
+                        attr_points += pts[0] + "," + pts[1] + " ";
+                    }
+                    return attr_points;
+                })
+                .style("stroke", "black")
+                .style("fill", "lightgray")
+                .on("click", function () {
+                    test(this);
+                });
+
+
             // [ TEMPORARY ] Print coordinate on each hexagon
-            d3.select("#map > svg").append("text")
-                .attr("x", temp_x)
-                .attr("y", temp_y)
-                .attr("fill", "red")
-                .html("&nbsp; x=" + this.x + " y=" + this.y + " z=" + this.z);
+            // d3.select("#foreground-map").append("text")
+            //     .attr("x", temp_x)
+            //     .attr("y", temp_y)
+            //     .attr("fill", "red")
+            //     .html("&nbsp; x=" + this.x + " y=" + this.y + " z=" + this.z);
         }
     }
 }
@@ -169,7 +194,6 @@ function createCoordinate(x, y, z) {
     };
 }
 
-
 /**
  * Linear interpolation
  * @param {Number} a 
@@ -209,10 +233,40 @@ function roundHexagonCoordinate(data) {
     };
 }
 
+/**
+ * Uncolored all colored hexagon
+ */
+function uncoloredHexagon() {
+    d3.selectAll(".colored")
+        .classed("colored", false)
+        .style("fill", "rgba(0,0,0,0)");
+}
+
+/**
+ * Check if two hexagon belong to the same scale
+ * @param {Node} hexagonA 
+ * @param {Node} hexagonB
+ * @return null if false else the scale
+ */
+function isHexagonBelongToSameScale(hexagonA, hexagonB) {
+    let dataA = getHexagonDataset(hexagonA),
+        dataB = getHexagonDataset(hexagonB);
+
+    if (dataA.scale == dataB.scale) {
+        return dataA.scale;
+    } else {
+        logMessage({
+            "type": "err",
+            "message": "isHexagonBelongToSameScale( :node, :node ) : The nodes gives don't belong to the same scale"
+        });
+        return null;
+    }
+}
+
 // ________ GET ________
 
 /**
- * Return all data attribute (data-x, data-y ...)
+ * Return all data attribute (data-placement, data-x, data-y ...)
  * @param {Node} hexagon 
  */
 function getHexagonDataset(hexagon) {
@@ -276,23 +330,27 @@ function getNextHexagonCoordinate(hexagonA, hexagonB, t) {
  */
 function pathfinder(hexagonA, hexagonB) {
 
-    let n = getDistanceBetweenHexagon(hexagonA, hexagonB);
-    let path = [];
+    let scale = isHexagonBelongToSameScale(hexagonA, hexagonB);
+    if (scale != null) {
+        let n = getDistanceBetweenHexagon(hexagonA, hexagonB);
+        let path = [];
 
-    for (let i = 0; i <= n; i++) {
-        let data = roundHexagonCoordinate(getNextHexagonCoordinate(hexagonA, hexagonB, (1 / n * i)));
-        d3.select(`.hexagon[data-x="${data.x}"][data-y="${data.y}"][data-z="${data.z}"]`)
-            .classed("colored", true)
-            .style("fill", "rgba(150,150,255,0.4)");
+        for (let i = 0; i <= n; i++) {
+            let data = roundHexagonCoordinate(getNextHexagonCoordinate(hexagonA, hexagonB, (1 / n * i)));
+            d3.select(`.${scale}-hexagon[data-x="${data.x}"][data-y="${data.y}"][data-z="${data.z}"]`)
+                .classed("colored", true)
+                .style("fill", "rgba(150,150,255,0.4)");
 
-        path.push({
-            "x": data.x,
-            "y": data.y,
-            "z": data.z
-        });
+            path.push({
+                "x": data.x,
+                "y": data.y,
+                "z": data.z
+            });
+        }
+        return path;
+    } else {
+        return null;
     }
-
-    return path;
 }
 
 /**
@@ -307,7 +365,7 @@ function showAllowedMovement(hexagon, movement_points) {
         for (let y = coord.y - movement_points; y <= coord.y + movement_points; y++) {
             for (let z = coord.z - movement_points; z <= coord.z + movement_points; z++) {
                 if (x + y + z == 0) {
-                    d3.select(`.hexagon[data-x="${x}"][data-y="${y}"][data-z="${z}"]`)
+                    d3.select(`.${coord.scale}-hexagon[data-x="${x}"][data-y="${y}"][data-z="${z}"]`)
                         .classed("colored", true)
                         .style("fill", "rgba(150,150,255,0.4)");
                 }
@@ -321,12 +379,18 @@ function showAllowedMovement(hexagon, movement_points) {
  * @param {Object} data 
  */
 function loadMap(data) {
-    d3.select("#map")
+
+    let svg = d3.select("#map")
         .append("svg")
-        .attr("id", "map_svg")
+        .attr("id", "svg-map")
         .attr("width", data["width"])
-        .attr("height", data["height"])
-        .style("background-color", data["background-color"]);
+        .attr("height", data["height"]);
+
+    svg.append("g")
+        .attr("id", "underground-map");
+
+    svg.append("g")
+        .attr("id", "foreground-map");
 
     for (coordinate of data["hexagons"]) {
         let hexagon = new Hexagon(coordinate);
@@ -345,20 +409,20 @@ function loadMap(data) {
 function test(hexagon) {
 
     if (PREVIOUS_CLICKED_HEXAGON != 0) {
-        if (PREVIOUS_CLICKED_HEXAGON.isEqualNode(hexagon)) {
-            console.log("test(:Node) : same hexagon clicked");
-        }else {
-            d3.selectAll(".colored")
-                .classed("colored", false)
-                .style("fill", "rgba(0,0,0,0)");
+        if (isHexagonBelongToSameScale(PREVIOUS_CLICKED_HEXAGON, hexagon) == null) {
+            return null;
+        } else {
+            uncoloredHexagon();
 
-            pathfinder(PREVIOUS_CLICKED_HEXAGON, hexagon);
-            moveUnity(0, PREVIOUS_CLICKED_HEXAGON, hexagon);
+            if (PREVIOUS_CLICKED_HEXAGON.isEqualNode(hexagon)) {
 
-            PREVIOUS_CLICKED_HEXAGON = hexagon;
+            } else {
+                pathfinder(PREVIOUS_CLICKED_HEXAGON, hexagon);
+                moveUnit(0, PREVIOUS_CLICKED_HEXAGON, hexagon);
+            }
+            PREVIOUS_CLICKED_HEXAGON = 0;
         }
-        PREVIOUS_CLICKED_HEXAGON = 0;
-    }else {
+    } else {
         PREVIOUS_CLICKED_HEXAGON = hexagon;
         showAllowedMovement(hexagon, 1);
     }
@@ -396,7 +460,7 @@ function createUnit() {
         cy = coord.y,
         r = 10;
 
-    d3.select("#map_svg")
+    d3.select("#foreground-map")
         .append("circle")
         .attr("id", "lerond")
         .attr("cx", cx)
@@ -405,7 +469,7 @@ function createUnit() {
         .style("fill", "red");
 }
 
-function moveUnity(i, hexagonA, hexagonB) {
+function moveUnit(i, hexagonA, hexagonB) {
 
     i++;
 
@@ -415,19 +479,29 @@ function moveUnity(i, hexagonA, hexagonB) {
         var timer = setTimeout(function () {
             let center = getCenterCoordinateOfHexagons(path[i]);
             d3.select("#lerond").transition().attr("cx", center.x).attr("cy", center.y);
-            moveUnity(i, hexagonA, hexagonB);
+            moveUnit(i, hexagonA, hexagonB);
         }, 700);
     } else {
         logMessage({
             "type": "suc",
             "message": "moveUnityTo() : Unit done movement"
         });
+        uncoloredHexagon();
     }
 }
 
+function switchMap(){
 
+    d3.select("#foreground-map")
+        .style("transform", "translate3d(-300px, 400px, 0px)")
+        //.style("transform", "translate(-100px, 100px)")
+        .style("opacity", 0.2);
 
+    d3.select("#underground-map")
+        .style("transform", "translate(100px, -100px)")
+        .style("opacity", 1);
 
+}
 
 
 
