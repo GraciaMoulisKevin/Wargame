@@ -14,7 +14,8 @@ window.onload = start;
 RADIUS = 0;
 WIDTH = 0;
 HEIGHT = 0;
-PREVIOUS_CLICKED_HEXAGON = 0;
+PREVIOUS_CLICKED_HEXAGON = null;
+ACTUAL_MAP = "foreground";
 
 // ________ CLASSES ________
 
@@ -96,7 +97,7 @@ class Hexagon {
             
             d3.select("#foreground-map")
                 .append("polygon")
-                .attr("class", "foreground-hexagon")
+                .attr("class", "hexagon foreground-hexagon")
                 .attr("data-scale", "foreground")
                 .attr("data-x", this.x)
                 .attr("data-y", this.y)
@@ -116,7 +117,7 @@ class Hexagon {
 
             d3.select("#underground-map")
                 .append("polygon")
-                .attr("class", "underground-hexagon")
+                .attr("class", "hexagon underground-hexagon")
                 .attr("data-scale", "underground")
                 .attr("data-x", this.x)
                 .attr("data-y", this.y)
@@ -359,13 +360,13 @@ function pathfinder(hexagonA, hexagonB) {
  */
 function showAllowedMovement(hexagon, movement_points) {
 
-    let coord = getHexagonDataset(hexagon);
+    let data = getHexagonDataset(hexagon);
 
-    for (let x = coord.x - movement_points; x <= coord.x + movement_points; x++) {
-        for (let y = coord.y - movement_points; y <= coord.y + movement_points; y++) {
-            for (let z = coord.z - movement_points; z <= coord.z + movement_points; z++) {
+    for (let x = data.x - movement_points; x <= data.x + movement_points; x++) {
+        for (let y = data.y - movement_points; y <= data.y + movement_points; y++) {
+            for (let z = data.z - movement_points; z <= data.z + movement_points; z++) {
                 if (x + y + z == 0) {
-                    d3.select(`.${coord.scale}-hexagon[data-x="${x}"][data-y="${y}"][data-z="${z}"]`)
+                    d3.select(`.${data.scale}-hexagon[data-x="${x}"][data-y="${y}"][data-z="${z}"]`)
                         .classed("colored", true)
                         .style("fill", "rgba(150,150,255,0.4)");
                 }
@@ -387,10 +388,18 @@ function loadMap(data) {
         .attr("height", data["height"]);
 
     svg.append("g")
-        .attr("id", "underground-map");
+        .attrs({
+            id : "underground-map",
+            transform : "rotate(-5,"+WIDTH/2+","+HEIGHT/2+") translate(-100, 50) scale(0.7,0.7)"
+        })
+        .style("opacity", 0.2);
 
     svg.append("g")
-        .attr("id", "foreground-map");
+        .attrs({
+            id : "foreground-map",
+            transform : "rotate(-5,"+WIDTH/2+","+HEIGHT/2+") translate(100, -50) scale(1.1, 1.1)"
+        })
+        .style("opacity", 1);
 
     for (coordinate of data["hexagons"]) {
         let hexagon = new Hexagon(coordinate);
@@ -408,7 +417,7 @@ function loadMap(data) {
  */
 function test(hexagon) {
 
-    if (PREVIOUS_CLICKED_HEXAGON != 0) {
+    if (PREVIOUS_CLICKED_HEXAGON != null) {
         if (isHexagonBelongToSameScale(PREVIOUS_CLICKED_HEXAGON, hexagon) == null) {
             return null;
         } else {
@@ -420,7 +429,7 @@ function test(hexagon) {
                 pathfinder(PREVIOUS_CLICKED_HEXAGON, hexagon);
                 moveUnit(0, PREVIOUS_CLICKED_HEXAGON, hexagon);
             }
-            PREVIOUS_CLICKED_HEXAGON = 0;
+            PREVIOUS_CLICKED_HEXAGON = null;
         }
     } else {
         PREVIOUS_CLICKED_HEXAGON = hexagon;
@@ -492,14 +501,29 @@ function moveUnit(i, hexagonA, hexagonB) {
 
 function switchMap(){
 
-    d3.select("#foreground-map")
-        .style("transform", "translate3d(-300px, 400px, 0px)")
-        //.style("transform", "translate(-100px, 100px)")
-        .style("opacity", 0.2);
+    let top_map, bottom_map;
+    
+    if ( ACTUAL_MAP == "foreground" ){
+        top_map = "#underground-map";
+        bottom_map = "#foreground-map";
+        ACTUAL_MAP = "underground";
+    } else {
+        top_map = "#foreground-map";
+        bottom_map = "#underground-map";
+        ACTUAL_MAP = "foreground";
+    }
 
-    d3.select("#underground-map")
-        .style("transform", "translate(100px, -100px)")
+    d3.select(top_map)
+        .transition()
+        .duration(300)
+        .attr("transform", "rotate(-5,"+WIDTH/2+","+HEIGHT/2+") translate(100, -50) scale(1.1, 1.1)")
         .style("opacity", 1);
+
+    d3.select(bottom_map)
+        .transition()
+        .duration(300)
+        .attr("transform", "rotate(-5,"+WIDTH/2+","+HEIGHT/2+") translate(-100, 50) scale(0.7, 0.7)")
+        .style("opacity", 0.2);
 
 }
 

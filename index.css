@@ -23,11 +23,7 @@
     margin-bottom: 3%;
 }
 
-#foreground-map {
-    transform: rotate3d(1, 1, 1, -40deg) translate3d(0, 300px, 0);
-}
-
-#underground-map {
-    opacity: 0.2;
-    transform: rotate3d(1, 1, 1, -40deg) translate3d(-300px, 400px, 0);
+#map{
+    background-color: none;
+    transform: skew(10deg, 5deg);
 }
