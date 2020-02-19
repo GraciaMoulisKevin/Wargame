@@ -39,14 +39,7 @@ cd Wargame/
 npm install
 ```
 
-<<<<<<< HEAD
-# Start
-```bash
-npm run dev
-```
-=======
 ## Lancer l'environnement de développement
 ```bash
 npm run dev
 ```
->>>>>>> origin/Charles_ECS
