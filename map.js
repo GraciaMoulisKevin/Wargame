@@ -250,8 +250,8 @@ function uncoloredHexagon() {
  * @return null if false else the scale
  */
 function isHexagonBelongToSameScale(hexagonA, hexagonB) {
-    let dataA = getHexagonDataset(hexagonA),
-        dataB = getHexagonDataset(hexagonB);
+    let dataA = getNodeDataset(hexagonA),
+        dataB = getNodeDataset(hexagonB);
 
     if (dataA.scale == dataB.scale) {
         return dataA.scale;
@@ -270,8 +270,8 @@ function isHexagonBelongToSameScale(hexagonA, hexagonB) {
  * Return all data attribute (data-placement, data-x, data-y ...)
  * @param {Node} hexagon 
  */
-function getHexagonDataset(hexagon) {
-    return $(hexagon).data();
+function getNodeDataset(node) {
+    return $(node).data();
 }
 
 /**
@@ -301,8 +301,8 @@ function getCenterCoordinateOfHexagons(coord) {
  * @param {Node} hexagonB
  */
 function getDistanceBetweenHexagon(hexagonA, hexagonB) {
-    let coordA = getHexagonDataset(hexagonA),
-        coordB = getHexagonDataset(hexagonB);
+    let coordA = getNodeDataset(hexagonA),
+        coordB = getNodeDataset(hexagonB);
     return (Math.abs(coordA.x - coordB.x) + Math.abs(coordA.y - coordB.y) + Math.abs(coordA.z - coordB.z)) / 2;
 }
 
@@ -313,8 +313,8 @@ function getDistanceBetweenHexagon(hexagonA, hexagonB) {
  * @param {Number} t
  */
 function getNextHexagonCoordinate(hexagonA, hexagonB, t) {
-    let coordA = getHexagonDataset(hexagonA),
-        coordB = getHexagonDataset(hexagonB);
+    let coordA = getNodeDataset(hexagonA),
+        coordB = getNodeDataset(hexagonB);
     return {
         "x": linearInterpolation(coordA.x, coordB.x, t),
         "y": linearInterpolation(coordA.y, coordB.y, t),
@@ -323,6 +323,37 @@ function getNextHexagonCoordinate(hexagonA, hexagonB, t) {
 }
 
 // ________ MAIN ________
+
+/**
+ * Switch the maps
+ */
+function switchMap(){
+
+    let top_map, bottom_map;
+    
+    if ( ACTUAL_MAP == "foreground" ){
+        top_map = "#underground-map";
+        bottom_map = "#foreground-map";
+        ACTUAL_MAP = "underground";
+    } else {
+        top_map = "#foreground-map";
+        bottom_map = "#underground-map";
+        ACTUAL_MAP = "foreground";
+    }
+
+    d3.select(top_map)
+        .transition()
+        .duration(300)
+        .attr("transform", "rotate(-5,"+WIDTH/2+","+HEIGHT/2+") translate(100, -50) scale(1.1, 1.1)")
+        .style("opacity", 1);
+
+    d3.select(bottom_map)
+        .transition()
+        .duration(300)
+        .attr("transform", "rotate(-5,"+WIDTH/2+","+HEIGHT/2+") translate(-100, 50) scale(0.7, 0.7)")
+        .style("opacity", 0.2);
+
+}
 
 /**
  * Create a path from idA to idB
@@ -360,7 +391,7 @@ function pathfinder(hexagonA, hexagonB) {
  */
 function showAllowedMovement(hexagon, movement_points) {
 
-    let data = getHexagonDataset(hexagon);
+    let data = getNodeDataset(hexagon);
 
     for (let x = data.x - movement_points; x <= data.x + movement_points; x++) {
         for (let y = data.y - movement_points; y <= data.y + movement_points; y++) {
@@ -438,6 +469,39 @@ function test(hexagon) {
 }
 
 /**
+ * 
+ * @param {Node} unit 
+ */
+function test2(unit) {
+
+    let hexagon; // = get l'hexa ou l'unit se situe
+
+    if (PREVIOUS_CLICKED_HEXAGON != null) {
+        if (isHexagonBelongToSameScale(PREVIOUS_CLICKED_HEXAGON, hexagon) == null) {
+            return null;
+        } else {
+            uncoloredHexagon();
+
+            if (PREVIOUS_CLICKED_HEXAGON.isEqualNode(hexagon)) {
+
+            } else {
+                pathfinder(PREVIOUS_CLICKED_HEXAGON, hexagon);
+                moveUnit(0, PREVIOUS_CLICKED_HEXAGON, hexagon);
+            }
+            PREVIOUS_CLICKED_HEXAGON = null;
+        }
+    } else {
+        PREVIOUS_CLICKED_HEXAGON = hexagon;
+        showAllowedMovement(hexagon, 1);
+    }
+}
+
+function axialToCubeCoordinate(_x, _y){
+    let x = _x, z = _y, y = -x-z;
+    console.log(createCoordinate(x,y,z));
+}
+
+/**
  * Start function when document start
  */
 function start() {
@@ -453,14 +517,15 @@ function start() {
             WIDTH = data["width"];
             HEIGHT = data["height"];
             loadMap(data);
-            createUnit();
+            createUnit("soldat", "foreground");
+            createUnit("sapeur", "underground");
         });
     });
 }
 
 // ________ TEMPORARY ________
 
-function createUnit() {
+function createUnit(type, scale) {
 
     let startCoordinate = createCoordinate(0, 0, 0);
 
@@ -469,13 +534,24 @@ function createUnit() {
         cy = coord.y,
         r = 10;
 
-    d3.select("#foreground-map")
+    d3.select(`#${scale}-map`)
         .append("circle")
-        .attr("id", "lerond")
-        .attr("cx", cx)
-        .attr("cy", cy)
-        .attr("r", r)
-        .style("fill", "red");
+        .attrs({
+            class : type,
+            "data-scale" : scale,
+            "data-x" : 0,
+            "data-y" : 0,
+            "data-z" : 0,
+            cx : cx,
+            cy : cy,
+            r : r
+        })
+        .style("fill", function(){
+            return ( type == "soldat" )? "red" : "blue";
+        })
+        .on("click", function () {
+            test2(this);
+        });
 }
 
 function moveUnit(i, hexagonA, hexagonB) {
@@ -497,34 +573,6 @@ function moveUnit(i, hexagonA, hexagonB) {
         });
         uncoloredHexagon();
     }
-}
-
-function switchMap(){
-
-    let top_map, bottom_map;
-    
-    if ( ACTUAL_MAP == "foreground" ){
-        top_map = "#underground-map";
-        bottom_map = "#foreground-map";
-        ACTUAL_MAP = "underground";
-    } else {
-        top_map = "#foreground-map";
-        bottom_map = "#underground-map";
-        ACTUAL_MAP = "foreground";
-    }
-
-    d3.select(top_map)
-        .transition()
-        .duration(300)
-        .attr("transform", "rotate(-5,"+WIDTH/2+","+HEIGHT/2+") translate(100, -50) scale(1.1, 1.1)")
-        .style("opacity", 1);
-
-    d3.select(bottom_map)
-        .transition()
-        .duration(300)
-        .attr("transform", "rotate(-5,"+WIDTH/2+","+HEIGHT/2+") translate(-100, 50) scale(0.7, 0.7)")
-        .style("opacity", 0.2);
-
 }
 
 
@@ -574,8 +622,6 @@ function switchMap(){
 //                 id = "";
 //                 coordinate = {"x" : x, "y" : y, "z" : z, "type" : "rgba(0,0,0,0)"};
 //                 id += "x" + x + "y" + y + "z" + z;
-//                 let hexagon = new Hexagon(coord, id);
-//             }
-//         }
+//                 let hconsole.log("")
 //     }
 // }
