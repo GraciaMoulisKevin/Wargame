@@ -29,7 +29,7 @@
     <div class="container fixed-top mr-1 mt-1 mb-1 w-25 h-100">
         <div id="playerContainer" class="container border h-25">
             <div class="h-75 overflow-auto" id="playerListContainer">
-
+                
             </div> 
             <div class="input-group h-25 mb-1">
                 <input class="w-100 h-100 btn btn-danger" id="readyButton" type="button" value="Ready" onclick="readyUp()">
@@ -101,13 +101,18 @@
                 } else {
                     appendUser(objUser.pseudo, objUser.ready);
                 }
-                let button = $('#readyButton');
-                if(objUser.ready){
-                    button.removeClass("btn-danger").addClass("btn-success");
-                } else {
-                    button.removeClass("btn-success").addClass("btn-danger");
+                if(objUser.pseudo == pseudo){
+                    let button = $('#readyButton');
+                    if(objUser.ready){
+                        button.removeClass("btn-danger").addClass("btn-success");
+                    } else {
+                        button.removeClass("btn-success").addClass("btn-danger");
+                    }
                 }
             }
+        })
+        socket.on('breakReady',function(){
+            $('#readyButton').remove();
         })
         
         

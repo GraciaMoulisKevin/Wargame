@@ -9,29 +9,29 @@ const history = {};
 const playerList = {};
 const roomData = {};
 /**
- * Create room folder (server)
- */
+* Create room folder (server)
+*/
 if(!fs.existsSync(__dirname +'/room')){
     fs.mkdirSync(__dirname + '/room')
 }
 
 app.use(bodyParser.json());       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
-  extended: true
+    extended: true
 }));
 
 /**
- * Send index.html to people that join on website root
- */
+* Send index.html to people that join on website root
+*/
 app.get('/', (req,res) => {
     res.sendFile(__dirname + '/index.html');
 })
 
 /**
- * Room manager for direct linking:
- *  -> If a room exists send the .html file to the user inside /room/
- *  -> If a room doesn't exists send the user to the website root
- */
+* Room manager for direct linking:
+*  -> If a room exists send the .html file to the user inside /room/
+*  -> If a room doesn't exists send the user to the website root
+*/
 app.get('/room/*', (req,res) => {
     res.sendFile(__dirname + '/room/' + req.originalUrl.slice(6) + '.html', (err) => {
         if(err){
@@ -41,8 +41,8 @@ app.get('/room/*', (req,res) => {
 })
 
 /**
- * Post request of root that creates / join a room by duplicating template.html
- */
+* Post request of root that creates / join a room by duplicating template.html
+*/
 app.post('/', (req,res) => {
     let roomName = req.body.roomName.replace(/[^a-zA-Z0-9]/g, '');
     let roomPath = __dirname + '/room/' + roomName + '.html';
@@ -52,7 +52,7 @@ app.post('/', (req,res) => {
         history[roomName] = [];
         playerList[roomName] = [];        
         roomData[roomName] = {ready: 0, max:2};
-
+        
         fs.copyFile(template, roomPath , (err) => {
             if(err) throw err;
             const files = fs.readdirSync(__dirname + '/room/');
@@ -63,10 +63,10 @@ app.post('/', (req,res) => {
 })
 
 /**
- * Socket.io basic connection :
- *  -> on root sends files
- *  -> in rooms, users join socket.io room of the room
- */
+* Socket.io basic connection :
+*  -> on root sends files
+*  -> in rooms, users join socket.io room of the room
+*/
 io.on('connection', function(socket){
     socket.on('wantFiles', function(){
         const files = fs.readdirSync(__dirname + '/room/');
@@ -90,7 +90,7 @@ io.on('connection', function(socket){
         }
         io.sockets.to(room).emit('chatMessage',message,pseudo);
     })
-
+    
     socket.on('registerUser', function(pseudo, room){
         if(hasLeader(playerList[room])){
             playerList[room].push({id: socket.id,pseudo: pseudo, leader: false, ready: false});
@@ -117,23 +117,25 @@ io.on('connection', function(socket){
     socket.on('readyUp', function (ready, room){
         if(roomData[room].ready == roomData[room].max){
             console.log("game already launched");
+            io.sockets.to(room).emit('breakReady');
             return;
         }
         if(ready && roomData[room].ready == roomData[room].max - 1){
             playerList[room][getPlayerNumber(playerList[room],socket.id)].ready = ready;
             sendUserList(room);
             roomData[room].ready++;
+            io.sockets.to(room).emit('breakReady');
             console.log("launch game");
         } else {
             if(ready){
                 roomData[room].ready++;
-            playerList[room][getPlayerNumber(playerList[room],socket.id)].ready = true;
-        } else {
+                playerList[room][getPlayerNumber(playerList[room],socket.id)].ready = true;
+            } else {
                 roomData[room].ready--;
-            playerList[room][getPlayerNumber(playerList[room],socket.id)].ready = false;
+                playerList[room][getPlayerNumber(playerList[room],socket.id)].ready = false;
+            }
         }
-            sendUserList(room);
-        }
+        sendUserList(room);
         console.log(roomData[room]);
     })
 })
@@ -141,8 +143,8 @@ io.on('connection', function(socket){
 
 
 /**
- * Listening node.js
- */
+* Listening node.js
+*/
 server.listen(port, () => {
     let files = fs.readdirSync(__dirname + '/room/').map(room => room.slice(0,-5));
     for(let room of files){
