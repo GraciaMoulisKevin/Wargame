@@ -14,8 +14,9 @@ window.onload = start;
 RADIUS = 0;
 WIDTH = 0;
 HEIGHT = 0;
-PREVIOUS_CLICKED_HEXAGON = null;
+PREVIOUS_SELECTED_UNIT = null;
 ACTUAL_MAP = "foreground";
+MOVEMENT_POINT = 1;
 
 // ________ CLASSES ________
 
@@ -112,7 +113,7 @@ class Hexagon {
                 .style("stroke", "black")
                 .style("fill", "lightgreen")
                 .on("click", function () {
-                    test(this);
+                    onclickHexagonEvent(this);
                 });
 
             d3.select("#underground-map")
@@ -132,7 +133,7 @@ class Hexagon {
                 .style("stroke", "black")
                 .style("fill", "lightgray")
                 .on("click", function () {
-                    test(this);
+                    onclickHexagonEvent(this)
                 });
 
 
@@ -249,12 +250,12 @@ function uncoloredHexagon() {
  * @param {Node} hexagonB
  * @return null if false else the scale
  */
-function isHexagonBelongToSameScale(hexagonA, hexagonB) {
-    let dataA = getNodeDataset(hexagonA),
-        dataB = getNodeDataset(hexagonB);
+function isOnSameScale(nodeA, nodeB) {
+    let scaleA = nodeA.getAttribute("data-scale"),
+        scaleB = nodeB.getAttribute("data-scale");
 
-    if (dataA.scale == dataB.scale) {
-        return dataA.scale;
+    if (scaleA == scaleB) {
+        return scaleA;
     } else {
         logMessage({
             "type": "err",
@@ -264,13 +265,13 @@ function isHexagonBelongToSameScale(hexagonA, hexagonB) {
     }
 }
 
-// ________ GET ________
+// ________ GET (HEXAGON) ________
 
 /**
  * Return all data attribute (data-placement, data-x, data-y ...)
  * @param {Node} hexagon 
  */
-function getNodeDataset(node) {
+function getHexagonDataset(node) {
     return $(node).data();
 }
 
@@ -301,8 +302,8 @@ function getCenterCoordinateOfHexagons(coord) {
  * @param {Node} hexagonB
  */
 function getDistanceBetweenHexagon(hexagonA, hexagonB) {
-    let coordA = getNodeDataset(hexagonA),
-        coordB = getNodeDataset(hexagonB);
+    let coordA = getHexagonDataset(hexagonA),
+        coordB = getHexagonDataset(hexagonB);
     return (Math.abs(coordA.x - coordB.x) + Math.abs(coordA.y - coordB.y) + Math.abs(coordA.z - coordB.z)) / 2;
 }
 
@@ -313,8 +314,8 @@ function getDistanceBetweenHexagon(hexagonA, hexagonB) {
  * @param {Number} t
  */
 function getNextHexagonCoordinate(hexagonA, hexagonB, t) {
-    let coordA = getNodeDataset(hexagonA),
-        coordB = getNodeDataset(hexagonB);
+    let coordA = getHexagonDataset(hexagonA),
+        coordB = getHexagonDataset(hexagonB);
     return {
         "x": linearInterpolation(coordA.x, coordB.x, t),
         "y": linearInterpolation(coordA.y, coordB.y, t),
@@ -322,6 +323,30 @@ function getNextHexagonCoordinate(hexagonA, hexagonB, t) {
     };
 }
 
+// ________ GET (UNIT) ________
+
+/**
+ * Return data attribute (data-scale, data-x, data-y & data-z)
+ * @param {Node} unit
+ */
+function getUnitDataset(unit){
+    return {
+        "scale": unit.getAttribute("data-scale"),
+        "x": parseInt(unit.getAttribute("data-x")),
+        "y": parseInt(unit.getAttribute("data-y")),
+        "z": parseInt(unit.getAttribute("data-z"))
+    }
+}
+
+/**
+ * Return the hexagon where the unit is
+ * @param {Node} unit
+ * @return {Node} a node
+ */
+function getHexagonWhereUnitIsLocated(unit){
+    let data = getUnitDataset(unit);
+    return d3.select(`.hexagon[data-scale="${data.scale}"][data-x="${data.x}"][data-y="${data.y}"][data-z="${data.z}"]`).node();
+}
 // ________ MAIN ________
 
 /**
@@ -362,7 +387,7 @@ function switchMap(){
  */
 function pathfinder(hexagonA, hexagonB) {
 
-    let scale = isHexagonBelongToSameScale(hexagonA, hexagonB);
+    let scale = isOnSameScale(hexagonA, hexagonB);
     if (scale != null) {
         let n = getDistanceBetweenHexagon(hexagonA, hexagonB);
         let path = [];
@@ -391,7 +416,7 @@ function pathfinder(hexagonA, hexagonB) {
  */
 function showAllowedMovement(hexagon, movement_points) {
 
-    let data = getNodeDataset(hexagon);
+    let data = getHexagonDataset(hexagon);
 
     for (let x = data.x - movement_points; x <= data.x + movement_points; x++) {
         for (let y = data.y - movement_points; y <= data.y + movement_points; y++) {
@@ -442,29 +467,17 @@ function loadMap(data) {
     });
 }
 
-/**
- * 
- * @param {Node} hexagon 
- */
-function test(hexagon) {
-
-    if (PREVIOUS_CLICKED_HEXAGON != null) {
-        if (isHexagonBelongToSameScale(PREVIOUS_CLICKED_HEXAGON, hexagon) == null) {
+function onclickHexagonEvent(hexagon) {
+    if ( PREVIOUS_SELECTED_UNIT != null ){
+        if (isOnSameScale(PREVIOUS_SELECTED_UNIT, hexagon) == null ){
             return null;
         } else {
             uncoloredHexagon();
-
-            if (PREVIOUS_CLICKED_HEXAGON.isEqualNode(hexagon)) {
-
-            } else {
-                pathfinder(PREVIOUS_CLICKED_HEXAGON, hexagon);
-                moveUnit(0, PREVIOUS_CLICKED_HEXAGON, hexagon);
-            }
-            PREVIOUS_CLICKED_HEXAGON = null;
+            let unitHexagon = getHexagonWhereUnitIsLocated(PREVIOUS_SELECTED_UNIT);
+            PREVIOUS_SELECTED_UNIT = null;
+            pathfinder(unitHexagon, hexagon);
+            moveUnit(0, unitHexagon, hexagon);
         }
-    } else {
-        PREVIOUS_CLICKED_HEXAGON = hexagon;
-        showAllowedMovement(hexagon, 1);
     }
 }
 
@@ -472,27 +485,23 @@ function test(hexagon) {
  * 
  * @param {Node} unit 
  */
-function test2(unit) {
+function onclickUnitEvent(unit) {
+    
+    let hexagon = getHexagonWhereUnitIsLocated(unit);
 
-    let hexagon; // = get l'hexa ou l'unit se situe
-
-    if (PREVIOUS_CLICKED_HEXAGON != null) {
-        if (isHexagonBelongToSameScale(PREVIOUS_CLICKED_HEXAGON, hexagon) == null) {
-            return null;
-        } else {
-            uncoloredHexagon();
-
-            if (PREVIOUS_CLICKED_HEXAGON.isEqualNode(hexagon)) {
-
-            } else {
-                pathfinder(PREVIOUS_CLICKED_HEXAGON, hexagon);
-                moveUnit(0, PREVIOUS_CLICKED_HEXAGON, hexagon);
-            }
-            PREVIOUS_CLICKED_HEXAGON = null;
-        }
+    if (PREVIOUS_SELECTED_UNIT == null){
+        PREVIOUS_SELECTED_UNIT = unit;
+        showAllowedMovement(hexagon, MOVEMENT_POINT);
+    } else if ( PREVIOUS_SELECTED_UNIT.isEqualNode(unit) ){
+        uncoloredHexagon();
+        PREVIOUS_SELECTED_UNIT = null;
+    } else if ( !PREVIOUS_SELECTED_UNIT.isEqualNode(unit) ){
+        uncoloredHexagon();
+        showAllowedMovement(hexagon, MOVEMENT_POINT);
+        PREVIOUS_SELECTED_UNIT = unit;
     } else {
-        PREVIOUS_CLICKED_HEXAGON = hexagon;
-        showAllowedMovement(hexagon, 1);
+        showAllowedMovement(hexagon, MOVEMENT_POINT);
+        PREVIOUS_SELECTED_UNIT = unit;
     }
 }
 
@@ -537,6 +546,7 @@ function createUnit(type, scale) {
     d3.select(`#${scale}-map`)
         .append("circle")
         .attrs({
+            id : function(){ return ( type == "soldat" )? "lerond" : "" },
             class : type,
             "data-scale" : scale,
             "data-x" : 0,
@@ -550,20 +560,39 @@ function createUnit(type, scale) {
             return ( type == "soldat" )? "red" : "blue";
         })
         .on("click", function () {
-            test2(this);
+            onclickUnitEvent(this);
         });
 }
 
+/**
+ * 
+ * @param {Number} i (by default use 0) 
+ * @param {Node} unit 
+ * @param {Node} hexagonA 
+ */
 function moveUnit(i, hexagonA, hexagonB) {
 
     i++;
 
     let path = pathfinder(hexagonA, hexagonB);
+    let node = d3.select("#lerond")
 
     if (i < path.length) {
         var timer = setTimeout(function () {
             let center = getCenterCoordinateOfHexagons(path[i]);
-            d3.select("#lerond").transition().attr("cx", center.x).attr("cy", center.y);
+            
+            node.attrs({
+                "data-x" : path[i].x,
+                "data-y" : path[i].y,
+                "data-z" : path[i].z
+            });
+            
+            node.transition()
+                .attrs({
+                    cx : center.x,
+                    cy : center.y
+                });
+
             moveUnit(i, hexagonA, hexagonB);
         }, 700);
     } else {
@@ -574,9 +603,6 @@ function moveUnit(i, hexagonA, hexagonB) {
         uncoloredHexagon();
     }
 }
-
-
-
 
 
 
