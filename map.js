@@ -16,7 +16,6 @@ WIDTH = 0;
 HEIGHT = 0;
 PREVIOUS_SELECTED_UNIT = null;
 ACTUAL_MAP = "foreground";
-MOVEMENT_POINT = 1;
 
 // ________ CLASSES ________
 
@@ -85,10 +84,10 @@ class Hexagon {
             }
 
             // [ TEMPORARY ] Allowed to print coordinate on each hexagon
-            // if (i == 3) {
-            //     temp_x = pt_x;
-            //     temp_y = pt_y
-            // }
+            if (i == 3) {
+                temp_x = pt_x;
+                temp_y = pt_y
+            }
 
             i++;
         }
@@ -100,6 +99,7 @@ class Hexagon {
                 .append("polygon")
                 .attr("class", "hexagon foreground-hexagon")
                 .attr("data-scale", "foreground")
+                .attr("data-type", this.type)
                 .attr("data-x", this.x)
                 .attr("data-y", this.y)
                 .attr("data-z", this.z)
@@ -111,7 +111,6 @@ class Hexagon {
                     return attr_points;
                 })
                 .style("stroke", "black")
-                .style("fill", "lightgreen")
                 .on("click", function () {
                     onclickHexagonEvent(this);
                 });
@@ -120,6 +119,7 @@ class Hexagon {
                 .append("polygon")
                 .attr("class", "hexagon underground-hexagon")
                 .attr("data-scale", "underground")
+                .attr("data-type", "lightgray")
                 .attr("data-x", this.x)
                 .attr("data-y", this.y)
                 .attr("data-z", this.z)
@@ -136,13 +136,12 @@ class Hexagon {
                     onclickHexagonEvent(this)
                 });
 
-
             // [ TEMPORARY ] Print coordinate on each hexagon
-            // d3.select("#foreground-map").append("text")
-            //     .attr("x", temp_x)
-            //     .attr("y", temp_y)
-            //     .attr("fill", "red")
-            //     .html("&nbsp; x=" + this.x + " y=" + this.y + " z=" + this.z);
+            d3.select("#foreground-map").append("text")
+                .attr("x", temp_x)
+                .attr("y", temp_y)
+                .attr("fill", "red")
+                .html("&nbsp; x=" + this.x + " y=" + this.y + " z=" + this.z);
         }
     }
 }
@@ -245,9 +244,9 @@ function uncoloredHexagon() {
 }
 
 /**
- * Check if two hexagon belong to the same scale
- * @param {Node} hexagonA 
- * @param {Node} hexagonB
+ * Check if two node belong to the same scale
+ * @param {Node} nodeA 
+ * @param {Node} nodeB
  * @return null if false else the scale
  */
 function isOnSameScale(nodeA, nodeB) {
@@ -355,7 +354,7 @@ function getHexagonWhereUnitIsLocated(unit){
 function switchMap(){
 
     let top_map, bottom_map;
-    
+
     if ( ACTUAL_MAP == "foreground" ){
         top_map = "#underground-map";
         bottom_map = "#foreground-map";
@@ -416,8 +415,8 @@ function pathfinder(hexagonA, hexagonB) {
  */
 function showAllowedMovement(hexagon, movement_points) {
 
-    let data = getHexagonDataset(hexagon);
-
+    let data = getHexagonDataset(hexagon),
+        colored_hexagon = [];
     for (let x = data.x - movement_points; x <= data.x + movement_points; x++) {
         for (let y = data.y - movement_points; y <= data.y + movement_points; y++) {
             for (let z = data.z - movement_points; z <= data.z + movement_points; z++) {
@@ -429,6 +428,8 @@ function showAllowedMovement(hexagon, movement_points) {
             }
         }
     }
+
+    console.log(colored_hexagon);
 }
 
 /**
@@ -467,6 +468,10 @@ function loadMap(data) {
     });
 }
 
+/**
+ * Manage event while user clicked on an hexagon
+ * @param {Node} hexagon 
+ */
 function onclickHexagonEvent(hexagon) {
     if ( PREVIOUS_SELECTED_UNIT != null ){
         if (isOnSameScale(PREVIOUS_SELECTED_UNIT, hexagon) == null ){
@@ -482,32 +487,30 @@ function onclickHexagonEvent(hexagon) {
 }
 
 /**
- * 
+ * Manage event while user clicked on an unit
  * @param {Node} unit 
  */
 function onclickUnitEvent(unit) {
     
-    let hexagon = getHexagonWhereUnitIsLocated(unit);
+    let unit_scale = unit.getAttribute("data-scale"),
+        hexagon = getHexagonWhereUnitIsLocated(unit);
 
-    if (PREVIOUS_SELECTED_UNIT == null){
-        PREVIOUS_SELECTED_UNIT = unit;
-        showAllowedMovement(hexagon, MOVEMENT_POINT);
-    } else if ( PREVIOUS_SELECTED_UNIT.isEqualNode(unit) ){
-        uncoloredHexagon();
-        PREVIOUS_SELECTED_UNIT = null;
-    } else if ( !PREVIOUS_SELECTED_UNIT.isEqualNode(unit) ){
-        uncoloredHexagon();
-        showAllowedMovement(hexagon, MOVEMENT_POINT);
-        PREVIOUS_SELECTED_UNIT = unit;
-    } else {
-        showAllowedMovement(hexagon, MOVEMENT_POINT);
-        PREVIOUS_SELECTED_UNIT = unit;
+    if ( unit_scale == ACTUAL_MAP ){
+        if (PREVIOUS_SELECTED_UNIT == null){
+            PREVIOUS_SELECTED_UNIT = unit;
+            showAllowedMovement(hexagon, 1);
+        } else if ( PREVIOUS_SELECTED_UNIT.isEqualNode(unit) ){
+            uncoloredHexagon();
+            PREVIOUS_SELECTED_UNIT = null;
+        } else if ( !PREVIOUS_SELECTED_UNIT.isEqualNode(unit) ){
+            uncoloredHexagon();
+            showAllowedMovement(hexagon, 1);
+            PREVIOUS_SELECTED_UNIT = unit;
+        } else {
+            showAllowedMovement(hexagon, 1);
+            PREVIOUS_SELECTED_UNIT = unit;
+        }
     }
-}
-
-function axialToCubeCoordinate(_x, _y){
-    let x = _x, z = _y, y = -x-z;
-    console.log(createCoordinate(x,y,z));
 }
 
 /**
@@ -650,4 +653,9 @@ function moveUnit(i, hexagonA, hexagonB) {
 //                 id += "x" + x + "y" + y + "z" + z;
 //                 let hconsole.log("")
 //     }
+// }
+//
+// function axialToCubeCoordinate(_x, _y){
+//     let x = _x, z = _y, y = -x-z;
+//     console.log(createCoordinate(x,y,z));
 // }

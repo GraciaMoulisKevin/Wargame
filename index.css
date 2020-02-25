@@ -27,3 +27,17 @@
     background-color: none;
     transform: skew(10deg, 5deg);
 }
+
+[data-type="grass"]{
+    fill: lightgreen;
+    /* fill: url() */
+    /* https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Gradients */
+}
+
+[data-type="mountain"]{
+    fill: darkgray;
+}
+
+[data-type="none"]{
+    fill: rgb(20, 20, 20);
+}
