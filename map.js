@@ -16,7 +16,7 @@ WIDTH = 0;
 HEIGHT = 0;
 PREVIOUS_SELECTED_UNIT = null;
 ACTUAL_MAP = "foreground";
-MOVEMENT_POINTS = 1;
+MOVEMENT_POINTS = 2;
 
 // ________ CLASSES ________
 
@@ -95,7 +95,7 @@ class Hexagon {
 
         if (can_create) {
 
-            
+
             d3.select("#foreground-map")
                 .append("polygon")
                 .attrs({
@@ -117,13 +117,13 @@ class Hexagon {
                 .on("click", function () {
                     onclickHexagonEvent(this);
                 })
-                .on("mouseover", function(){
-                    if ( PREVIOUS_SELECTED_UNIT != null ){
-                        pathfinder( getHexagonWhereUnitIsLocated(PREVIOUS_SELECTED_UNIT), this);
+                .on("mouseover", function () {
+                    if (PREVIOUS_SELECTED_UNIT != null) {
+                        pathfinder(getHexagonWhereUnitIsLocated(PREVIOUS_SELECTED_UNIT), this);
                     }
                 })
-                .on("mouseout", function(){
-                    if ( PREVIOUS_SELECTED_UNIT != null ){
+                .on("mouseout", function () {
+                    if (PREVIOUS_SELECTED_UNIT != null) {
                         uncoloredPathfinder();
                     }
                 });
@@ -263,7 +263,7 @@ function uncoloredAvailableMovement() {
 /**
  * Uncolored the pathfinder
  */
-function uncoloredPathfinder(){
+function uncoloredPathfinder() {
     d3.selectAll(".pathfinder")
         .classed("pathfinder", false);
     d3.selectAll(".pathfinder-unavailable")
@@ -273,7 +273,7 @@ function uncoloredPathfinder(){
 /**
  * Uncolored all colored hexagons
  */
-function uncoloredHexagon(){
+function uncoloredHexagon() {
     uncoloredAvailableMovement();
     uncoloredPathfinder();
 }
@@ -363,7 +363,7 @@ function getNextHexagonCoordinate(hexagonA, hexagonB, t) {
  * Return data attribute (data-scale, data-x, data-y & data-z)
  * @param {Node} unit
  */
-function getUnitDataset(unit){
+function getUnitDataset(unit) {
     return {
         "scale": unit.getAttribute("data-scale"),
         "x": parseInt(unit.getAttribute("data-x")),
@@ -377,7 +377,7 @@ function getUnitDataset(unit){
  * @param {Node} unit
  * @return {Node} a node
  */
-function getHexagonWhereUnitIsLocated(unit){
+function getHexagonWhereUnitIsLocated(unit) {
     let data = getUnitDataset(unit);
     return d3.select(`.hexagon[data-scale="${data.scale}"][data-x="${data.x}"][data-y="${data.y}"][data-z="${data.z}"]`).node();
 }
@@ -386,11 +386,11 @@ function getHexagonWhereUnitIsLocated(unit){
 /**
  * Switch the maps
  */
-function switchMap(){
+function switchMap() {
 
     let top_map, bottom_map;
 
-    if ( ACTUAL_MAP == "foreground" ){
+    if (ACTUAL_MAP == "foreground") {
         top_map = "#underground-map";
         bottom_map = "#foreground-map";
         ACTUAL_MAP = "underground";
@@ -403,13 +403,13 @@ function switchMap(){
     d3.select(top_map)
         .transition()
         .duration(300)
-        .attr("transform", "rotate(-5,"+WIDTH/2+","+HEIGHT/2+") translate(100, -50) scale(1.1, 1.1)")
+        .attr("transform", "rotate(-5," + WIDTH / 2 + "," + HEIGHT / 2 + ") translate(100, -50) scale(1.1, 1.1)")
         .style("opacity", 1);
 
     d3.select(bottom_map)
         .transition()
         .duration(300)
-        .attr("transform", "rotate(-5,"+WIDTH/2+","+HEIGHT/2+") translate(-100, 50) scale(0.7, 0.7)")
+        .attr("transform", "rotate(-5," + WIDTH / 2 + "," + HEIGHT / 2 + ") translate(-100, 50) scale(0.7, 0.7)")
         .style("opacity", 0.2);
 
 }
@@ -428,8 +428,8 @@ function pathfinder(hexagonA, hexagonB) {
 
         for (let i = 0; i <= n; i++) {
             let data = roundHexagonCoordinate(getNextHexagonCoordinate(hexagonA, hexagonB, (1 / n * i)));
-            
-            if ( n <= MOVEMENT_POINTS ){ 
+
+            if (n <= MOVEMENT_POINTS) {
                 d3.select(`.${scale}-hexagon[data-x="${data.x}"][data-y="${data.y}"][data-z="${data.z}"]`)
                     .classed("pathfinder", true);
             } else {
@@ -483,15 +483,15 @@ function loadMap(data) {
 
     svg.append("g")
         .attrs({
-            id : "underground-map",
-            transform : "rotate(-5,"+WIDTH/2+","+HEIGHT/2+") translate(-100, 50) scale(0.7,0.7)"
+            id: "underground-map",
+            transform: "rotate(-5," + WIDTH / 2 + "," + HEIGHT / 2 + ") translate(-100, 50) scale(0.7,0.7)"
         })
         .style("opacity", 0.2);
 
     svg.append("g")
         .attrs({
-            id : "foreground-map",
-            transform : "rotate(-5,"+WIDTH/2+","+HEIGHT/2+") translate(100, -50) scale(1.1, 1.1)"
+            id: "foreground-map",
+            transform: "rotate(-5," + WIDTH / 2 + "," + HEIGHT / 2 + ") translate(100, -50) scale(1.1, 1.1)"
         })
         .style("opacity", 1);
 
@@ -511,18 +511,17 @@ function loadMap(data) {
  */
 function onclickHexagonEvent(hexagon) {
 
-    if ( PREVIOUS_SELECTED_UNIT != null ){
-        if (isOnSameScale(PREVIOUS_SELECTED_UNIT, hexagon) == null ){
+    if (PREVIOUS_SELECTED_UNIT != null) {
+        if (isOnSameScale(PREVIOUS_SELECTED_UNIT, hexagon) == null) {
             return null;
         } else {
-            let n = getDistanceBetweenHexagon( getHexagonWhereUnitIsLocated(PREVIOUS_SELECTED_UNIT), hexagon);
+            let n = getDistanceBetweenHexagon(getHexagonWhereUnitIsLocated(PREVIOUS_SELECTED_UNIT), hexagon);
 
-            if ( n <= MOVEMENT_POINTS ){
+            if (n <= MOVEMENT_POINTS) {
                 uncoloredHexagon();
                 let unitHexagon = getHexagonWhereUnitIsLocated(PREVIOUS_SELECTED_UNIT);
+                moveUnit(0, PREVIOUS_SELECTED_UNIT, hexagon);
                 PREVIOUS_SELECTED_UNIT = null;
-                //pathfinder(unitHexagon, hexagon);
-                moveUnit(0, unitHexagon, hexagon);
             }
         }
     }
@@ -533,18 +532,18 @@ function onclickHexagonEvent(hexagon) {
  * @param {Node} unit 
  */
 function onclickUnitEvent(unit) {
-    
+
     let unit_scale = unit.getAttribute("data-scale"),
         hexagon = getHexagonWhereUnitIsLocated(unit);
 
-    if ( unit_scale == ACTUAL_MAP ){
-        if (PREVIOUS_SELECTED_UNIT == null){
+    if (unit_scale == ACTUAL_MAP) {
+        if (PREVIOUS_SELECTED_UNIT == null) {
             PREVIOUS_SELECTED_UNIT = unit;
             showAllowedMovement(hexagon, MOVEMENT_POINTS);
-        } else if ( PREVIOUS_SELECTED_UNIT.isEqualNode(unit) ){
+        } else if (PREVIOUS_SELECTED_UNIT.isEqualNode(unit)) {
             uncoloredHexagon();
             PREVIOUS_SELECTED_UNIT = null;
-        } else if ( !PREVIOUS_SELECTED_UNIT.isEqualNode(unit) ){
+        } else if (!PREVIOUS_SELECTED_UNIT.isEqualNode(unit)) {
             uncoloredHexagon();
             showAllowedMovement(hexagon, MOVEMENT_POINTS);
             PREVIOUS_SELECTED_UNIT = unit;
@@ -591,89 +590,65 @@ function createUnit(type, scale) {
     d3.select(`#${scale}-map`)
         .append("circle")
         .attrs({
-            id : function(){ return ( type == "soldat" )? "lerond" : "" },
-            class : type,
-            "data-scale" : scale,
-            "data-x" : 0,
-            "data-y" : 0,
-            "data-z" : 0,
-            cx : cx,
-            cy : cy,
-            r : r
+            id: function () {
+                return (type == "soldat") ? "lerond" : ""
+            },
+            class: type,
+            "data-scale": scale,
+            "data-x": 0,
+            "data-y": 0,
+            "data-z": 0,
+            cx: cx,
+            cy: cy,
+            r: r
         })
-        .style("fill", function(){
-            return ( type == "soldat" )? "red" : "blue";
+        .style("fill", function () {
+            return (type == "soldat") ? "red" : "blue";
         })
         .on("click", function () {
             onclickUnitEvent(this);
         });
 }
 
-/**
- * 
- * @param {Number} i (by default use 0) 
- * @param {Node} unit 
- * @param {Node} hexagonA 
- */
-function moveUnit(i, hexagonA, hexagonB) {
 
-    i++;
+function moveUnit(i, unit, hexagon){
+    movement(1, unit, hexagon);
+}
 
-    let path = pathfinder(hexagonA, hexagonB);
-    let node = d3.select("#lerond")
+function movement(i, unit, hexagon){
+    
+    let unit_hexagon = getHexagonWhereUnitIsLocated(unit),
+        path = pathfinder(unit_hexagon, hexagon),
+        node = d3.select(unit);
 
     if (i < path.length) {
-        var timer = setTimeout(function () {
+        setTimeout(function () {
             let center = getCenterCoordinateOfHexagons(path[i]);
-            
+
             node.attrs({
-                "data-x" : path[i].x,
-                "data-y" : path[i].y,
-                "data-z" : path[i].z
+                "data-x": path[i].x,
+                "data-y": path[i].y,
+                "data-z": path[i].z
             });
-            
+
             node.transition()
                 .attrs({
-                    cx : center.x,
-                    cy : center.y
+                    cx: center.x,
+                    cy: center.y
                 });
-
-            moveUnit(i, hexagonA, hexagonB);
-        }, 700);
+            movement(i++, unit, hexagon);
+        }, 500);
     } else {
         logMessage({
             "type": "suc",
-            "message": "moveUnityTo() : Unit done movement"
+            "message": "movement() : Unit done movement"
         });
         uncoloredHexagon();
     }
 }
 
 
-
-
 // ################################## ARCHIVE ############################### //
-/**
-//  * Parse the id of an hexagon to extract coordinate
-//  * @param {String} id 
-//  */
-// function hexagonIdParser(id) {
-//     let points;
-//     if ((/x(-?[0-9]{1,2})y(-?[0-9]{1,2})z(-?[0-9]{1,2})/.test(id))) {
-//         data = (/x(-?[0-9]{1,2})y(-?[0-9]{1,2})z(-?[0-9]{1,2})/.exec(id));
-//         points = {
-//             "x": parseInt(data[1]),
-//             "y": parseInt(data[2]),
-//             "z": parseInt(data[3])
-//         };
-//     } else {
-//         logMessage({
-//             "type": "err",
-//             "message": "hexagonIdParser( :string ) : Incorrect id type of hexagon \n id = " + id
-//         });
-//     }
-//     return points;
-// }
 
 // function getDataHexagonAttributs(){
 
@@ -684,7 +659,6 @@ function moveUnit(i, hexagonA, hexagonB) {
 //         console.log(hexagon.attributes);
 //     }
 // }
-
 //[ BLACK MAGIC VERSION ]
 // let n = 3; for ( let x = -n; x <= n; x++ ){
 //     for ( let y = -n; y <= n; y++ ){
