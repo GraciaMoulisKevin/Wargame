@@ -16,6 +16,7 @@ WIDTH = 0;
 HEIGHT = 0;
 PREVIOUS_SELECTED_UNIT = null;
 ACTUAL_MAP = "foreground";
+MOVEMENT_POINTS = 1;
 
 // ________ CLASSES ________
 
@@ -84,10 +85,10 @@ class Hexagon {
             }
 
             // [ TEMPORARY ] Allowed to print coordinate on each hexagon
-            if (i == 3) {
-                temp_x = pt_x;
-                temp_y = pt_y
-            }
+            // if (i == 3) {
+            //     temp_x = pt_x;
+            //     temp_y = pt_y
+            // }
 
             i++;
         }
@@ -97,51 +98,68 @@ class Hexagon {
             
             d3.select("#foreground-map")
                 .append("polygon")
-                .attr("class", "hexagon foreground-hexagon")
-                .attr("data-scale", "foreground")
-                .attr("data-type", this.type)
-                .attr("data-x", this.x)
-                .attr("data-y", this.y)
-                .attr("data-z", this.z)
-                .attr("points", function (d) {
-                    let attr_points = "";
-                    for (let pts of points) {
-                        attr_points += pts[0] + "," + pts[1] + " ";
+                .attrs({
+                    class: `hexagon foreground-hexagon ${this.type}`,
+                    "data-scale": "foreground",
+                    "data-type": this.type,
+                    "data-x": this.x,
+                    "data-y": this.y,
+                    "data-z": this.z,
+                    points: function (d) {
+                        let attr_points = "";
+                        for (let pts of points) {
+                            attr_points += pts[0] + "," + pts[1] + " ";
+                        }
+                        return attr_points;
                     }
-                    return attr_points;
                 })
                 .style("stroke", "black")
                 .on("click", function () {
                     onclickHexagonEvent(this);
+                })
+                .on("mouseover", function(){
+                    if ( PREVIOUS_SELECTED_UNIT != null ){
+                        pathfinder( getHexagonWhereUnitIsLocated(PREVIOUS_SELECTED_UNIT), this);
+                    }
+                })
+                .on("mouseout", function(){
+                    if ( PREVIOUS_SELECTED_UNIT != null ){
+                        uncoloredPathfinder();
+                    }
                 });
+
 
             d3.select("#underground-map")
                 .append("polygon")
-                .attr("class", "hexagon underground-hexagon")
-                .attr("data-scale", "underground")
-                .attr("data-type", "lightgray")
-                .attr("data-x", this.x)
-                .attr("data-y", this.y)
-                .attr("data-z", this.z)
-                .attr("points", function (d) {
-                    let attr_points = "";
-                    for (let pts of points) {
-                        attr_points += pts[0] + "," + pts[1] + " ";
+                .attrs({
+                    class: `hexagon underground-hexagon ${this.type}`,
+                    "data-scale": "underground",
+                    "data-type": "lightgray",
+                    "data-x": this.x,
+                    "data-y": this.y,
+                    "data-z": this.z,
+                    points: function (d) {
+                        let attr_points = "";
+                        for (let pts of points) {
+                            attr_points += pts[0] + "," + pts[1] + " ";
+                        }
+                        return attr_points;
                     }
-                    return attr_points;
                 })
-                .style("stroke", "black")
-                .style("fill", "lightgray")
+                .styles({
+                    stroke: "black",
+                    fill: "lightgray"
+                })
                 .on("click", function () {
                     onclickHexagonEvent(this)
                 });
 
             // [ TEMPORARY ] Print coordinate on each hexagon
-            d3.select("#foreground-map").append("text")
-                .attr("x", temp_x)
-                .attr("y", temp_y)
-                .attr("fill", "red")
-                .html("&nbsp; x=" + this.x + " y=" + this.y + " z=" + this.z);
+            // d3.select("#foreground-map").append("text")
+            //     .attr("x", temp_x)
+            //     .attr("y", temp_y)
+            //     .attr("fill", "red")
+            //     .html("&nbsp; x=" + this.x + " y=" + this.y + " z=" + this.z);
         }
     }
 }
@@ -235,12 +253,29 @@ function roundHexagonCoordinate(data) {
 }
 
 /**
- * Uncolored all colored hexagon
+ * Uncolored available movements
  */
-function uncoloredHexagon() {
-    d3.selectAll(".colored")
-        .classed("colored", false)
-        .style("fill", "rgba(0,0,0,0)");
+function uncoloredAvailableMovement() {
+    d3.selectAll(".available-movement")
+        .classed("available-movement", false);
+}
+
+/**
+ * Uncolored the pathfinder
+ */
+function uncoloredPathfinder(){
+    d3.selectAll(".pathfinder")
+        .classed("pathfinder", false);
+    d3.selectAll(".pathfinder-unavailable")
+        .classed("pathfinder-unavailable", false);
+}
+
+/**
+ * Uncolored all colored hexagons
+ */
+function uncoloredHexagon(){
+    uncoloredAvailableMovement();
+    uncoloredPathfinder();
 }
 
 /**
@@ -393,9 +428,14 @@ function pathfinder(hexagonA, hexagonB) {
 
         for (let i = 0; i <= n; i++) {
             let data = roundHexagonCoordinate(getNextHexagonCoordinate(hexagonA, hexagonB, (1 / n * i)));
-            d3.select(`.${scale}-hexagon[data-x="${data.x}"][data-y="${data.y}"][data-z="${data.z}"]`)
-                .classed("colored", true)
-                .style("fill", "rgba(150,150,255,0.4)");
+            
+            if ( n <= MOVEMENT_POINTS ){ 
+                d3.select(`.${scale}-hexagon[data-x="${data.x}"][data-y="${data.y}"][data-z="${data.z}"]`)
+                    .classed("pathfinder", true);
+            } else {
+                d3.select(`.${scale}-hexagon[data-x="${data.x}"][data-y="${data.y}"][data-z="${data.z}"]`)
+                    .classed("pathfinder-unavailable", true);
+            }
 
             path.push({
                 "x": data.x,
@@ -415,21 +455,18 @@ function pathfinder(hexagonA, hexagonB) {
  */
 function showAllowedMovement(hexagon, movement_points) {
 
-    let data = getHexagonDataset(hexagon),
-        colored_hexagon = [];
+    let data = getHexagonDataset(hexagon);
+
     for (let x = data.x - movement_points; x <= data.x + movement_points; x++) {
         for (let y = data.y - movement_points; y <= data.y + movement_points; y++) {
             for (let z = data.z - movement_points; z <= data.z + movement_points; z++) {
                 if (x + y + z == 0) {
                     d3.select(`.${data.scale}-hexagon[data-x="${x}"][data-y="${y}"][data-z="${z}"]`)
-                        .classed("colored", true)
-                        .style("fill", "rgba(150,150,255,0.4)");
+                        .classed("available-movement", true);
                 }
             }
         }
     }
-
-    console.log(colored_hexagon);
 }
 
 /**
@@ -473,15 +510,20 @@ function loadMap(data) {
  * @param {Node} hexagon 
  */
 function onclickHexagonEvent(hexagon) {
+
     if ( PREVIOUS_SELECTED_UNIT != null ){
         if (isOnSameScale(PREVIOUS_SELECTED_UNIT, hexagon) == null ){
             return null;
         } else {
-            uncoloredHexagon();
-            let unitHexagon = getHexagonWhereUnitIsLocated(PREVIOUS_SELECTED_UNIT);
-            PREVIOUS_SELECTED_UNIT = null;
-            pathfinder(unitHexagon, hexagon);
-            moveUnit(0, unitHexagon, hexagon);
+            let n = getDistanceBetweenHexagon( getHexagonWhereUnitIsLocated(PREVIOUS_SELECTED_UNIT), hexagon);
+
+            if ( n <= MOVEMENT_POINTS ){
+                uncoloredHexagon();
+                let unitHexagon = getHexagonWhereUnitIsLocated(PREVIOUS_SELECTED_UNIT);
+                PREVIOUS_SELECTED_UNIT = null;
+                //pathfinder(unitHexagon, hexagon);
+                moveUnit(0, unitHexagon, hexagon);
+            }
         }
     }
 }
@@ -498,16 +540,16 @@ function onclickUnitEvent(unit) {
     if ( unit_scale == ACTUAL_MAP ){
         if (PREVIOUS_SELECTED_UNIT == null){
             PREVIOUS_SELECTED_UNIT = unit;
-            showAllowedMovement(hexagon, 1);
+            showAllowedMovement(hexagon, MOVEMENT_POINTS);
         } else if ( PREVIOUS_SELECTED_UNIT.isEqualNode(unit) ){
             uncoloredHexagon();
             PREVIOUS_SELECTED_UNIT = null;
         } else if ( !PREVIOUS_SELECTED_UNIT.isEqualNode(unit) ){
             uncoloredHexagon();
-            showAllowedMovement(hexagon, 1);
+            showAllowedMovement(hexagon, MOVEMENT_POINTS);
             PREVIOUS_SELECTED_UNIT = unit;
         } else {
-            showAllowedMovement(hexagon, 1);
+            showAllowedMovement(hexagon, MOVEMENT_POINTS);
             PREVIOUS_SELECTED_UNIT = unit;
         }
     }

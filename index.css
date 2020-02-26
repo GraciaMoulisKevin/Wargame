@@ -28,16 +28,26 @@
     transform: skew(10deg, 5deg);
 }
 
-[data-type="grass"]{
-    fill: lightgreen;
-    /* fill: url() */
-    /* https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Gradients */
+.available-movement{
+    fill: rgba(223, 130, 10, 0.4) !important;
 }
 
-[data-type="mountain"]{
+.pathfinder{
+    fill: rgba(150,150,255,0.4) !important;
+}
+
+.pathfinder-unavailable{
+    fill: rgba(216, 41, 41, 0.60) !important;
+}
+
+.grass{
+    fill: lightgreen;
+}
+
+.mountain{
     fill: darkgray;
 }
 
-[data-type="none"]{
-    fill: rgb(20, 20, 20);
+.void{
+    fill: rgba(25, 25, 25, 0.8);
 }
