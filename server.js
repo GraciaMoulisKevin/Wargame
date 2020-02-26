@@ -107,7 +107,7 @@ io.on('connection', function(socket){
             }
             let playerNumber = getPlayerNumber(playerList[disconnectedRoom],socket.id)
             if(playerNumber == undefined) return;
-            playerList[disconnectedRoom].splice(getPlayerNumber(playerNumber), 1);
+            playerList[disconnectedRoom].splice(playerNumber, 1);
             if(!hasLeader(playerList[disconnectedRoom]) && playerList[disconnectedRoom][0] != undefined){
                 playerList[disconnectedRoom][0].leader = true;
             }
