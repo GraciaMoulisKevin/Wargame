@@ -72,9 +72,13 @@ io.on('connection', function(socket){
         const files = fs.readdirSync(__dirname + '/room/');
         socket.emit('files',files);
     })
-    socket.on('room', function(roomName){
-        socket.join(roomName);
-        socket.emit('messageHistory',history[roomName]);
+    socket.on('room', function(room){
+        socket.join(room);
+        socket.emit('messageHistory',history[room]);
+        sendUserList(room);
+        if(isReady(room)){
+            socket.emit('breakReady');
+        }
     })
     
     socket.on('sendChatMessage', function(message,room){
@@ -93,8 +97,10 @@ io.on('connection', function(socket){
     
     socket.on('registerUser', function(pseudo, room){
         if(isAlreadyIn(pseudo,playerList[room])){
-            socket.emit('invalidPseudo');
+            socket.emit('invalidPseudo', true);
             return;
+        } else {
+            socket.emit('invalidPseudo', false);
         }
         if(hasLeader(playerList[room])){
             playerList[room].push({id: socket.id,pseudo: pseudo, leader: false, ready: false});
@@ -142,7 +148,6 @@ io.on('connection', function(socket){
             }
         }
         sendUserList(room);
-        console.log(roomData[room]);
     })
 })
 

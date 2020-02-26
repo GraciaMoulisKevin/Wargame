@@ -12,15 +12,13 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="exampleModalCenterTitle">Enter username</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeModal()">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
                 </div>
                 <div class="modal-body">
                     <form id="modalForm">
                         <input type="text" id="modalPseudo" maxlength="15">
                         <button type="submit" class="btn btn-primary" onclick="closeModal()">Save</button>
                     </form>
+                    <p id="usernameTaken" style="display: none;color: red;">Username already taken</p>
                 </div>
             </div>
         </div>
@@ -114,8 +112,8 @@
         socket.on('breakReady',function(){
             $('#readyButton').remove();
         })
-        socket.on('invalidPseudo', function(){
-            openModal();
+        socket.on('invalidPseudo', function(bool){
+            modalPseudoInvalid(bool);
         })
         
         
@@ -132,15 +130,15 @@
         
         function closeModal(){
             pseudo = $('#modalPseudo').val();
-            if(pseudo == ""){
-                pseudo = "guest" + (Math.floor(Math.random() * 999999999));
-            }
-            $('#modalWindowPseudo').modal('toggle');
             socket.emit('registerUser', pseudo, roomName);
         }
-        function openModal(){
-            $('#modalWindowPseudo').modal('toggle');
-            console.log("bip");
+        function modalPseudoInvalid(bool){
+            if(bool){
+                $('#usernameTaken').css("display","block");
+                return
+            } else {
+                $('#modalWindowPseudo').modal('hide');
+            }
         }
 
         function appendMessage(message,pseudo){
