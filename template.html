@@ -114,6 +114,9 @@
         socket.on('breakReady',function(){
             $('#readyButton').remove();
         })
+        socket.on('invalidPseudo', function(){
+            openModal();
+        })
         
         
         messageForm.addEventListener('submit', function(e){
@@ -132,10 +135,14 @@
             if(pseudo == ""){
                 pseudo = "guest" + (Math.floor(Math.random() * 999999999));
             }
-            $('#modalWindowPseudo').modal('hide');
+            $('#modalWindowPseudo').modal('toggle');
             socket.emit('registerUser', pseudo, roomName);
         }
-        
+        function openModal(){
+            $('#modalWindowPseudo').modal('toggle');
+            console.log("bip");
+        }
+
         function appendMessage(message,pseudo){
             const messageElement = document.createElement('div');
             messageElement.innerHTML = "<b>" + pseudo + "</b> : " + message ;

@@ -92,10 +92,17 @@ io.on('connection', function(socket){
     })
     
     socket.on('registerUser', function(pseudo, room){
+        if(isAlreadyIn(pseudo,playerList[room])){
+            socket.emit('invalidPseudo');
+            return;
+        }
         if(hasLeader(playerList[room])){
             playerList[room].push({id: socket.id,pseudo: pseudo, leader: false, ready: false});
         } else {
             playerList[room].push({id: socket.id,pseudo: pseudo, leader: true, ready: false});
+        }
+        if(isReady(room)){
+            socket.emit('breakReady');
         }
         sendUserList(room);
     })
@@ -116,7 +123,6 @@ io.on('connection', function(socket){
     })
     socket.on('readyUp', function (ready, room){
         if(roomData[room].ready == roomData[room].max){
-            console.log("game already launched");
             io.sockets.to(room).emit('breakReady');
             return;
         }
@@ -126,7 +132,6 @@ io.on('connection', function(socket){
             roomData[room].ready++;
             io.sockets.to(room).emit('breakReady');
             io.sockets.to(room).emit('systemMessage', "Game Start!");
-            console.log("launch game");
         } else {
             if(ready){
                 roomData[room].ready++;
@@ -193,4 +198,19 @@ function sendUserList(room){
             ready: player.ready
         }
     }))
+}
+function isReady(room){
+    if(roomData[room].ready == roomData[room].max){
+        return true;
+    } else {
+        return false;
+    }
+}
+function isAlreadyIn(pseudo,playerArray){
+    for(user of playerArray){
+        if(user.pseudo == pseudo){
+            return true;
+        }
+    }
+    return false;
 }
