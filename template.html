@@ -80,7 +80,7 @@
             socket.emit('room',roomName);
         })
         socket.on('systemMessage', function(data){
-            console.log(data);
+            appendMessage(data,"System");
         })
         socket.on('chatMessage', function(message,pseudo){
             appendMessage(message,pseudo);

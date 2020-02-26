@@ -125,6 +125,7 @@ io.on('connection', function(socket){
             sendUserList(room);
             roomData[room].ready++;
             io.sockets.to(room).emit('breakReady');
+            io.sockets.to(room).emit('systemMessage', "Game Start!");
             console.log("launch game");
         } else {
             if(ready){
