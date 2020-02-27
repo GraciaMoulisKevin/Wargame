@@ -53,6 +53,10 @@ app.get('/room/*', (req,res) => {
 app.post('/', (req,res) => {
     let roomName = req.body.roomName.replace(/[^a-zA-Z0-9]/g, '');
     let roomPath = __dirname + '/room/' + roomName + '.html';
+    if(roomName == ""){
+        res.redirect('/');
+        return;
+    }
     if(fs.existsSync(roomPath)){
         res.redirect('/room/' + roomName);
     } else {
@@ -143,6 +147,12 @@ io.on('connection', function(socket){
                 playerList[disconnectedRoom][0].leader = true;
             }
             sendUserList(disconnectedRoom);
+            if(playerList[disconnectedRoom].length == 0){
+                fs.unlink(__dirname + '/room/' + disconnectedRoom + '.html', (err) => {
+                    if(err) console.log(err);
+                });
+
+            }
         }
         updateRoomList();
     })
@@ -184,7 +194,7 @@ server.listen(port, () => {
         history[room] = [];
         roomData[room] = {ready: 0, max:2,started:false};
     }
-    console.log(`Running on ${port}! with rooms : ${files}`)
+    console.log(`Running on ${port}!`)
 })
 
 
