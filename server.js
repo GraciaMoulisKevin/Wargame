@@ -51,7 +51,7 @@ app.post('/', (req,res) => {
     } else {
         history[roomName] = [];
         playerList[roomName] = [];        
-        roomData[roomName] = {ready: 0, max:2};
+        roomData[roomName] = {ready: 0, max:2, started:false};
         
         fs.copyFile(template, roomPath , (err) => {
             if(err) throw err;
@@ -70,7 +70,14 @@ app.post('/', (req,res) => {
 io.on('connection', function(socket){
     socket.on('wantFiles', function(){
         const files = fs.readdirSync(__dirname + '/room/');
-        socket.emit('files',files);
+        let data = []
+        for(let roomName of files){
+            data.push({
+                roomName: roomName,
+                usersInside: playerList[roomName.slice(0,-5)].length
+            });
+        }
+        socket.emit('files',data);
     })
     socket.on('room', function(room){
         socket.join(room);
@@ -120,7 +127,9 @@ io.on('connection', function(socket){
             }
             let playerNumber = getPlayerNumber(playerList[disconnectedRoom],socket.id)
             if(playerNumber == undefined) return;
-            playerList[disconnectedRoom].splice(playerNumber, 1);
+            if(playerList[disconnectedRoom].splice(playerNumber, 1)[0].ready){
+                roomData[disconnectedRoom].ready--;
+            }
             if(!hasLeader(playerList[disconnectedRoom]) && playerList[disconnectedRoom][0] != undefined){
                 playerList[disconnectedRoom][0].leader = true;
             }
@@ -128,7 +137,7 @@ io.on('connection', function(socket){
         }
     })
     socket.on('readyUp', function (ready, room){
-        if(roomData[room].ready == roomData[room].max){
+        if(roomData[room].started){
             io.sockets.to(room).emit('breakReady');
             return;
         }
@@ -136,6 +145,7 @@ io.on('connection', function(socket){
             playerList[room][getPlayerNumber(playerList[room],socket.id)].ready = ready;
             sendUserList(room);
             roomData[room].ready++;
+            roomData[room].started = true;
             io.sockets.to(room).emit('breakReady');
             io.sockets.to(room).emit('systemMessage', "Game Start!");
         } else {
@@ -161,7 +171,7 @@ server.listen(port, () => {
     for(let room of files){
         playerList[room] = [];
         history[room] = [];
-        roomData[room] = {ready: 0, max:2};
+        roomData[room] = {ready: 0, max:2,started:false};
     }
     console.log(`Running on ${port}! with rooms : ${files}`)
 })

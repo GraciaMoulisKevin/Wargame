@@ -12,7 +12,7 @@
         socket.on('files', function(data) {
             document.getElementById('roomIndex').innerHTML = null;
             data.forEach(element => {
-                document.getElementById('roomIndex').innerHTML += "<a class='list-group-item list-group-item-action' href='/room/" + element.slice(0,-5) + "'>" + element.slice(0,-5) + "</a>";
+                document.getElementById('roomIndex').innerHTML += "<a class='list-group-item list-group-item-action' href='/room/" + element.roomName.slice(0,-5) + "'>" + element.roomName.slice(0,-5) + "<div style='float:right'>" + element.usersInside + "</div></a>";
             });
         })
     </script>
