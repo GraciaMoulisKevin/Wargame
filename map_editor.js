@@ -11,3 +11,7 @@ function stopEdition(type){
             onclickHexagonEvent(this);
     })
 }
+
+function printEdition(){
+    
+}

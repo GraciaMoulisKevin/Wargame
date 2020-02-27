@@ -99,7 +99,7 @@ class Hexagon {
             d3.select("#foreground-map")
                 .append("polygon")
                 .attrs({
-                    class: `hexagon foreground-hexagon ${this.type}`,
+                    class: `hexagon foreground-hexagon`,
                     "data-scale": "foreground",
                     "data-type": this.type,
                     "data-x": this.x,
@@ -132,7 +132,7 @@ class Hexagon {
             d3.select("#underground-map")
                 .append("polygon")
                 .attrs({
-                    class: `hexagon underground-hexagon ${this.type}`,
+                    class: `hexagon underground-hexagon`,
                     "data-scale": "underground",
                     "data-type": "lightgray",
                     "data-x": this.x,
@@ -646,33 +646,57 @@ function createUnit(type, scale) {
 
     let startCoordinate = createCoordinate(0, 0, 0);
 
-    let coord = getCenterCoordinateOfHexagons(startCoordinate),
-        cx = coord.x,
-        cy = coord.y,
-        r = 10;
+    let coord = getCenterCoordinateOfHexagons(startCoordinate);
 
     d3.select(`#${scale}-map`)
-        .append("circle")
+        .append("image")
         .attrs({
-            id: function () {
-                return (type == "soldat") ? "lerond" : ""
-            },
             class: type,
+            width: 60,
+            height: 60,
+            href: "./static/images/test.svg",
+            transform: `translate(${coord.x-30}, ${coord.y-30})`,
             "data-scale": scale,
             "data-x": 0,
             "data-y": 0,
-            "data-z": 0,
-            cx: cx,
-            cy: cy,
-            r: r
-        })
-        .style("fill", function () {
-            return (type == "soldat") ? "red" : "blue";
+            "data-z": 0
         })
         .on("click", function () {
             onclickUnitEvent(this);
         });
 }
+
+// function createUnit(type, scale) {
+
+//     let startCoordinate = createCoordinate(0, 0, 0);
+
+//     let coord = getCenterCoordinateOfHexagons(startCoordinate),
+//         cx = coord.x,
+//         cy = coord.y,
+//         r = 10;
+
+//     d3.select(`#${scale}-map`)
+//         .append("circle")
+//         .attrs({
+//             id: function () {
+//                 return (type == "soldat") ? "lerond" : ""
+//             },
+//             class: type,
+//             "data-scale": scale,
+//             "data-x": 0,
+//             "data-y": 0,
+//             "data-z": 0,
+//             cx: cx,
+//             cy: cy,
+//             r: r
+//         })
+//         .style("fill", function () {
+//             return (type == "soldat") ? "red" : "blue";
+//         })
+//         .on("click", function () {
+//             onclickUnitEvent(this);
+//         });
+// }
 
 function prout(n){
     let type = ["grass", "mountain", "water", "volcano", "desert", "snow", "forest", "urban"];
