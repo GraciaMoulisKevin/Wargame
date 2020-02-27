@@ -152,6 +152,16 @@ class Hexagon {
                 })
                 .on("click", function () {
                     onclickHexagonEvent(this)
+                })
+                .on("mouseover", function () {
+                    if (PREVIOUS_SELECTED_UNIT != null) {
+                        pathfinder(getHexagonWhereUnitIsLocated(PREVIOUS_SELECTED_UNIT), this);
+                    }
+                })
+                .on("mouseout", function () {
+                    if (PREVIOUS_SELECTED_UNIT != null) {
+                        uncoloredPathfinder();
+                    }
                 });
 
             // [ TEMPORARY ] Print coordinate on each hexagon
@@ -165,7 +175,6 @@ class Hexagon {
 }
 
 // ________ HELPFULL ________
-
 /**
  * Transform degrees to radian
  * @param {Number} deg 
@@ -199,6 +208,28 @@ function logMessage(object) {
     }
 }
 
+/**
+ * Check if two node belong to the same scale
+ * @param {Node} nodeA 
+ * @param {Node} nodeB
+ * @return null if false else the scale
+ */
+function isOnSameScale(nodeA, nodeB) {
+    let scaleA = nodeA.getAttribute("data-scale"),
+        scaleB = nodeB.getAttribute("data-scale");
+
+    if (scaleA == scaleB) {
+        return scaleA;
+    } else {
+        logMessage({
+            "type": "err",
+            "message": "isHexagonBelongToSameScale( :node, :node ) : The nodes gives don't belong to the same scale"
+        });
+        return null;
+    }
+}
+
+// ________ HEXAGON COORDINATE ________
 /**
  * 
  * @param {Number} x 
@@ -252,6 +283,8 @@ function roundHexagonCoordinate(data) {
     };
 }
 
+
+// ________ UNCOLORED ________
 /**
  * Uncolored available movements
  */
@@ -276,27 +309,6 @@ function uncoloredPathfinder() {
 function uncoloredHexagon() {
     uncoloredAvailableMovement();
     uncoloredPathfinder();
-}
-
-/**
- * Check if two node belong to the same scale
- * @param {Node} nodeA 
- * @param {Node} nodeB
- * @return null if false else the scale
- */
-function isOnSameScale(nodeA, nodeB) {
-    let scaleA = nodeA.getAttribute("data-scale"),
-        scaleB = nodeB.getAttribute("data-scale");
-
-    if (scaleA == scaleB) {
-        return scaleA;
-    } else {
-        logMessage({
-            "type": "err",
-            "message": "isHexagonBelongToSameScale( :node, :node ) : The nodes gives don't belong to the same scale"
-        });
-        return null;
-    }
 }
 
 // ________ GET (HEXAGON) ________
@@ -381,37 +393,117 @@ function getHexagonWhereUnitIsLocated(unit) {
     let data = getUnitDataset(unit);
     return d3.select(`.hexagon[data-scale="${data.scale}"][data-x="${data.x}"][data-y="${data.y}"][data-z="${data.z}"]`).node();
 }
+
+
+// ________ ONCLICK MANAGEMENT ________
+/**
+ * Manage event while user clicked on an hexagon
+ * @param {Node} hexagon 
+ */
+function onclickHexagonEvent(hexagon) {
+
+    if (PREVIOUS_SELECTED_UNIT != null) {
+        if (isOnSameScale(PREVIOUS_SELECTED_UNIT, hexagon) == null) {
+            return null;
+        } else {
+            let n = getDistanceBetweenHexagon(getHexagonWhereUnitIsLocated(PREVIOUS_SELECTED_UNIT), hexagon);
+
+            if (n <= MOVEMENT_POINTS) {
+                uncoloredHexagon();
+                let unitHexagon = getHexagonWhereUnitIsLocated(PREVIOUS_SELECTED_UNIT);
+                moveUnit(PREVIOUS_SELECTED_UNIT, hexagon);
+                PREVIOUS_SELECTED_UNIT = null;
+            }
+        }
+    }
+}
+
+/**
+ * Manage event while user clicked on an unit
+ * @param {Node} unit 
+ */
+function onclickUnitEvent(unit) {
+
+    let unit_scale = unit.getAttribute("data-scale"),
+        hexagon = getHexagonWhereUnitIsLocated(unit);
+
+    if (unit_scale == ACTUAL_MAP) {
+        if (PREVIOUS_SELECTED_UNIT == null) {
+            PREVIOUS_SELECTED_UNIT = unit;
+            showAllowedMovement(hexagon, MOVEMENT_POINTS);
+        } else if (PREVIOUS_SELECTED_UNIT.isEqualNode(unit)) {
+            uncoloredHexagon();
+            PREVIOUS_SELECTED_UNIT = null;
+        } else if (!PREVIOUS_SELECTED_UNIT.isEqualNode(unit)) {
+            uncoloredHexagon();
+            showAllowedMovement(hexagon, MOVEMENT_POINTS);
+            PREVIOUS_SELECTED_UNIT = unit;
+        } else {
+            showAllowedMovement(hexagon, MOVEMENT_POINTS);
+            PREVIOUS_SELECTED_UNIT = unit;
+        }
+    }
+}
+
 // ________ MAIN ________
 
 /**
- * Switch the maps
+ * Start function when document start
  */
-function switchMap() {
+function start() {
 
-    let top_map, bottom_map;
+    /**
+     * Read map JSON data when the page is ready
+     */
+    $().ready(function () {
+        d3.json("settings.json").then(function (data) {
+            RADIUS = data["radius"];
+        });
+        d3.json("map.json").then(function (data) {
+            WIDTH = data["width"];
+            HEIGHT = data["height"];
+            loadMap(data);
+            createUnit("soldat", "foreground");
+            createUnit("sapeur", "underground");
+        });
+    });
+}
 
-    if (ACTUAL_MAP == "foreground") {
-        top_map = "#underground-map";
-        bottom_map = "#foreground-map";
-        ACTUAL_MAP = "underground";
-    } else {
-        top_map = "#foreground-map";
-        bottom_map = "#underground-map";
-        ACTUAL_MAP = "foreground";
-    }
+/**
+ * Load the map
+ * @param {Object} data 
+ */
+function loadMap(data) {
 
-    d3.select(top_map)
-        .transition()
-        .duration(300)
-        .attr("transform", "rotate(-5," + WIDTH / 2 + "," + HEIGHT / 2 + ") translate(100, -50) scale(1.1, 1.1)")
-        .style("opacity", 1);
+    let svg = d3.select("#map")
+        .append("svg")
+        .attr("id", "svg-map")
+        .attr("width", data["width"])
+        .attr("height", data["height"]);
 
-    d3.select(bottom_map)
-        .transition()
-        .duration(300)
-        .attr("transform", "rotate(-5," + WIDTH / 2 + "," + HEIGHT / 2 + ") translate(-100, 50) scale(0.7, 0.7)")
+    svg.append("g")
+        .attrs({
+            id: "underground-map",
+            transform: "rotate(-5," + WIDTH / 2 + "," + HEIGHT / 2 + ") translate(-100, 50) scale(0.7,0.7)"
+        })
         .style("opacity", 0.2);
 
+    svg.append("g")
+        .attrs({
+            id: "foreground-map",
+            transform: "rotate(-5," + WIDTH / 2 + "," + HEIGHT / 2 + ") translate(100, -50) scale(1.1, 1.1)"
+        })
+        .style("opacity", 1);
+
+    for (coordinate of data["hexagons"]) {
+        let hexagon = new Hexagon(coordinate);
+    }
+
+
+    logMessage({
+        "type": "suc",
+        "message": "loadMap() : map has been created"
+    });
 }
 
 /**
@@ -470,113 +562,85 @@ function showAllowedMovement(hexagon, movement_points) {
 }
 
 /**
- * Load the map
- * @param {Object} data 
- */
-function loadMap(data) {
-
-    let svg = d3.select("#map")
-        .append("svg")
-        .attr("id", "svg-map")
-        .attr("width", data["width"])
-        .attr("height", data["height"]);
-
-    svg.append("g")
-        .attrs({
-            id: "underground-map",
-            transform: "rotate(-5," + WIDTH / 2 + "," + HEIGHT / 2 + ") translate(-100, 50) scale(0.7,0.7)"
-        })
-        .style("opacity", 0.2);
-
-    svg.append("g")
-        .attrs({
-            id: "foreground-map",
-            transform: "rotate(-5," + WIDTH / 2 + "," + HEIGHT / 2 + ") translate(100, -50) scale(1.1, 1.1)"
-        })
-        .style("opacity", 1);
-
-    for (coordinate of data["hexagons"]) {
-        let hexagon = new Hexagon(coordinate);
-    }
-
-    logMessage({
-        "type": "suc",
-        "message": "loadMap() : map has been created"
-    });
-}
-
-/**
- * Manage event while user clicked on an hexagon
+ * Move a selected unit to the hexagon
+ * @param {Number} i 
+ * @param {Node} unit 
  * @param {Node} hexagon 
  */
-function onclickHexagonEvent(hexagon) {
-
-    if (PREVIOUS_SELECTED_UNIT != null) {
-        if (isOnSameScale(PREVIOUS_SELECTED_UNIT, hexagon) == null) {
-            return null;
-        } else {
-            let n = getDistanceBetweenHexagon(getHexagonWhereUnitIsLocated(PREVIOUS_SELECTED_UNIT), hexagon);
-
-            if (n <= MOVEMENT_POINTS) {
-                uncoloredHexagon();
-                let unitHexagon = getHexagonWhereUnitIsLocated(PREVIOUS_SELECTED_UNIT);
-                moveUnit(0, PREVIOUS_SELECTED_UNIT, hexagon);
-                PREVIOUS_SELECTED_UNIT = null;
-            }
-        }
-    }
+function moveUnit(unit, hexagon){
+    movement(1, unit, hexagon);
 }
 
 /**
- * Manage event while user clicked on an unit
+ * Mange the movement
+ * @param {Number} i 
  * @param {Node} unit 
+ * @param {Node} hexagon 
  */
-function onclickUnitEvent(unit) {
+function movement(i, unit, hexagon){
+    
+    let unit_hexagon = getHexagonWhereUnitIsLocated(unit),
+        path = pathfinder(unit_hexagon, hexagon),
+        node = d3.select(unit);
 
-    let unit_scale = unit.getAttribute("data-scale"),
-        hexagon = getHexagonWhereUnitIsLocated(unit);
+    if (i < path.length) {
+        setTimeout(function () {
+            let center = getCenterCoordinateOfHexagons(path[i]);
 
-    if (unit_scale == ACTUAL_MAP) {
-        if (PREVIOUS_SELECTED_UNIT == null) {
-            PREVIOUS_SELECTED_UNIT = unit;
-            showAllowedMovement(hexagon, MOVEMENT_POINTS);
-        } else if (PREVIOUS_SELECTED_UNIT.isEqualNode(unit)) {
-            uncoloredHexagon();
-            PREVIOUS_SELECTED_UNIT = null;
-        } else if (!PREVIOUS_SELECTED_UNIT.isEqualNode(unit)) {
-            uncoloredHexagon();
-            showAllowedMovement(hexagon, MOVEMENT_POINTS);
-            PREVIOUS_SELECTED_UNIT = unit;
-        } else {
-            showAllowedMovement(hexagon, MOVEMENT_POINTS);
-            PREVIOUS_SELECTED_UNIT = unit;
-        }
+            node.attrs({
+                "data-x": path[i].x,
+                "data-y": path[i].y,
+                "data-z": path[i].z
+            });
+
+            node.transition()
+                .attrs({
+                    cx: center.x,
+                    cy: center.y
+                });
+            movement(i++, unit, hexagon);
+        }, 500);
+    } else {
+        logMessage({
+            "type": "suc",
+            "message": "movement() : Unit done movement"
+        });
+        uncoloredHexagon();
     }
 }
 
 /**
- * Start function when document start
+ * Switch the maps
  */
-function start() {
+function switchMap() {
 
-    /**
-     * Read map JSON data when the page is ready
-     */
-    $().ready(function () {
-        d3.json("settings.json").then(function (data) {
-            RADIUS = data["radius"];
-        });
-        d3.json("map.json").then(function (data) {
-            WIDTH = data["width"];
-            HEIGHT = data["height"];
-            loadMap(data);
-            createUnit("soldat", "foreground");
-            createUnit("sapeur", "underground");
-        });
-    });
+    let top_map, bottom_map;
+
+    if (ACTUAL_MAP == "foreground") {
+        top_map = "#underground-map";
+        bottom_map = "#foreground-map";
+        ACTUAL_MAP = "underground";
+    } else {
+        top_map = "#foreground-map";
+        bottom_map = "#underground-map";
+        ACTUAL_MAP = "foreground";
+    }
+
+    d3.select(top_map)
+        .transition()
+        .duration(300)
+        .attr("transform", "rotate(-5," + WIDTH / 2 + "," + HEIGHT / 2 + ") translate(100, -50) scale(1.1, 1.1)")
+        .style("opacity", 1);
+
+    d3.select(bottom_map)
+        .transition()
+        .duration(300)
+        .attr("transform", "rotate(-5," + WIDTH / 2 + "," + HEIGHT / 2 + ") translate(-100, 50) scale(0.7, 0.7)")
+        .style("opacity", 0.2);
+
 }
 
-// ________ TEMPORARY ________
+// ________ OTHER ________
 
 function createUnit(type, scale) {
 
@@ -610,43 +674,20 @@ function createUnit(type, scale) {
         });
 }
 
-
-function moveUnit(i, unit, hexagon){
-    movement(1, unit, hexagon);
-}
-
-function movement(i, unit, hexagon){
-    
-    let unit_hexagon = getHexagonWhereUnitIsLocated(unit),
-        path = pathfinder(unit_hexagon, hexagon),
-        node = d3.select(unit);
-
-    if (i < path.length) {
-        setTimeout(function () {
-            let center = getCenterCoordinateOfHexagons(path[i]);
-
-            node.attrs({
-                "data-x": path[i].x,
-                "data-y": path[i].y,
-                "data-z": path[i].z
-            });
-
-            node.transition()
-                .attrs({
-                    cx: center.x,
-                    cy: center.y
-                });
-            movement(i++, unit, hexagon);
-        }, 500);
-    } else {
-        logMessage({
-            "type": "suc",
-            "message": "movement() : Unit done movement"
-        });
-        uncoloredHexagon();
+function prout(n){
+    let type = ["grass", "mountain", "water", "volcano", "desert", "snow", "forest", "urban"];
+    for ( let x = -n; x <= n; x++ ){
+        for ( let y = -n; y <= n; y++ ){
+            for ( let z = -n; z <= n; z++ ){
+                if ( x + y + z == 0 ){
+                    let r = Math.floor((Math.random() * type.length));
+                    coordinate = `{"x" : ${x}, "y" : ${y}, "z" : ${z}, "type" : "${type[r]}"}`;
+                    console.log(coordinate);
+                }
+            }
+        }
     }
 }
-
 
 // ################################## ARCHIVE ############################### //
 
@@ -657,17 +698,6 @@ function movement(i, unit, hexagon){
 
 //     for ( hexagon of node ){
 //         console.log(hexagon.attributes);
-//     }
-// }
-//[ BLACK MAGIC VERSION ]
-// let n = 3; for ( let x = -n; x <= n; x++ ){
-//     for ( let y = -n; y <= n; y++ ){
-//         for ( let z = -n; z <= n; z++ ){
-//             if ( x + y + z == 0 ){
-//                 id = "";
-//                 coordinate = {"x" : x, "y" : y, "z" : z, "type" : "rgba(0,0,0,0)"};
-//                 id += "x" + x + "y" + y + "z" + z;
-//                 let hconsole.log("")
 //     }
 // }
 //

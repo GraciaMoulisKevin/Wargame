@@ -48,6 +48,29 @@
     fill: darkgray;
 }
 
+.water{
+    fill: lightskyblue;
+}
+
+.forest{
+    fill: rgb(7, 94, 12);
+}
+
+.snow{
+    fill: whitesmoke;
+}
+
+.volcano{
+    fill: rgb(201, 27, 4);
+}
+
+.urban{
+    fill: gray;
+}
+
+.desert{
+    fill: sandybrown;
+}
 .void{
     fill: rgba(25, 25, 25, 0.8);
 }
