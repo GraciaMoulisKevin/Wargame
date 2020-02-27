@@ -1,4 +1,6 @@
-const app = require('express')();
+const express = require('express')
+const app = express();
+const path = require('path');
 const server = require('http').Server(app)
 const io = require('socket.io')(server)
 const port = 3000
@@ -19,6 +21,7 @@ app.use(bodyParser.json());       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true
 }));
+app.use("/public",express.static(__dirname + '/public'));
 
 /**
 * Send index.html to people that join on website root
@@ -26,6 +29,10 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 app.get('/', (req,res) => {
     res.sendFile(__dirname + '/index.html');
 })
+
+// app.get('/public/script.js', (req,res) => {
+//     res.sendFile(path.join(__dirname, '/public/script.js'))
+// })
 
 /**
 * Room manager for direct linking:
@@ -179,6 +186,8 @@ server.listen(port, () => {
     }
     console.log(`Running on ${port}! with rooms : ${files}`)
 })
+
+
 
 function hasLeader(roomArray){
     let flag = false;
