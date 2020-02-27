@@ -55,8 +55,7 @@ app.post('/', (req,res) => {
         
         fs.copyFile(template, roomPath , (err) => {
             if(err) throw err;
-            const files = fs.readdirSync(__dirname + '/room/');
-            io.sockets.emit('files',files);
+            updateRoomList();
             res.redirect('/room/' + roomName);
         })
     }
@@ -72,9 +71,11 @@ io.on('connection', function(socket){
         const files = fs.readdirSync(__dirname + '/room/');
         let data = []
         for(let roomName of files){
+            let room = roomName.slice(0,-5);
             data.push({
                 roomName: roomName,
-                usersInside: playerList[roomName.slice(0,-5)].length
+                isReady: roomData[room].started,
+                usersInside: playerList[room].length
             });
         }
         socket.emit('files',data);
@@ -117,6 +118,7 @@ io.on('connection', function(socket){
         if(isReady(room)){
             socket.emit('breakReady');
         }
+        updateRoomList();
         sendUserList(room);
     })
     socket.on('disconnect', function(reason){
@@ -135,6 +137,7 @@ io.on('connection', function(socket){
             }
             sendUserList(disconnectedRoom);
         }
+        updateRoomList();
     })
     socket.on('readyUp', function (ready, room){
         if(roomData[room].started){
@@ -157,6 +160,7 @@ io.on('connection', function(socket){
                 playerList[room][getPlayerNumber(playerList[room],socket.id)].ready = false;
             }
         }
+        updateRoomList();
         sendUserList(room);
     })
 })
@@ -215,7 +219,7 @@ function sendUserList(room){
     }))
 }
 function isReady(room){
-    if(roomData[room].ready == roomData[room].max){
+    if(roomData[room].started){
         return true;
     } else {
         return false;
@@ -228,4 +232,17 @@ function isAlreadyIn(pseudo,playerArray){
         }
     }
     return false;
+}
+function updateRoomList(){
+    const files = fs.readdirSync(__dirname + '/room/');
+    let data = []
+    for(let roomName of files){
+        let room = roomName.slice(0,-5);
+        data.push({
+            roomName: roomName,
+            isReady: roomData[room].started,
+            usersInside: playerList[room].length
+        });
+    }
+    io.sockets.emit('files',data);
 }
