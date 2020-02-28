@@ -2,6 +2,17 @@
     margin: 0;
 }
 
+#map{
+    background-color: none;
+    transform: skew(10deg, 5deg);
+}
+
+/*
+#title {
+    font-size: 200%;
+    padding: 2%;
+}
+
 #container-menu {
     position: fixed;
     margin: auto;
@@ -10,67 +21,9 @@
     left: 0;
     right: 0;
 }
-
-#title {
-    font-size: 200%;
-    padding: 2%;
-}
-
 .btn-menu {
     width: 90%;
     height: 90px;
     margin: auto;
     margin-bottom: 3%;
-}
-
-#map{
-    background-color: none;
-    transform: skew(10deg, 5deg);
-}
-
-.available-movement{
-    fill: rgba(223, 130, 10, 0.4) !important;
-}
-
-.pathfinder{
-    fill: rgba(150,150,255,0.4) !important;
-}
-
-.pathfinder-unavailable{
-    fill: rgba(216, 41, 41, 0.60) !important;
-}
-
-[data-type=grass]{
-    fill: lightgreen;
-}
-
-[data-type=mountain]{
-    fill: darkgray;
-}
-
-[data-type=water]{
-    fill: lightskyblue;
-}
-
-[data-type=forest]{
-    fill: rgb(7, 94, 12);
-}
-
-[data-type=snow]{
-    fill: whitesmoke;
-}
-
-[data-type=volcano]{
-    fill: rgb(201, 27, 4);
-}
-
-[data-type=urban]{
-    fill: gray;
-}
-
-[data-type=desert]{
-    fill: sandybrown;
-}
-[data-type=void]{
-    fill: rgba(25, 25, 25, 0.8);
-}
+} */

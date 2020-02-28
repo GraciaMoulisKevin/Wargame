@@ -1,0 +1,55 @@
+/** /**
+ * Author : Canta Thomas
+ * Description : Manage hexagon color
+ *
+ * Git Repository : https://github.com/GraciaMoulisKevin/Wargame
+ * 
+ * Copyright : 2020 Ⓒ
+ */
+
+.available-movement{
+    fill: rgba(223, 130, 10, 0.4) !important;
+}
+
+.pathfinder{
+    fill: rgba(150,150,255,0.4) !important;
+}
+
+.pathfinder-unavailable{
+    fill: rgba(216, 41, 41, 0.60) !important;
+}
+
+[data-type=grass]{
+    fill: lightgreen;
+}
+
+[data-type=mountain]{
+    fill: darkgray;
+}
+
+[data-type=water]{
+    fill: lightskyblue;
+}
+
+[data-type=forest]{
+    fill: rgb(7, 94, 12);
+}
+
+[data-type=snow]{
+    fill: whitesmoke;
+}
+
+[data-type=volcano]{
+    fill: rgb(201, 27, 4);
+}
+
+[data-type=urban]{
+    fill: gray;
+}
+
+[data-type=sand]{
+    fill: sandybrown;
+}
+[data-type=void]{
+    fill: rgba(25, 25, 25, 0.8);
+}

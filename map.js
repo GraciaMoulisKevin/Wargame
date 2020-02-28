@@ -83,13 +83,6 @@ class Hexagon {
                     "message": "Hexagon::createHexagon() : Invalid coordinate (" + this.x + ", " + this.y + ", " + this.z + ")"
                 });
             }
-
-            // [ TEMPORARY ] Allowed to print coordinate on each hexagon
-            // if (i == 3) {
-            //     temp_x = pt_x;
-            //     temp_y = pt_y
-            // }
-
             i++;
         }
 
@@ -163,13 +156,6 @@ class Hexagon {
                         uncoloredPathfinder();
                     }
                 });
-
-            // [ TEMPORARY ] Print coordinate on each hexagon
-            // d3.select("#foreground-map").append("text")
-            //     .attr("x", temp_x)
-            //     .attr("y", temp_y)
-            //     .attr("fill", "red")
-            //     .html("&nbsp; x=" + this.x + " y=" + this.y + " z=" + this.z);
         }
     }
 }
@@ -581,8 +567,9 @@ function movement(i, unit, hexagon){
     
     let unit_hexagon = getHexagonWhereUnitIsLocated(unit),
         path = pathfinder(unit_hexagon, hexagon),
-        node = d3.select(unit);
-
+        node = d3.select(unit),
+        svg_size = d3.select(unit).attr("width");
+    
     if (i < path.length) {
         setTimeout(function () {
             let center = getCenterCoordinateOfHexagons(path[i]);
@@ -595,8 +582,7 @@ function movement(i, unit, hexagon){
 
             node.transition()
                 .attrs({
-                    cx: center.x,
-                    cy: center.y
+                    transform : `translate( ${center.x-(svg_size/2)}, ${center.y-(svg_size/2)})`
                 });
             movement(i++, unit, hexagon);
         }, 500);
@@ -644,18 +630,18 @@ function switchMap() {
 
 function createUnit(type, scale) {
 
-    let startCoordinate = createCoordinate(0, 0, 0);
-
-    let coord = getCenterCoordinateOfHexagons(startCoordinate);
+    let startCoordinate = createCoordinate(0, 0, 0),
+        coord = getCenterCoordinateOfHexagons(startCoordinate)
+        svg_size = 40;
 
     d3.select(`#${scale}-map`)
         .append("image")
         .attrs({
             class: type,
-            width: 60,
-            height: 60,
+            width: svg_size,
+            height: svg_size,
             href: "./static/images/test.svg",
-            transform: `translate(${coord.x-30}, ${coord.y-30})`,
+            transform: `translate(${coord.x-(svg_size/2)}, ${coord.y-(svg_size/2)})`,
             "data-scale": scale,
             "data-x": 0,
             "data-y": 0,
@@ -664,53 +650,6 @@ function createUnit(type, scale) {
         .on("click", function () {
             onclickUnitEvent(this);
         });
-}
-
-// function createUnit(type, scale) {
-
-//     let startCoordinate = createCoordinate(0, 0, 0);
-
-//     let coord = getCenterCoordinateOfHexagons(startCoordinate),
-//         cx = coord.x,
-//         cy = coord.y,
-//         r = 10;
-
-//     d3.select(`#${scale}-map`)
-//         .append("circle")
-//         .attrs({
-//             id: function () {
-//                 return (type == "soldat") ? "lerond" : ""
-//             },
-//             class: type,
-//             "data-scale": scale,
-//             "data-x": 0,
-//             "data-y": 0,
-//             "data-z": 0,
-//             cx: cx,
-//             cy: cy,
-//             r: r
-//         })
-//         .style("fill", function () {
-//             return (type == "soldat") ? "red" : "blue";
-//         })
-//         .on("click", function () {
-//             onclickUnitEvent(this);
-//         });
-// }
-
-function prout(n){
-    let type = ["grass", "mountain", "water", "volcano", "desert", "snow", "forest", "urban"];
-    for ( let x = -n; x <= n; x++ ){
-        for ( let y = -n; y <= n; y++ ){
-            for ( let z = -n; z <= n; z++ ){
-                if ( x + y + z == 0 ){
-                    let r = Math.floor((Math.random() * type.length));
-                    coordinate = `{"x" : ${x}, "y" : ${y}, "z" : ${z}, "type" : "${type[r]}"}`;
-                    console.log(coordinate);
-                }
-            }
-        }
-    }
 }
 
 // ################################## ARCHIVE ############################### //
@@ -729,3 +668,10 @@ function prout(n){
 //     let x = _x, z = _y, y = -x-z;
 //     console.log(createCoordinate(x,y,z));
 // }
+
+
+//https://editor.method.ac/
+//https://i.pinimg.com/originals/ae/2e/3b/ae2e3be46e63253f38e6e0d21ed574e1.png
+//https://img.itch.zone/aW1hZ2UvMTA5MTYwLzEyMDY4MjYucG5n/original/7SEYHd.png
+//https://img.itch.zone/aW1hZ2UvMjM3NjUwLzExMzExNDIucG5n/original/693xiv.png
+//https://opengameart.org/sites/default/files/Preview_100.png
