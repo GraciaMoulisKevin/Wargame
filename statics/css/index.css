@@ -7,6 +7,13 @@
     transform: skew(10deg, 5deg);
 }
 
+canvas{
+    position: absolute;
+}
+
+img{
+    /* display : none; */
+}
 /*
 #title {
     font-size: 200%;
