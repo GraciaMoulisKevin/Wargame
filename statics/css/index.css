@@ -3,8 +3,7 @@
 }
 
 #map{
-    background-color: none;
-    transform: skew(10deg, 5deg);
+    transform: skew(3deg, 1deg);
 }
 
 canvas{

@@ -1,6 +1,6 @@
 {
-    "width" : 500,
-    "height" : 350,
+    "width" : 2000,
+    "height" : 1000,
     "hexagons" : 
         [
             {"x": -3, "y": 0, "z": 3, "type": "void"},

@@ -442,10 +442,10 @@ function start() {
      * Read map JSON data when the page is ready
      */
     $().ready(function () {
-        d3.json("settings.json").then(function (data) {
+        d3.json("./statics/data/settings.json").then(function (data) {
             RADIUS = data["radius"];
         });
-        d3.json("map.json").then(function (data) {
+        d3.json("./statics/data/map.json").then(function (data) {
             WIDTH = data["width"];
             HEIGHT = data["height"];
             loadMap(data);
@@ -569,7 +569,7 @@ function movement(i, unit, hexagon){
         path = pathfinder(unit_hexagon, hexagon),
         node = d3.select(unit),
         svg_size = d3.select(unit).attr("width");
-    
+
     if (i < path.length) {
         setTimeout(function () {
             let center = getCenterCoordinateOfHexagons(path[i]);
@@ -631,7 +631,7 @@ function switchMap() {
 function createUnit(type, scale) {
 
     let startCoordinate = createCoordinate(0, 0, 0),
-        coord = getCenterCoordinateOfHexagons(startCoordinate)
+        coord = getCenterCoordinateOfHexagons(startCoordinate),
         svg_size = 40;
 
     d3.select(`#${scale}-map`)
@@ -640,7 +640,7 @@ function createUnit(type, scale) {
             class: type,
             width: svg_size,
             height: svg_size,
-            href: "./static/images/test.svg",
+            href: "./assets/images/test.svg",
             transform: `translate(${coord.x-(svg_size/2)}, ${coord.y-(svg_size/2)})`,
             "data-scale": scale,
             "data-x": 0,

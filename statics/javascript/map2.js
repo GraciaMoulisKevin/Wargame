@@ -11,6 +11,11 @@
  * https://www.youtube.com/watch?v=3EMxBkqC4z0;
  * https://jsfiddle.net/BmeKr/ EVENT LISTENER ON CLICK OF CANVAS
  *
+//https://editor.method.ac/
+//https://i.pinimg.com/originals/ae/2e/3b/ae2e3be46e63253f38e6e0d21ed574e1.png
+//https://img.itch.zone/aW1hZ2UvMTA5MTYwLzEyMDY4MjYucG5n/original/7SEYHd.png
+//https://img.itch.zone/aW1hZ2UvMjM3NjUwLzExMzExNDIucG5n/original/693xiv.png
+//https://opengameart.org/sites/default/files/Preview_100.png
  */
 
 // ________ ONLOAD ________
@@ -29,7 +34,11 @@ MOVEMENT_POINTS = 2;
 
 class Hexagon {
 
-    constructor(data) {
+    constructor(data, x, y) {
+
+        this.center_x = x;
+
+        this.center_y = y;
 
         this.x = data.x;
 
@@ -59,31 +68,19 @@ class Hexagon {
 
     createHexagon() {
         
-        let center = this.getCenterCoordinateOfHexagons();
-
         let canvas = document.getElementById('foreground-map');
 
         let ctx = canvas.getContext("2d");
-        
-        ctx.drawImage(this.image, center.x, center.y, RADIUS * 2, RADIUS * 2);
-    }
 
-    getCenterCoordinateOfHexagons() {
+        ctx.save();
 
-        let diameter = RADIUS * 2;
+        ctx.translate(this.center_x, this.center_y);
 
-        let spacing = (Math.sqrt(3) / 2) * RADIUS; // radius of the inscribed circle
-        
-        let z_spacing = (3 / 4) * diameter;
+        ctx.rotate(degreeToRadian(-28));
 
-        x = WIDTH / 2 + (this.x * spacing) + (-this.y * spacing);
+        ctx.drawImage(this.image, -RADIUS/2, -RADIUS/2, RADIUS, RADIUS);
 
-        y = HEIGHT / 2 + (this.z * z_spacing);
-
-        return {
-            "x": x,
-            "y": y
-        };
+        ctx.restore();
     }
 }
 
@@ -147,6 +144,28 @@ function linearInterpolation(a, b, t) {
 }
 
 /**
+ * Get axial coordinates representing the center of an hexagon
+ * @param {Number} x 
+ * @param {Number} y 
+ * @param {Number} z 
+ */
+function getCenterCoordinateOfHexagons(x, y, z) {
+
+    let x_spacing = (Math.sqrt(3) / 2) * RADIUS/2; // radius of the inscribed circle
+    
+    let z_spacing = (3 / 4) * RADIUS;
+
+    let x_center = WIDTH / 2 + (x * x_spacing) + (-y * x_spacing);
+
+    let y_center = HEIGHT / 2 + (z * z_spacing);
+    
+    return {
+        "x": x_center,
+        "y": y_center
+    };
+}
+
+/**
  * round data to get proper coordinate
  * @param {Object} data
  */
@@ -186,13 +205,21 @@ function start() {
      * Read map JSON data when the page is ready
      */
     $().ready(function () {
-        d3.json("statics/javascript/settings.json").then(function (data) {
+
+        d3.json("statics/data/settings.json").then(function (data) {
+
             RADIUS = data["radius"];
+
         });
-        d3.json("statics/javascript/map_save.json").then(function (data) {
+
+        d3.json("statics/data/map.json").then(function (data) {
+
             WIDTH = data["width"];
+
             HEIGHT = data["height"];
+            
             loadMap(data);
+            
         });
     });
 }
@@ -203,9 +230,9 @@ function start() {
  */
 function loadMap(data) {
 
-    let canvas = d3.select("#map");
+    let map = d3.select("#map");
 
-    canvas.append("canvas")
+    map.append("canvas")
         .attrs({
             id: "underground-map",
             width: data["width"],
@@ -219,7 +246,7 @@ function loadMap(data) {
             transform: "scale(0.7, 0.7)"
         });
 
-    canvas.append("canvas")
+    map.append("canvas")
         .attrs({
             id: "foreground-map",
             width: data["width"],
@@ -233,10 +260,18 @@ function loadMap(data) {
             transform: "scale(1.1, 1.1)"
         });
 
+    var elements = [];
+
     for (coordinate of data["hexagons"]) {
-        let hexagon = new Hexagon(coordinate);
+        
+        let center = getCenterCoordinateOfHexagons(coordinate.x, coordinate.y, coordinate.z);
+        
+        let hexagon = new Hexagon(coordinate, center.x, center.y);
+
+        elements.push(hexagon);
     }
 
+    console.dir(elements);
 
     logMessage({
         "type": "suc",
@@ -292,8 +327,17 @@ function switchMap() {
 
 }
 
-//https://editor.method.ac/
-//https://i.pinimg.com/originals/ae/2e/3b/ae2e3be46e63253f38e6e0d21ed574e1.png
-//https://img.itch.zone/aW1hZ2UvMTA5MTYwLzEyMDY4MjYucG5n/original/7SEYHd.png
-//https://img.itch.zone/aW1hZ2UvMjM3NjUwLzExMzExNDIucG5n/original/693xiv.png
-//https://opengameart.org/sites/default/files/Preview_100.png
+let canvas = document.getElementById('foreground-map');
+
+canvas.addEventListener('click', function(event) {
+            
+    var x = event.pageX - elemLeft,
+        y = event.pageY - elemTop;
+
+    elements.forEach(function(element) {
+        if (y > element.top && y < element.top + element.height && x > element.left && x < element.left + element.width) {
+            alert('clicked an element');
+        }
+    });
+
+}, false);

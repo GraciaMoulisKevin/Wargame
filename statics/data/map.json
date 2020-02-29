@@ -1,6 +1,6 @@
 {
-    "width" : 500,
-    "height" : 150,
+    "width" : 2000,
+    "height" : 1000,
     "hexagons" : 
         [
             { "x": -7, "y": 0, "z": 7, "type": "urban"},
