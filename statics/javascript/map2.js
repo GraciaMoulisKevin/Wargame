@@ -23,12 +23,10 @@ window.onload = start;
 
 // ________ MACROS ________
 
-RADIUS = 0;
+HEX_SIZE = 0;
 WIDTH = 0;
 HEIGHT = 0;
-PREVIOUS_SELECTED_UNIT = null;
 ACTUAL_MAP = "foreground";
-MOVEMENT_POINTS = 2;
 
 // ________ CLASSES ________
 
@@ -43,19 +41,25 @@ class Hexagon {
         this.x = data.x;
 
         this.y = data.y;
-        
+
         this.z = data.z;
 
         this.type = data.type;
 
-        this.image = document.getElementById("asset-"+this.type);
+        this.image = document.getElementById("asset-" + this.type);
 
         if (this.isCorrectCoordinate(this.x, this.y, this.z)) {
+
             this.createHexagon();
+
         } else {
+
             logMessage({
+
                 "type": "war",
+
                 "message": " Hexagon::Constructor() : Invalid coordinate (" + this.x + ", " + this.y + ", " + this.z + ")"
+
             });
         }
     }
@@ -63,11 +67,12 @@ class Hexagon {
     isCorrectCoordinate(x, y, z) {
 
         return ((x + y + z) == 0);
-    
+
     }
 
     createHexagon() {
-        
+
+
         let canvas = document.getElementById('foreground-map');
 
         let ctx = canvas.getContext("2d");
@@ -76,9 +81,9 @@ class Hexagon {
 
         ctx.translate(this.center_x, this.center_y);
 
-        ctx.rotate(degreeToRadian(-28));
+        ctx.rotate(degreeToRadian(-89.27));
 
-        ctx.drawImage(this.image, -RADIUS/2, -RADIUS/2, RADIUS, RADIUS);
+        ctx.drawImage(this.image, -HEX_SIZE / 2, -HEX_SIZE / 2, HEX_SIZE, HEX_SIZE);
 
         ctx.restore();
     }
@@ -118,19 +123,34 @@ function logMessage(object) {
     }
 }
 
-// ________ HEXAGON COORDINATE ________
 /**
  * 
  * @param {Number} x 
  * @param {Number} y 
  * @param {Number} z
  */
-function createCoordinate(x, y, z) {
+function createCubeCoordinate(x, y, z) {
     return {
         "x": x,
         "y": y,
         "z": z
     };
+}
+
+// ________ HEXAGON COORDINATE ________
+
+/**
+ * Get the cube hexagon coordinate (x, y, z) where we clicked
+ * @param {Number} x 
+ * @param {Number} y 
+ */
+function pixelToHexagonCoordinate(x, y) {
+
+    let q = (Math.sqrt(3) / 3 * x - 1 / 3 * y) / (HEX_SIZE / 2);
+
+    let r = (2 / 3 * y) / (HEX_SIZE / 2);
+
+    return roundHexagonCoordinate(createCubeCoordinate(q, -q - r, r));
 }
 
 /**
@@ -151,14 +171,14 @@ function linearInterpolation(a, b, t) {
  */
 function getCenterCoordinateOfHexagons(x, y, z) {
 
-    let x_spacing = (Math.sqrt(3) / 2) * RADIUS/2; // radius of the inscribed circle
-    
-    let z_spacing = (3 / 4) * RADIUS;
+    let x_spacing = (Math.sqrt(3) / 2) * HEX_SIZE / 2; // HEX_SIZE of the inscribed circle
+
+    let z_spacing = (3 / 4) * HEX_SIZE;
 
     let x_center = WIDTH / 2 + (x * x_spacing) + (-y * x_spacing);
 
     let y_center = HEIGHT / 2 + (z * z_spacing);
-    
+
     return {
         "x": x_center,
         "y": y_center
@@ -194,6 +214,44 @@ function roundHexagonCoordinate(data) {
     };
 }
 
+// ________ ONCLICK MANAGER ________
+
+/**
+ * Manage onclick event on an hexagon
+ * @param {Array} elements 
+ */
+function addOnclickEventOnHexagon(elements) {
+
+    //get the canvas and is offset(Left/Top)
+    let canvas = document.getElementById('foreground-map');
+
+    canvas.addEventListener('click', function (event) {
+
+        //pointer position onclick
+        let cursor_x = event.pageX;
+
+        let cursor_y = event.pageY;
+
+        //offset modifiers
+        let x = cursor_x + canvas.offsetLeft;
+
+        let y = cursor_y - canvas.offsetTop;
+
+        //get cube coordinate of the hexagon clicked
+        let hexagon_coordinate = pixelToHexagonCoordinate(x - WIDTH / 2, y - HEIGHT / 2);
+
+        elements.forEach(function (element) {
+
+            if (hexagon_coordinate.x == element.x && hexagon_coordinate.y == element.y && hexagon_coordinate.z == element.z) {
+
+                showAllowedMovement(element);
+
+            }
+        });
+
+    }, false);
+}
+
 // ________ MAIN ________
 
 /**
@@ -208,7 +266,7 @@ function start() {
 
         d3.json("statics/data/settings.json").then(function (data) {
 
-            RADIUS = data["radius"];
+            HEX_SIZE = data["radius"];
 
         });
 
@@ -217,9 +275,9 @@ function start() {
             WIDTH = data["width"];
 
             HEIGHT = data["height"];
-            
+
             loadMap(data);
-            
+
         });
     });
 }
@@ -234,48 +292,69 @@ function loadMap(data) {
 
     map.append("canvas")
         .attrs({
+
             id: "underground-map",
+
             width: data["width"],
+
             height: data["height"],
+
         })
+
         .styles({
+
             opacity: 0.2,
+
             "background-color": "gray",
-            top: "0px",
-            left: "0px",
+
+            top: "200px",
+
+            left: "-250px",
+
             transform: "scale(0.7, 0.7)"
+
         });
 
     map.append("canvas")
         .attrs({
+
             id: "foreground-map",
+
             width: data["width"],
+
             height: data["height"]
+
         })
+
         .styles({
+
             opacity: 1,
-            "background-color": "red",
-            top: "150px",
-            left: "250px",
-            transform: "scale(1.1, 1.1)"
+
+            top: "200px",
+
+            left: "0px"
+
         });
 
     var elements = [];
 
     for (coordinate of data["hexagons"]) {
-        
+
         let center = getCenterCoordinateOfHexagons(coordinate.x, coordinate.y, coordinate.z);
-        
+
         let hexagon = new Hexagon(coordinate, center.x, center.y);
 
         elements.push(hexagon);
     }
 
-    console.dir(elements);
+    addOnclickEventOnHexagon(elements);
 
     logMessage({
+
         "type": "suc",
+
         "message": "loadMap() : map has been created"
+
     });
 }
 
@@ -285,23 +364,23 @@ function loadMap(data) {
 function switchMap() {
 
     let top_map;
-    
+
     let bottom_map;
 
     if (ACTUAL_MAP == "foreground") {
 
         top_map = "#underground-map";
-        
+
         bottom_map = "#foreground-map";
-        
+
         ACTUAL_MAP = "underground";
 
     } else {
 
         top_map = "#foreground-map";
-        
+
         bottom_map = "#underground-map";
-        
+
         ACTUAL_MAP = "foreground";
     }
 
@@ -309,35 +388,51 @@ function switchMap() {
         .transition()
         .duration(300)
         .styles({
+
             opacity: 1,
-            top : '150px',
-            left: '250px',
-            transform: "scale(1.1, 1.1)"
+
+            top: '200px',
+
+            left: '0px',
+
+            transform: "scale(1, 1)"
+
         });
 
     d3.select(bottom_map)
         .transition()
         .duration(300)
         .styles({
+
             opacity: 0.2,
-            top : '0px',
-            left: '0px',
+
+            top: '200px',
+
+            left: '-250px',
+
             transform: "scale(0.7, 0.7)"
+
         });
 
 }
 
-let canvas = document.getElementById('foreground-map');
+/**
+ * 
+ * @param {*} hexagon 
+ * @param {*} movement_points 
+ */
+function showAllowedMovement(hexagon, movement_points=1) {
 
-canvas.addEventListener('click', function(event) {
-            
-    var x = event.pageX - elemLeft,
-        y = event.pageY - elemTop;
+    console.log(hexagon.x)
 
-    elements.forEach(function(element) {
-        if (y > element.top && y < element.top + element.height && x > element.left && x < element.left + element.width) {
-            alert('clicked an element');
+    for (let x = data.x - movement_points; x <= data.x + movement_points; x++) {
+        for (let y = data.y - movement_points; y <= data.y + movement_points; y++) {
+            for (let z = data.z - movement_points; z <= data.z + movement_points; z++) {
+                if (x + y + z == 0) {
+                    d3.select(`.${data.scale}-hexagon[data-x="${x}"][data-y="${y}"][data-z="${z}"]`)
+                        .classed("available-movement", true);
+                }
+            }
         }
-    });
-
-}, false);
+    }
+}

@@ -2,18 +2,24 @@
     margin: 0;
 }
 
-#map{
-    transform: skew(3deg, 1deg);
-}
-
 canvas{
     position: absolute;
 }
 
 img{
-    /* display : none; */
+    display : none;
 }
-/*
+
+/* #map{
+    transform: skew(3deg, 1deg);
+} */
+
+
+
+
+
+/* ____ START MENU ____ */
+/* 
 #title {
     font-size: 200%;
     padding: 2%;
