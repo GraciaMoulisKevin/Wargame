@@ -15,8 +15,7 @@
 
         <!-- CSS -->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-        <link rel="stylesheet" href="statics/css/index.css">
-        <!-- <link rel="stylesheet" href="statics/css/color.css"> -->
+        <link rel="stylesheet" href="statics/styles.css">
 
     </head>
 
@@ -25,27 +24,30 @@
         <button id="switch" onclick="switchMap()"> Echanger </button>
         
         <!-- ASSET -->
-        <img id="asset-forest" src="assets/images/forest.png">
-        <img id="asset-grass" src="assets/images/grass.png">
-        <img id="asset-mountain" src="assets/images/mountain.png">
-        <img id="asset-sand" src="assets/images/sand.png">
-        <img id="asset-snow" src="assets/images/snow.png">
-        <img id="asset-urban" src="assets/images/urban.png">
-        <img id="asset-volcano" src="assets/images/volcano.png">
-        <img id="asset-water" src="assets/images/water.png">
-        <img id="asset-void" src="assets/images/mountain.png">
-        <img id="asset-available" src="assets/images/volcano.png">
+        <img id="asset-forest" src="statics/images/forest.png">
+        <img id="asset-grass" src="statics/images/grass.png">
+        <img id="asset-mountain" src="statics/images/mountain.png">
+        <img id="asset-sand" src="statics/images/sand.png">
+        <img id="asset-snow" src="statics/images/snow.png">
+        <img id="asset-urban" src="statics/images/urban.png">
+        <img id="asset-volcano" src="statics/images/volcano.png">
+        <img id="asset-water" src="statics/images/water.png">
+        <img id="asset-void" src="statics/images/mountain.png">
+        <img id="asset-available" src="statics/images/volcano.png">
 
         <!-- MAP -->
         <br><br><br><br><br><br><br><br><br>
-        <div id="map"></div>
+        <div id="map">
+            <canvas id="foreground-map"></canvas>
+            <canvas id="underground-map"></canvas>
+        </div>
 
         <!-- SCRIPT -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
         <script src="https://d3js.org/d3.v5.min.js"></script>
         <script src="https://d3js.org/d3-selection-multi.v1.min.js"></script>
         <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
-        <script src="statics/javascript/map2.js"></script>
+        <script src="statics/javascript/index.js"></script>
     </body>
 
 </html>
