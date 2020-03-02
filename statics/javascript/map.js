@@ -416,16 +416,16 @@ function onclickUnitEvent(unit) {
     if (unit_scale == ACTUAL_MAP) {
         if (PREVIOUS_SELECTED_UNIT == null) {
             PREVIOUS_SELECTED_UNIT = unit;
-            showAllowedMovement(hexagon, MOVEMENT_POINTS);
+            showAvailableMovement(hexagon, MOVEMENT_POINTS);
         } else if (PREVIOUS_SELECTED_UNIT.isEqualNode(unit)) {
             uncoloredHexagon();
             PREVIOUS_SELECTED_UNIT = null;
         } else if (!PREVIOUS_SELECTED_UNIT.isEqualNode(unit)) {
             uncoloredHexagon();
-            showAllowedMovement(hexagon, MOVEMENT_POINTS);
+            showAvailableMovement(hexagon, MOVEMENT_POINTS);
             PREVIOUS_SELECTED_UNIT = unit;
         } else {
-            showAllowedMovement(hexagon, MOVEMENT_POINTS);
+            showAvailableMovement(hexagon, MOVEMENT_POINTS);
             PREVIOUS_SELECTED_UNIT = unit;
         }
     }
@@ -531,7 +531,7 @@ function pathfinder(hexagonA, hexagonB) {
  * 
  * @param {Node} hexagon 
  */
-function showAllowedMovement(hexagon, movement_points) {
+function showAvailableMovement(hexagon, movement_points) {
 
     let data = getHexagonDataset(hexagon);
 

@@ -21,12 +21,28 @@
 // ________ ONLOAD ________
 window.onload = start;
 
+
+var myGameArea = {
+    canvas : document.getElementById("foreground-map"),
+    start : function() {
+        this.canvas.width = 1000;
+        this.canvas.height = 500;
+        this.context = this.canvas.getContext("2d");
+        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+        this.interval = setInterval(updateGameArea, 20);
+    },
+    clear : function() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+}
+
 // ________ MACROS ________
 
 HEX_SIZE = 0;
 WIDTH = 0;
 HEIGHT = 0;
 ACTUAL_MAP = "foreground";
+
 
 // ________ CLASSES ________
 
@@ -45,8 +61,6 @@ class Hexagon {
         this.z = data.z;
 
         this.type = data.type;
-
-        this.image = document.getElementById("asset-" + this.type);
 
         if (this.isCorrectCoordinate(this.x, this.y, this.z)) {
 
@@ -70,6 +84,24 @@ class Hexagon {
 
     }
 
+    getImage(){
+
+        return document.getElementById("asset-" + this.type);
+    
+    }
+
+    getAvailableImage(){
+
+        return document.getElementById("asset-available");
+    
+    }
+
+    showAsAvailable(){
+    
+        console.log("hi !");
+
+    }
+
     createHexagon() {
 
 
@@ -83,7 +115,7 @@ class Hexagon {
 
         ctx.rotate(degreeToRadian(-89.27));
 
-        ctx.drawImage(this.image, -HEX_SIZE / 2, -HEX_SIZE / 2, HEX_SIZE, HEX_SIZE);
+        ctx.drawImage(this.getImage(), -HEX_SIZE / 2, -HEX_SIZE / 2, HEX_SIZE, HEX_SIZE);
 
         ctx.restore();
     }
@@ -244,7 +276,7 @@ function addOnclickEventOnHexagon(elements) {
 
             if (hexagon_coordinate.x == element.x && hexagon_coordinate.y == element.y && hexagon_coordinate.z == element.z) {
 
-                showAllowedMovement(element);
+                showAvailableMovement(elements, element);
 
             }
         });
@@ -270,7 +302,7 @@ function start() {
 
         });
 
-        d3.json("statics/data/map.json").then(function (data) {
+        d3.json("statics/data/map_save.json").then(function (data) {
 
             WIDTH = data["width"];
 
@@ -278,6 +310,7 @@ function start() {
 
             loadMap(data);
 
+            myGameArea.start();
         });
     });
 }
@@ -358,6 +391,11 @@ function loadMap(data) {
     });
 }
 
+function updateGameArea() {
+    myGameArea.clear();
+    myGamePiece.update();
+}
+
 /**
  * Switch the maps
  */
@@ -421,18 +459,42 @@ function switchMap() {
  * @param {*} hexagon 
  * @param {*} movement_points 
  */
-function showAllowedMovement(hexagon, movement_points=1) {
+function showAvailableMovement(elements, hexagon, movement_points=1) {
 
-    console.log(hexagon.x)
+    elements.forEach(function(element){
 
-    for (let x = data.x - movement_points; x <= data.x + movement_points; x++) {
-        for (let y = data.y - movement_points; y <= data.y + movement_points; y++) {
-            for (let z = data.z - movement_points; z <= data.z + movement_points; z++) {
-                if (x + y + z == 0) {
-                    d3.select(`.${data.scale}-hexagon[data-x="${x}"][data-y="${y}"][data-z="${z}"]`)
-                        .classed("available-movement", true);
-                }
+        if ( isReachable(element, hexagon, movement_points)) {
+
+            element.showAsAvailable();
+
+        }
+    });
+
+    console.log(nb);
+}
+
+/**
+ * 
+ * @param {Object} element 
+ * @param {Object} origin 
+ * @param {Number} movement_points 
+ */
+function isReachable(element, origin, movement_points){
+
+    if ( element.x >= origin.x - movement_points && element.x <= origin.x + movement_points ){
+
+        if ( element.y >= origin.y - movement_points && element.y <= origin.y + movement_points ){
+
+            if ( element.z >= origin.z - movement_points && element.z <= origin.z + movement_points ){
+
+                return true;
+
             }
         }
+
+    } else {
+
+        return false;
+
     }
 }
