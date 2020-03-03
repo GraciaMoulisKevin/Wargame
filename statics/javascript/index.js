@@ -7,46 +7,76 @@
  * https://codesandbox.io/s/z2pqr9620m
  */
 
-
 $().ready(function () {
-    d3.json("statics/data/settings.json").then(function (data) {
-        HEX_SIZE = data["radius"];
-    });
+    
+    const WIDTH = 1400;
+    const HEIGHT = 1000;
 
-    d3.json("statics/data/map_save.json").then(function (data) {
-        WIDTH = data["width"];
-        HEIGHT = data["height"];
-    });
-});
+    let foreground_canvas = document.getElementById("foreground-map");
+    let foreground_ctx = foreground_canvas.getContext("2d");
+    let foreground_game = new Game(WIDTH, HEIGHT, "foreground", 1);
 
-// ________ MACROS ________
+    let underground_canvas = document.getElementById("underground-map");
+    let underground_ctx = underground_canvas.getContext("2d");
+    let underground_game = new Game(WIDTH, HEIGHT, "underground", 0.7);
+    
 
-HEX_SIZE = 0;
-WIDTH = 0;
-HEIGHT = 0;
-ACTUAL_MAP = "foreground";
+    foreground_game.start();
 
-let foreground_canvas = document.getElementById("foreground-map");
-let foreground_ctx = foreground_canvas.getContext("2d");
+    let lastTime = 0;
+    function gameLoop(timestamp) {
 
-// let underground_canvas = document.getElementById("underground-map");
-// let underground_ctx = underground_canvas.getContext("2d");
+        let deltaTime = timestamp - lastTime;
+        lastTime = timestamp;
 
-let game = new Game(WIDTH, HEIGHT);
+        // game.update(deltaTime);
+        // hexagon.draw(foreground_ctx);
+        foreground_game.draw(foreground_ctx);
 
-let lastTime = 0;
-function gameLoop(timestamp) {
-
-    let deltaTime = timestamp - lastTime;
-    lastTime = timestamp;
-
-    // game.update(deltaTime);
-    // game.draw(ctx);
+        requestAnimationFrame(gameLoop);
+    }
 
     requestAnimationFrame(gameLoop);
-}
+});
 
-requestAnimationFrame(gameLoop);
+/**
+ * Switch the maps
+ */
+function switchMap() {
+
+    let top_map;
+    let bottom_map;
+
+    if (ACTUAL_MAP == "foreground") {
+        top_map = "#underground-map";
+        bottom_map = "#foreground-map";
+        ACTUAL_MAP = "underground";
+    } else {
+        top_map = "#foreground-map";
+        bottom_map = "#underground-map";
+        ACTUAL_MAP = "foreground";
+    }
+
+    d3.select(top_map)
+        .transition()
+        .duration(300)
+        .styles({
+            opacity: 1,
+            top: '200px',
+            left: '0px',
+            transform: "scale(1, 1)"
+        });
+
+    d3.select(bottom_map)
+        .transition()
+        .duration(300)
+        .styles({
+            opacity: 0.2,
+            top: '200px',
+            left: '-250px',
+            transform: "scale(0.7, 0.7)"
+        });
+}
 
 
 

@@ -1,7 +1,8 @@
 {
-    "width" : 1440,
-    "height" : 1000,
-    "hexagons" : 
+    "width": 1440,
+    "height": 1000,
+    "hexagon_size": 80,
+    "hexagons": 
         [
             { "x": -7, "y": 0, "z": 7, "type": "urban"},
             { "x": -7, "y": 1, "z": 6, "type": "urban"},
