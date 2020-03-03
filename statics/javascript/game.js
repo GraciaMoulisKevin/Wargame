@@ -13,7 +13,7 @@ const levels = {
 
 class Game{
     
-    constructor(gameWidth, gameHeight, type, scale){
+    constructor(gameWidth, gameHeight){
         this.gameWidth = gameWidth;
         this.gameHeight = gameHeight;
 
@@ -22,29 +22,13 @@ class Game{
 
         this.levels = [levels.LEVEL1, levels.LEVEL2];
         this.currentLevel = 0;
-
-        this.type = type;
-        this.scale = scale;
     }
 
-    setWidth(width){
-        d3.select(`#${this.type}-map`).attr("width", width);
+    createMaps(){
+        Map(this, this.level[this.currentLevel], "underground");
+        Map(this, this.level[this.currentLevel], "foreground");
     }
-    setHeight(height){
-        d3.select(`#${this.type}-map`).attr("height", height);
-    }
-    setScale(scale){
-        d3.select(`#${this.type}-map`).style("scale", `(${this.scale}, ${this.scale})`);
-    }
-
-    start(){
-        this.setWidth(this.gameWidth);
-        this.setHeight(this.gameHeight);
-        this.setScale(this.scale);
-        
-        this.hexagons = buildLevel(this, this.levels[this.currentLevel]);
-    }
-
+    
     draw(ctx){
         [...this.hexagons, ...this.gameObject].forEach(element => {
             element.draw(ctx);

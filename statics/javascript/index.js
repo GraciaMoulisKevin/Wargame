@@ -12,16 +12,20 @@ $().ready(function () {
     const WIDTH = 1400;
     const HEIGHT = 1000;
 
-    let foreground_canvas = document.getElementById("foreground-map");
-    let foreground_ctx = foreground_canvas.getContext("2d");
-    let foreground_game = new Game(WIDTH, HEIGHT, "foreground", 1);
+    let game = new Game(WIDTH, HEIGHT);
+    game.createMaps();
 
-    let underground_canvas = document.getElementById("underground-map");
-    let underground_ctx = underground_canvas.getContext("2d");
-    let underground_game = new Game(WIDTH, HEIGHT, "underground", 0.7);
+    let foregroundCanvas = document.getElementById("foreground-map");
+    let foregroundCtx = foregroundCanvas.getContext("2d");
+    let foregroundGame = new Game(WIDTH, HEIGHT, "foreground", 1);
+
+    let undergroundCanvas = document.getElementById("underground-map");
+    let undergroundCtx = undergroundCanvas.getContext("2d");
+    let undergroundGame = new Game(WIDTH, HEIGHT, "underground", 0.7);
     
 
-    foreground_game.start();
+    undergroundGame.start();
+    foregroundGame.start();
 
     let lastTime = 0;
     function gameLoop(timestamp) {
@@ -29,9 +33,8 @@ $().ready(function () {
         let deltaTime = timestamp - lastTime;
         lastTime = timestamp;
 
-        // game.update(deltaTime);
-        // hexagon.draw(foreground_ctx);
-        foreground_game.draw(foreground_ctx);
+        undergroundGame.draw(undergroundCtx);
+        foregroundGame.draw(foregroundCtx);
 
         requestAnimationFrame(gameLoop);
     }
@@ -44,40 +47,18 @@ $().ready(function () {
  */
 function switchMap() {
 
-    let top_map;
-    let bottom_map;
+    let foregroundScale = foregroundGame.scale;
+    let undergroundScale = undergroundGame.scale
 
-    if (ACTUAL_MAP == "foreground") {
-        top_map = "#underground-map";
-        bottom_map = "#foreground-map";
-        ACTUAL_MAP = "underground";
+    if ( foregroundScale > undergroundScale ){
+        undergroundScale.switch(1);
+        foregroundScale.switch(0.7);
     } else {
-        top_map = "#foreground-map";
-        bottom_map = "#underground-map";
-        ACTUAL_MAP = "foreground";
+        foregroundScale.switch(1);       
+        undergroundScale.switch(0.7);
     }
 
-    d3.select(top_map)
-        .transition()
-        .duration(300)
-        .styles({
-            opacity: 1,
-            top: '200px',
-            left: '0px',
-            transform: "scale(1, 1)"
-        });
-
-    d3.select(bottom_map)
-        .transition()
-        .duration(300)
-        .styles({
-            opacity: 0.2,
-            top: '200px',
-            left: '-250px',
-            transform: "scale(0.7, 0.7)"
-        });
 }
-
 
 
 // // ________ ONLOAD ________
