@@ -6,7 +6,7 @@
  * Copyright : 2020 Ⓒ
  */
 
-export default class Hexagon {
+class Hexagon {
 
     constructor(data, x, y) {
 
@@ -32,9 +32,6 @@ export default class Hexagon {
     getImage(){ return document.getElementById("asset-" + this.type); }
 
     draw(ctx) {
-
-        let canvas = document.getElementById('foreground-map');
-        let ctx = canvas.getContext("2d");
 
         ctx.save();
 

@@ -6,9 +6,7 @@
  * Copyright : 2020 Ⓒ
  */
 
-require('./hexagon');
-
-export default class Game{
+class Game{
     
     constructor(gameWidth, gameHeight){
         this.gameWidth = gameWidth;
@@ -17,11 +15,7 @@ export default class Game{
     }
 
     start(){
-
         this.gameHexagons = buildLevel(this);
-
     }
 
 };
-
-module.exports.Game = Game;

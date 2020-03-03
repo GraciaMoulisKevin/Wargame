@@ -7,27 +7,24 @@
  * https://codesandbox.io/s/z2pqr9620m
  */
 
-const jquery = require('jquery');
 
-window.onload = function(){
-    $().ready(function () {
-        d3.json("statics/data/settings.json").then(function (data) {
-            HEX_SIZE = data["radius"];
-        });
-
-        d3.json("statics/data/map_save.json").then(function (data) {
-            WIDTH = data["width"];
-            HEIGHT = data["height"];
-        });
+$().ready(function () {
+    d3.json("statics/data/settings.json").then(function (data) {
+        HEX_SIZE = data["radius"];
     });
-}
+
+    d3.json("statics/data/map_save.json").then(function (data) {
+        WIDTH = data["width"];
+        HEIGHT = data["height"];
+    });
+});
 
 // ________ MACROS ________
 
-const HEX_SIZE = 0;
-const WIDTH = 0;
-const HEIGHT = 0;
-const ACTUAL_MAP = "foreground";
+HEX_SIZE = 0;
+WIDTH = 0;
+HEIGHT = 0;
+ACTUAL_MAP = "foreground";
 
 let foreground_canvas = document.getElementById("foreground-map");
 let foreground_ctx = foreground_canvas.getContext("2d");
@@ -43,8 +40,8 @@ function gameLoop(timestamp) {
     let deltaTime = timestamp - lastTime;
     lastTime = timestamp;
 
-    game.update(deltaTime);
-    game.draw(ctx);
+    // game.update(deltaTime);
+    // game.draw(ctx);
 
     requestAnimationFrame(gameLoop);
 }
