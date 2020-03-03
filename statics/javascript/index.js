@@ -7,20 +7,16 @@
  * https://codesandbox.io/s/z2pqr9620m
  */
 
+$().ready(function () {
+    d3.json("statics/data/settings.json").then(function (data) {
+        HEX_SIZE = data["radius"];
+    });
 
-
-window.onload = function(){
-  $().ready(function () {
-      d3.json("statics/data/settings.json").then(function (data) {
-          HEX_SIZE = data["radius"];
-      });
-
-      d3.json("statics/data/map_save.json").then(function (data) {
-          WIDTH = data["width"];
-          HEIGHT = data["height"];
-      });
-  });
-};
+    d3.json("statics/data/map_save.json").then(function (data) {
+        WIDTH = data["width"];
+        HEIGHT = data["height"];
+    });
+});
 
 // ________ MACROS ________
 
