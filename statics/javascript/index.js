@@ -7,16 +7,20 @@
  * https://codesandbox.io/s/z2pqr9620m
  */
 
-$().ready(function () {
-    d3.json("statics/data/settings.json").then(function (data) {
-        HEX_SIZE = data["radius"];
-    });
+const jquery = require('jquery');
 
-    d3.json("statics/data/map_save.json").then(function (data) {
-        WIDTH = data["width"];
-        HEIGHT = data["height"];
+window.onload = function(){
+    $().ready(function () {
+        d3.json("statics/data/settings.json").then(function (data) {
+            HEX_SIZE = data["radius"];
+        });
+
+        d3.json("statics/data/map_save.json").then(function (data) {
+            WIDTH = data["width"];
+            HEIGHT = data["height"];
+        });
     });
-});
+}
 
 // ________ MACROS ________
 
@@ -36,13 +40,13 @@ let game = new Game(WIDTH, HEIGHT);
 let lastTime = 0;
 function gameLoop(timestamp) {
 
-  let deltaTime = timestamp - lastTime;
-  lastTime = timestamp;
+    let deltaTime = timestamp - lastTime;
+    lastTime = timestamp;
 
-  game.update(deltaTime);
-  game.draw(ctx);
+    game.update(deltaTime);
+    game.draw(ctx);
 
-  requestAnimationFrame(gameLoop);
+    requestAnimationFrame(gameLoop);
 }
 
 requestAnimationFrame(gameLoop);
