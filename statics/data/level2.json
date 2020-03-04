@@ -1,6 +1,7 @@
 {
     "width" : 1000,
     "height" : 500,
+    "hexagon_size": 80,
     "hexagons" : 
         [
             {"x": -3, "y": 0, "z": 3, "type": "volcano"},

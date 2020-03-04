@@ -7,32 +7,32 @@
  * https://codesandbox.io/s/z2pqr9620m
  */
 
+const WIDTH = 1400;
+const HEIGHT = 1000;
+
+//CANVAS
+let foregroundCanvas = document.getElementById("foreground-map");
+let undergroundCanvas = document.getElementById("underground-map");
+
+//CTX
+let foregroundCtx = foregroundCanvas.getContext("2d");
+let undergroundCtx = undergroundCanvas.getContext("2d");
+
+//GAME
+let game = new Game(WIDTH, HEIGHT, 0);
+
+//ADD MAPS
+let foregroundMap = game.addMap("foreground");
+let undergroundMap = game.addMap("underground");
+
 $().ready(function () {
     
-    const WIDTH = 1400;
-    const HEIGHT = 1000;
-
-    //CANVAS
-    let foregroundCanvas = document.getElementById("foreground-map");
-    let undergroundCanvas = document.getElementById("underground-map");
-
-    //CTX
-    let foregroundCtx = foregroundCanvas.getContext("2d");
-    let undergroundCtx = undergroundCanvas.getContext("2d");
-
-    //GAME
-    let game = new Game(WIDTH, HEIGHT);
-
-    //CREATE MAP
-    let foregroundMap = game.createForegroundMap();
-    let undergroundMap = game.createUndergroundMap();
-
-    foregroundMap.start();
-    undergroundMap.start();
-
+    undergroundMap.buildMap();
+    foregroundMap.buildMap();
+    
     let lastTime = 0;
-    function gameLoop(timestamp) {
 
+    function gameLoop(timestamp) {
         let deltaTime = timestamp - lastTime;
         lastTime = timestamp;
 
@@ -40,28 +40,19 @@ $().ready(function () {
         foregroundMap.draw(foregroundCtx);
         undergroundMap.draw(undergroundCtx);
 
-        requestAnimationFrame(gameLoop);
+        
+        requestAnimationFrame(gameLoop)
     }
 
     requestAnimationFrame(gameLoop);
+
 });
 
 /**
  * Switch the maps
  */
 function switchMap() {
-
-    let foregroundScale = foregroundGame.scale;
-    let undergroundScale = undergroundGame.scale
-
-    if ( foregroundScale > undergroundScale ){
-        undergroundScale.switch(1);
-        foregroundScale.switch(0.7);
-    } else {
-        foregroundScale.switch(1);       
-        undergroundScale.switch(0.7);
-    }
-
+    game.switch(foregroundMap, undergroundMap);
 }
 
 

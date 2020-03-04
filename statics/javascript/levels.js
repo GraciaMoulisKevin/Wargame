@@ -1,4 +1,4 @@
-function buildLevel(game, level){
+function buildLevel(map, level, type){
     
     let hexagons = [];
 
@@ -6,9 +6,9 @@ function buildLevel(game, level){
         
         let hexagonSize = data["hexagon_size"];
 
-        for ( hexagon of data["hexagons"] ){
+        for ( hexagon of data[type] ){
             
-            hexagons.push(new Hexagon(game, hexagon.x, hexagon.y, hexagon.z, hexagon.type, hexagonSize ) );
+            hexagons.push(new Hexagon(map, hexagon.x, hexagon.y, hexagon.z, hexagon.type, hexagonSize));
         }
     });
 

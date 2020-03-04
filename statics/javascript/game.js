@@ -13,19 +13,44 @@ const levels = {
 
 class Game{
     
-    constructor(gameWidth, gameHeight){
+    constructor(gameWidth, gameHeight, level){
         this.gameWidth = gameWidth;
         this.gameHeight = gameHeight;
 
         this.levels = [levels.LEVEL1, levels.LEVEL2];
-        this.currentLevel = 0;
+        this.currentLevel = level;
     }
 
-    createForegroundMap(){
-        return new Map(this, this.levels[this.currentLevel], "foreground");
+    getWidth(){
+        return this.gameWidth
     }
-    createUndergroundMap(){
-        return new Map(this, this.levels[this.currentLevel], "underground");
+
+    getHeight(){
+        return this.gameHeight;
+    }
+
+    addMap(type){
+        return new Map(this, this.levels[this.currentLevel], type);
+    }
+
+    switch(foregroundMap, undergroundMap){
+
+        if ( foregroundMap.getActualPosition() == 1 ){
+            
+            d3.select(`#${foregroundMap.type}-map`).transition().styles(undergroundStyles);
+            foregroundMap.setActualPosition(0);
+            
+            d3.select(`#${undergroundMap.type}-map`).transition().styles(foregroundStyles);
+            undergroundMap.setActualPosition(1);
+
+        } else {
+
+            d3.select(`#${undergroundMap.type}-map`).transition().styles(undergroundStyles);
+            undergroundMap.setActualPosition(0);
+            
+            d3.select(`#${foregroundMap.type}-map`).transition().styles(foregroundStyles);
+            foregroundMap.setActualPosition(1);
+        }
     }
 
     // switch(scale){

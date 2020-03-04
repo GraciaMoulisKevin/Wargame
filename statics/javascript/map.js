@@ -6,38 +6,56 @@
  * Copyright : 2020 Ⓒ
  */
 
-const scales = {
-    "foreground": 1,
-    "underground": 0.7
-}
+const foregroundStyles = { left: "100px", top: "100px", opacity: 1, transform: "scale(1,1)" };
+const undergroundStyles = { left: "-250px", top: "50px", opacity: 0.2, transform: "scale(0.7,0.7)" };
 
 class Map{
     
     constructor(game, level, type){
         this.game = game;
 
+        this.mapWidth = game.getWidth();
+        this.mapHeight = game.getHeight();
+
         this.hexagons = [];
         this.gameObject = [];
-
         this.level = level;
 
         this.type = type;
+        this.actualPosition = (this.type == "foreground")? 1 : 0; 
+
+        this.addAttrs();
+        this.addStyles();
     }
 
-    getScale(){
-        if ( type == "foreground" ){
-            return 1;
+    // GET METHOD
+    getActualPosition(){
+        return this.actualPosition;
+    }
+
+    getWidth(){
+        return this.mapWidth;
+    }
+
+    getHeight(){
+        return this.mapHeight;
+    }
+
+    getStyles(){
+        if (this.type == "foreground"){
+            return foregroundStyles;
         } else {
-            return 0.7;
+            return undergroundStyles;
         }
     }
 
+    // SET METHOD
     setWidth(width){
-        return this.width = width;
+        return this.mapWidth = width;
     }
 
     setHeight(height){
-        return this.height = height;
+        return this.mapHeight = height;
     }
 
     setType(type){
@@ -48,38 +66,22 @@ class Map{
         this.scale = scale;
     }
 
-    setOffsetLeft(){
-        if ( this.scale == 1 ){
-            d3.select(`#${this.type}-map`).style("left", "0");
-        } else {
-            d3.select(`#${this.type}-map`).style("left", "-250px");
-        }
-    }
-    setOffsetTop(){
-        d3.select(`#${this.type}-map`).style("top", "200px");
+    setActualPosition(position){
+        this.actualPosition = position;
     }
 
-    setAttrs(){
-        d3.select(`#${this.type}-map`)
-        .attrs({
-            "width": this.width,
-            "height": this.height
-        });
+    // ADD METHOD
+    addAttrs(){
+        d3.select(`#${this.type}-map`).attrs({ "width": this.mapWidth, "height": this.mapHeight});
     }
 
-    setStyles(){
-        d3.select(`#${this.type}-map`)
-        .styles({
-            "top": this.getOffsetTop(),
-            "left": this.getOffsetLeft(),
-            "transform": `scale(${this.getScale()}, ${this.getScale()})`
-        });
+    addStyles(){
+        d3.select(`#${this.type}-map`).styles(this.getStyles());
     }
-    
-    start(){
-        this.setAttrs();
-        this.setStyles();
-        this.hexagons = buildLevel(this, this.level);
+
+    // BUILD MAP
+    buildMap(){
+        this.hexagons = buildLevel(this, this.level, this.type);
     }
 
     draw(ctx){
