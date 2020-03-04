@@ -6,6 +6,11 @@
  * Copyright : 2020 Ⓒ
  */
 
+const scales = {
+    "foreground": 1,
+    "underground": 0.7
+}
+
 class Map{
     
     constructor(game, level, type){
@@ -17,15 +22,22 @@ class Map{
         this.level = level;
 
         this.type = type;
-        this.scale = scale;
+    }
+
+    getScale(){
+        if ( type == "foreground" ){
+            return 1;
+        } else {
+            return 0.7;
+        }
     }
 
     setWidth(width){
-        d3.select(`#${this.type}-map`).attr("width", width);
+        return this.width = width;
     }
 
     setHeight(height){
-        d3.select(`#${this.type}-map`).attr("height", height);
+        return this.height = height;
     }
 
     setType(type){
@@ -34,7 +46,6 @@ class Map{
 
     setScale(scale){
         this.scale = scale;
-        d3.select(`#${this.type}-map`).style("transform", `scale(${this.scale}, ${this.scale})`);
     }
 
     setOffsetLeft(){
@@ -49,19 +60,32 @@ class Map{
     }
 
     setAttrs(){
-        this.setWidth(this.gameWidth);
-        this.setHeight(this.gameHeight);
+        d3.select(`#${this.type}-map`)
+        .attrs({
+            "width": this.width,
+            "height": this.height
+        });
     }
 
     setStyles(){
-        this.setScale(this.scale);
-        this.setOffsetTop();
-        this.setOffsetLeft();
+        d3.select(`#${this.type}-map`)
+        .styles({
+            "top": this.getOffsetTop(),
+            "left": this.getOffsetLeft(),
+            "transform": `scale(${this.getScale()}, ${this.getScale()})`
+        });
+    }
+    
+    start(){
+        this.setAttrs();
+        this.setStyles();
+        this.hexagons = buildLevel(this, this.level);
     }
 
-    switch(scale){
-        this.setScale(scale);
-        this.setOffsetLeft();
+    draw(ctx){
+        [...this.hexagons, ...this.gameObject].forEach(element => {
+            element.draw(ctx);
+        });
     }
 
 }

@@ -17,21 +17,19 @@ class Game{
         this.gameWidth = gameWidth;
         this.gameHeight = gameHeight;
 
-        this.hexagons = [];
-        this.gameObject = [];
-
         this.levels = [levels.LEVEL1, levels.LEVEL2];
         this.currentLevel = 0;
     }
 
-    createMaps(){
-        Map(this, this.level[this.currentLevel], "underground");
-        Map(this, this.level[this.currentLevel], "foreground");
+    createForegroundMap(){
+        return new Map(this, this.levels[this.currentLevel], "foreground");
     }
-    
-    draw(ctx){
-        [...this.hexagons, ...this.gameObject].forEach(element => {
-            element.draw(ctx);
-        });
+    createUndergroundMap(){
+        return new Map(this, this.levels[this.currentLevel], "underground");
     }
+
+    // switch(scale){
+    //     this.setScale(scale);
+    //     this.setOffsetLeft();
+    // }
 }

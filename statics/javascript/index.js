@@ -12,20 +12,23 @@ $().ready(function () {
     const WIDTH = 1400;
     const HEIGHT = 1000;
 
-    let game = new Game(WIDTH, HEIGHT);
-    game.createMaps();
-
+    //CANVAS
     let foregroundCanvas = document.getElementById("foreground-map");
-    let foregroundCtx = foregroundCanvas.getContext("2d");
-    let foregroundGame = new Game(WIDTH, HEIGHT, "foreground", 1);
-
     let undergroundCanvas = document.getElementById("underground-map");
-    let undergroundCtx = undergroundCanvas.getContext("2d");
-    let undergroundGame = new Game(WIDTH, HEIGHT, "underground", 0.7);
-    
 
-    undergroundGame.start();
-    foregroundGame.start();
+    //CTX
+    let foregroundCtx = foregroundCanvas.getContext("2d");
+    let undergroundCtx = undergroundCanvas.getContext("2d");
+
+    //GAME
+    let game = new Game(WIDTH, HEIGHT);
+
+    //CREATE MAP
+    let foregroundMap = game.createForegroundMap();
+    let undergroundMap = game.createUndergroundMap();
+
+    foregroundMap.start();
+    undergroundMap.start();
 
     let lastTime = 0;
     function gameLoop(timestamp) {
@@ -33,8 +36,9 @@ $().ready(function () {
         let deltaTime = timestamp - lastTime;
         lastTime = timestamp;
 
-        undergroundGame.draw(undergroundCtx);
-        foregroundGame.draw(foregroundCtx);
+        //DRAW MAP
+        foregroundMap.draw(foregroundCtx);
+        undergroundMap.draw(undergroundCtx);
 
         requestAnimationFrame(gameLoop);
     }
