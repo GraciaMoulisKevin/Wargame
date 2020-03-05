@@ -29,8 +29,12 @@ class Game{
         return this.gameHeight;
     }
 
+    getLevel(){
+        return this.levels[this.currentLevel];
+    }
+
     addMap(type){
-        return new Map(this, this.levels[this.currentLevel], type);
+        return new Map(this, this.getLevel(), type);
     }
 
     switch(foregroundMap, undergroundMap){

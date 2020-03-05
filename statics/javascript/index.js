@@ -25,6 +25,9 @@ let game = new Game(WIDTH, HEIGHT, 0);
 let foregroundMap = game.addMap("foreground");
 let undergroundMap = game.addMap("underground");
 
+/**
+ * MAIN FUNCTION
+ */
 $().ready(function () {
     
     undergroundMap.buildMap();
@@ -63,10 +66,7 @@ function switchMap() {
  */
 function addOnclickEventOnHexagon(elements) {
 
-    //get the canvas and is offset(Left/Top)
-    let canvas = document.getElementById('foreground-map');
-
-    canvas.addEventListener('click', function (event) {
+    foregroundCanvas.addEventListener('click', function (event) {
 
         //pointer position onclick
         let cursor_x = event.pageX;
@@ -74,12 +74,12 @@ function addOnclickEventOnHexagon(elements) {
         let cursor_y = event.pageY;
 
         //offset modifiers
-        let x = cursor_x + canvas.offsetLeft;
+        let x = cursor_x + foregroundCanvas.offsetLeft;
 
-        let y = cursor_y - canvas.offsetTop;
+        let y = cursor_y - foregroundCanvas.offsetTop;
 
         //get cube coordinate of the hexagon clicked
-        let hexagon_coordinate = pixelToHexagonCoordinate(x - WIDTH / 2, y - HEIGHT / 2);
+        let hexagon_coordinate = pixelToHexagonCoordinate(x - WIDTH / 2, y - HEIGHT / 2, game.getLevel());
 
         elements.forEach(function (element) {
 
@@ -93,6 +93,111 @@ function addOnclickEventOnHexagon(elements) {
     }, false);
 }
 
+
+function getData(data){
+    console.log(data);
+    return data["hexagon_size"];
+}
+
+function readJson(json, callback){
+    console.log(json);
+    d3.json(`/statics/data/${json}`).then( function(data){
+        callback(data);
+    });
+}
+
+/**
+ * Get the cube hexagon coordinate (x, y, z) where we clicked
+ * @param {Number} x 
+ * @param {Number} y 
+ */
+function pixelToHexagonCoordinate(x, y, type) {
+    let hexagonSize = readJson(type, getData);
+    console.log("attendez le !!");
+    let q = (Math.sqrt(3) / 3 * x - 1 / 3 * y) / (hexagonSize / 2);
+
+    let r = (2 / 3 * y) / (hexagonSize / 2);
+
+    console.log(hexagonSize);
+    return roundHexagonCoordinate(createCubeCoordinate(q, -q - r, r));
+}
+
+/**
+ * round data to get proper coordinate
+ * @param {Object} data
+ */
+function roundHexagonCoordinate(data) {
+
+    let x = Math.round(data.x)
+    let y = Math.round(data.y)
+    let z = Math.round(data.z)
+
+    let x_diff = Math.abs(x - data.x)
+    let y_diff = Math.abs(y - data.y)
+    let z_diff = Math.abs(z - data.z)
+
+    if ((x_diff >= y_diff) && (x_diff >= z_diff)) {
+        x = -y - z;
+    } else if (y_diff >= z_diff) {
+        y = -x - z;
+    } else {
+        z = -x - y;
+    }
+
+    return {
+        "x": x,
+        "y": y,
+        "z": z
+    };
+}
+
+/**
+ * 
+ * @param {Number} x 
+ * @param {Number} y 
+ * @param {Number} z
+ */
+function createCubeCoordinate(x, y, z) {
+    return {
+        "x": x,
+        "y": y,
+        "z": z
+    };
+}
+
+/**
+ * 
+ * @param {*} hexagon 
+ * @param {*} movement_points 
+ */
+function showAvailableMovement(elements, hexagon, movement_points=1) {
+
+    elements.forEach(function(element){
+
+        if ( isReachable(element, hexagon, movement_points)) {
+            element.showAsAvailable();
+        }
+    });
+}
+
+/**
+ * 
+ * @param {Object} element 
+ * @param {Object} origin 
+ * @param {Number} movement_points 
+ */
+function isReachable(element, origin, movement_points){
+
+    if ( element.x >= origin.x - movement_points && element.x <= origin.x + movement_points ){
+        if ( element.y >= origin.y - movement_points && element.y <= origin.y + movement_points ){
+            if ( element.z >= origin.z - movement_points && element.z <= origin.z + movement_points ){
+                return true;
+            }
+        }
+    } else {
+        return false;
+    }
+}
 
 // // ________ ONLOAD ________
 // window.onload = start;
