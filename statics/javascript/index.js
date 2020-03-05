@@ -7,8 +7,9 @@
  * https://codesandbox.io/s/z2pqr9620m
  */
 
-const WIDTH = 1400;
-const HEIGHT = 1000;
+MAP_WIDTH = 1440;
+MAP_HEIGHT = 1000;
+HEXAGON_SIZE = 80;
 
 //CANVAS
 let foregroundCanvas = document.getElementById("foreground-map");
@@ -19,7 +20,7 @@ let foregroundCtx = foregroundCanvas.getContext("2d");
 let undergroundCtx = undergroundCanvas.getContext("2d");
 
 //GAME
-let game = new Game(WIDTH, HEIGHT, 0);
+let game = new Game(MAP_WIDTH, MAP_HEIGHT, 0);
 
 //ADD MAPS
 let foregroundMap = game.addMap("foreground");
@@ -28,8 +29,9 @@ let undergroundMap = game.addMap("underground");
 /**
  * MAIN FUNCTION
  */
-$().ready(function () {
-    
+$().ready( function () {
+
+
     undergroundMap.buildMap();
     foregroundMap.buildMap();
     
@@ -42,14 +44,14 @@ $().ready(function () {
         //DRAW MAP
         foregroundMap.draw(foregroundCtx);
         undergroundMap.draw(undergroundCtx);
-
         
         requestAnimationFrame(gameLoop)
     }
 
     requestAnimationFrame(gameLoop);
 
-    addOnclickEventOnHexagon(foregroundMap.getElements());
+    //addOnclickEventOnHexagon(foregroundCanvas, foregroundMap, foregroundMap.getHexagons());
+    addOnclickEventOnHexagon(undergroundCanvas, undergroundMap, undergroundMap.getHexagons());
 
 });
 
@@ -64,46 +66,28 @@ function switchMap() {
  * Manage onclick event on an hexagon
  * @param {Array} elements 
  */
-function addOnclickEventOnHexagon(elements) {
+function addOnclickEventOnHexagon(canvas, map, elements) {
 
-    foregroundCanvas.addEventListener('click', function (event) {
+    canvas.addEventListener('click', function (event) {
 
         //pointer position onclick
         let cursor_x = event.pageX;
-
         let cursor_y = event.pageY;
 
         //offset modifiers
-        let x = cursor_x + foregroundCanvas.offsetLeft;
-
-        let y = cursor_y - foregroundCanvas.offsetTop;
+        let x = cursor_x - canvas.offsetLeft;
+        let y = cursor_y - canvas.offsetTop;
 
         //get cube coordinate of the hexagon clicked
-        let hexagon_coordinate = pixelToHexagonCoordinate(x - WIDTH / 2, y - HEIGHT / 2, game.getLevel());
-
+        let hexagonCoordinate = pixelToHexagonCoordinate(x - MAP_WIDTH / 2, y - MAP_HEIGHT / 2);
+        console.log(hexagonCoordinate);
         elements.forEach(function (element) {
-
-            if (hexagon_coordinate.x == element.x && hexagon_coordinate.y == element.y && hexagon_coordinate.z == element.z) {
-
-                showAvailableMovement(elements, element);
-
+            if (hexagonCoordinate.x == element.x && hexagonCoordinate.y == element.y && hexagonCoordinate.z == element.z) {
+                showAvailableMovement(map, elements, element);
             }
         });
 
     }, false);
-}
-
-
-function getData(data){
-    console.log(data);
-    return data["hexagon_size"];
-}
-
-function readJson(json, callback){
-    console.log(json);
-    d3.json(`/statics/data/${json}`).then( function(data){
-        callback(data);
-    });
 }
 
 /**
@@ -111,15 +95,12 @@ function readJson(json, callback){
  * @param {Number} x 
  * @param {Number} y 
  */
-function pixelToHexagonCoordinate(x, y, type) {
-    let hexagonSize = readJson(type, getData);
-    console.log("attendez le !!");
-    let q = (Math.sqrt(3) / 3 * x - 1 / 3 * y) / (hexagonSize / 2);
+function pixelToHexagonCoordinate(x, y) {
 
-    let r = (2 / 3 * y) / (hexagonSize / 2);
+    let q = (Math.sqrt(3) / 3 * x - 1 / 3 * y) / (HEXAGON_SIZE / 2);
+    let r = (2 / 3 * y) / (HEXAGON_SIZE / 2);
 
-    console.log(hexagonSize);
-    return roundHexagonCoordinate(createCubeCoordinate(q, -q - r, r));
+    return roundHexagonCoordinate(createCubeCoordinate(q, -q-r, r));
 }
 
 /**
@@ -170,14 +151,17 @@ function createCubeCoordinate(x, y, z) {
  * @param {*} hexagon 
  * @param {*} movement_points 
  */
-function showAvailableMovement(elements, hexagon, movement_points=1) {
+function showAvailableMovement(map, elements, hexagon, movement_points=1) {
 
-    elements.forEach(function(element){
-
-        if ( isReachable(element, hexagon, movement_points)) {
-            element.showAsAvailable();
+    let hexagons = [];
+    
+    for (let i=0; i < elements.length; i++){
+        if ( isReachable(elements[i], hexagon, movement_points)) {
+            hexagons.push(i);
         }
-    });
+    }
+
+    map.setHexagonsAs(hexagons, "available");
 }
 
 /**
@@ -188,10 +172,14 @@ function showAvailableMovement(elements, hexagon, movement_points=1) {
  */
 function isReachable(element, origin, movement_points){
 
-    if ( element.x >= origin.x - movement_points && element.x <= origin.x + movement_points ){
-        if ( element.y >= origin.y - movement_points && element.y <= origin.y + movement_points ){
-            if ( element.z >= origin.z - movement_points && element.z <= origin.z + movement_points ){
-                return true;
+    if (element.x >= origin.x - movement_points && element.x <= origin.x + movement_points){
+        if (element.y >= origin.y - movement_points && element.y <= origin.y + movement_points){
+            if (element.z >= origin.z - movement_points && element.z <= origin.z + movement_points){
+                if ( element != origin ){
+                    return true;
+                } else {
+                    return false;
+                }
             }
         }
     } else {

@@ -29,58 +29,32 @@ class Map{
     }
 
     // GET METHOD
-    getActualPosition(){
-        return this.actualPosition;
-    }
+    getActualPosition(){return this.actualPosition;}
+    getWidth(){return this.mapWidth;}
+    getHeight(){return this.mapHeight;}
+    getStyles(){ return (this.type == "foreground")? foregroundStyles : undergroundStyles;}
+    getHexagons(){return this.hexagons;}
 
-    getWidth(){
-        return this.mapWidth;
-    }
-
-    getHeight(){
-        return this.mapHeight;
-    }
-
-    getStyles(){
-        if (this.type == "foreground"){
-            return foregroundStyles;
-        } else {
-            return undergroundStyles;
+    // SET METHOD
+    setWidth(width){return this.mapWidth = width;}
+    setHeight(height){return this.mapHeight = height;}
+    setType(type){this.type = type;}
+    setScale(scale){this.scale = scale;}
+    setActualPosition(position){this.actualPosition = position;}
+    setHexagonsAs(indexes, type){
+        for (let i=0; i < indexes.length; i++){
+            this.hexagons[indexes[i]].setType(type);
         }
     }
-
-    getElements(){
-        return [ this.hexagons, this.gameObject ];
-    }
-    // SET METHOD
-    setWidth(width){
-        return this.mapWidth = width;
-    }
-
-    setHeight(height){
-        return this.mapHeight = height;
-    }
-
-    setType(type){
-        this.type = type;
-    }
-
-    setScale(scale){
-        this.scale = scale;
-    }
-
-    setActualPosition(position){
-        this.actualPosition = position;
+    restoreHexagonsType(indexes){
+        for (let i=0; i < indexes.length; i++){
+            this.hexagons[indexes[i]].setType(this.hexagons[indexes[i]].getSaveType());
+        }  
     }
 
     // ADD METHOD
-    addAttrs(){
-        d3.select(`#${this.type}-map`).attrs({ "width": this.mapWidth, "height": this.mapHeight});
-    }
-
-    addStyles(){
-        d3.select(`#${this.type}-map`).styles(this.getStyles());
-    }
+    addAttrs(){d3.select(`#${this.type}-map`).attrs({ "width": this.mapWidth, "height": this.mapHeight});}
+    addStyles(){d3.select(`#${this.type}-map`).styles(this.getStyles());}
 
     // BUILD MAP
     buildMap(){

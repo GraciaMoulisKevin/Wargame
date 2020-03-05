@@ -1,3 +1,8 @@
 {
-    "hexagon_size" : 80
+    "hexagon_size": 80,
+    "levels" : 
+        [
+            {"name": "level1", "width": 1440, "height": 1000},
+            {"name": "level2", "width": 1000, "height": 500}
+        ]
 }

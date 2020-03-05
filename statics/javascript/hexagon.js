@@ -18,17 +18,14 @@ class Hexagon {
         this.type = type;
         this.size = size;
 
+        this.saveType = "volcano";
         this.center = this.getCenterCoordinateOfHexagons(x, y, z);
     }
-
-    isCorrectCoordinate(x, y, z) { 
-        return ((x + y + z) == 0); 
-    }
-
-    getImage(){ 
-        return document.getElementById("asset-" + this.type); 
-    }
-
+    
+    // GET METHOD
+    getSaveType(){return this.saveType;}
+    getImage(){return document.getElementById("asset-" + this.type);}
+    
     /**
      * Get axial coordinates representing the center of an hexagon
      * @param {Number} x 
@@ -45,20 +42,21 @@ class Hexagon {
 
         return { "x": x_center, "y": y_center };
     }
+    
+    // SET METHOD
+    setType(type){this.type = type;}
 
-    /**
-     * Transform degrees to radian
-     * @param {Number} deg 
-     */
-    degreeToRadian(deg) { 
-        return Math.PI * deg / 180; 
-    }
+    // FUNCTION
+    isCorrectCoordinate(x, y, z) {return ((x + y + z) == 0);}
+    
+    degreeToRadian(deg) {return Math.PI * deg / 180;}
 
     draw(ctx) {
         ctx.save();
         ctx.translate(this.center.x, this.center.y);
-        // ctx.rotate(this.degreeToRadian(-89.27));
         ctx.drawImage(this.getImage(), -this.size / 2, -this.size / 2, this.size, this.size);
         ctx.restore();
     }
 }
+
+// ctx.rotate(this.degreeToRadian(-89.27)); 
