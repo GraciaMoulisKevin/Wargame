@@ -46,6 +46,8 @@ $().ready(function () {
 
     requestAnimationFrame(gameLoop);
 
+    addOnclickEventOnHexagon(foregroundMap.getElements());
+
 });
 
 /**
@@ -53,6 +55,42 @@ $().ready(function () {
  */
 function switchMap() {
     game.switch(foregroundMap, undergroundMap);
+}
+
+/**
+ * Manage onclick event on an hexagon
+ * @param {Array} elements 
+ */
+function addOnclickEventOnHexagon(elements) {
+
+    //get the canvas and is offset(Left/Top)
+    let canvas = document.getElementById('foreground-map');
+
+    canvas.addEventListener('click', function (event) {
+
+        //pointer position onclick
+        let cursor_x = event.pageX;
+
+        let cursor_y = event.pageY;
+
+        //offset modifiers
+        let x = cursor_x + canvas.offsetLeft;
+
+        let y = cursor_y - canvas.offsetTop;
+
+        //get cube coordinate of the hexagon clicked
+        let hexagon_coordinate = pixelToHexagonCoordinate(x - WIDTH / 2, y - HEIGHT / 2);
+
+        elements.forEach(function (element) {
+
+            if (hexagon_coordinate.x == element.x && hexagon_coordinate.y == element.y && hexagon_coordinate.z == element.z) {
+
+                showAvailableMovement(elements, element);
+
+            }
+        });
+
+    }, false);
 }
 
 

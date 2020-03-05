@@ -49,6 +49,9 @@ class Map{
         }
     }
 
+    getElements(){
+        return [ this.hexagons, this.gameObject ];
+    }
     // SET METHOD
     setWidth(width){
         return this.mapWidth = width;

@@ -52,9 +52,4 @@ class Game{
             foregroundMap.setActualPosition(1);
         }
     }
-
-    // switch(scale){
-    //     this.setScale(scale);
-    //     this.setOffsetLeft();
-    // }
 }
