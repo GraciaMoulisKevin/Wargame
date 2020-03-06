@@ -134,7 +134,7 @@ class Hexagon {
                 .attrs({
                     class: `hexagon underground-hexagon ${this.type}`,
                     "data-scale": "underground",
-                    "data-type": "lightgray",
+                    "data-type": "grass",
                     "data-x": this.x,
                     "data-y": this.y,
                     "data-z": this.z,
@@ -147,8 +147,8 @@ class Hexagon {
                     }
                 })
                 .styles({
-                    stroke: "black",
-                    fill: "lightgray"
+                    stroke: "black"
+                    // fill: "lightgray"
                 })
                 .on("click", function () {
                     onclickHexagonEvent(this)
@@ -739,7 +739,7 @@ function onclickHexagonEvent(hexagon) {
             let found = false;
             for(let test of visited)
                 if(test[0].isEqualNode(hexagon))
-                   found = true;
+                    found = true;
 
             if(found){
                 uncoloredHexagon();
