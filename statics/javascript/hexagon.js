@@ -18,7 +18,7 @@ class Hexagon {
         this.type = type;
         this.size = size;
 
-        this.saveType = "volcano";
+        this.saveType = type;
         this.center = this.getCenterCoordinateOfHexagons(x, y, z);
     }
     

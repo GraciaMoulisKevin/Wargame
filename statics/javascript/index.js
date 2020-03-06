@@ -10,6 +10,7 @@
 MAP_WIDTH = 1440;
 MAP_HEIGHT = 1000;
 HEXAGON_SIZE = 80;
+CLICK = 0;
 
 //CANVAS
 let foregroundCanvas = document.getElementById("foreground-map");
@@ -50,7 +51,7 @@ $().ready( function () {
 
     requestAnimationFrame(gameLoop);
 
-    //addOnclickEventOnHexagon(foregroundCanvas, foregroundMap, foregroundMap.getHexagons());
+    addOnclickEventOnHexagon(foregroundCanvas, foregroundMap, foregroundMap.getHexagons());
     addOnclickEventOnHexagon(undergroundCanvas, undergroundMap, undergroundMap.getHexagons());
 
 });
@@ -80,7 +81,7 @@ function addOnclickEventOnHexagon(canvas, map, elements) {
 
         //get cube coordinate of the hexagon clicked
         let hexagonCoordinate = pixelToHexagonCoordinate(x - MAP_WIDTH / 2, y - MAP_HEIGHT / 2);
-        console.log(hexagonCoordinate);
+
         elements.forEach(function (element) {
             if (hexagonCoordinate.x == element.x && hexagonCoordinate.y == element.y && hexagonCoordinate.z == element.z) {
                 showAvailableMovement(map, elements, element);
@@ -153,15 +154,20 @@ function createCubeCoordinate(x, y, z) {
  */
 function showAvailableMovement(map, elements, hexagon, movement_points=1) {
 
-    let hexagons = [];
-    
-    for (let i=0; i < elements.length; i++){
-        if ( isReachable(elements[i], hexagon, movement_points)) {
-            hexagons.push(i);
+    if ( CLICK == 0 ){
+        let hexagons = [];
+        
+        for (let i=0; i < elements.length; i++){
+            if ( isReachable(elements[i], hexagon, movement_points)) {
+                hexagons.push(i);
+            }
         }
+        map.setHexagonsAs(hexagons, "available");
+        CLICK = 1;
+    } else {
+        map.restoreHexagonsType();
+        CLICK = 0;
     }
-
-    map.setHexagonsAs(hexagons, "available");
 }
 
 /**

@@ -24,6 +24,8 @@ class Map{
         this.type = type;
         this.actualPosition = (this.type == "foreground")? 1 : 0; 
 
+        this.hexagonsAvailable = [];
+
         this.addAttrs();
         this.addStyles();
     }
@@ -42,13 +44,14 @@ class Map{
     setScale(scale){this.scale = scale;}
     setActualPosition(position){this.actualPosition = position;}
     setHexagonsAs(indexes, type){
+        this.hexagonsAvailable = indexes;
         for (let i=0; i < indexes.length; i++){
             this.hexagons[indexes[i]].setType(type);
         }
     }
-    restoreHexagonsType(indexes){
-        for (let i=0; i < indexes.length; i++){
-            this.hexagons[indexes[i]].setType(this.hexagons[indexes[i]].getSaveType());
+    restoreHexagonsType(){
+        for (let i=0; i < this.hexagonsAvailable.length; i++){
+            this.hexagons[this.hexagonsAvailable[i]].setType(this.hexagons[this.hexagonsAvailable[i]].getSaveType());
         }  
     }
 
