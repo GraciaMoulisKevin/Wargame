@@ -36,7 +36,24 @@ class Map{
     getHeight(){return this.mapHeight;}
     getStyles(){ return (this.type == "foreground")? foregroundStyles : undergroundStyles;}
     getHexagons(){return this.hexagons;}
+    getNeighbors(hexagon){
 
+        let middle = Math.floor(this.hexagons.length/2);
+        let start = 0;
+        let end = this.hexagons.length;
+
+        while ( start <= end ) {
+            if ( this.hexagons[middle].x < hexagon.x ) {
+                start = middle+1;
+            } else {
+                end = middle-1;
+            }
+            middle = Math.floor((start + end) / 2);
+        }
+
+        console.log(this.hexagons[middle]);
+
+    }
     // SET METHOD
     setWidth(width){return this.mapWidth = width;}
     setHeight(height){return this.mapHeight = height;}

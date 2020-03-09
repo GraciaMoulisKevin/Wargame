@@ -30,12 +30,12 @@ let undergroundMap = game.addMap("underground");
 /**
  * MAIN FUNCTION
  */
-$().ready( function () {
+$().ready(function () {
 
 
     undergroundMap.buildMap();
     foregroundMap.buildMap();
-    
+
     let lastTime = 0;
 
     function gameLoop(timestamp) {
@@ -45,7 +45,7 @@ $().ready( function () {
         //DRAW MAP
         foregroundMap.draw(foregroundCtx);
         undergroundMap.draw(undergroundCtx);
-        
+
         requestAnimationFrame(gameLoop)
     }
 
@@ -59,7 +59,7 @@ $().ready( function () {
 /**
  * Switch the maps
  */
-function switchMap(){
+function switchMap() {
     game.switch(foregroundMap, undergroundMap);
 }
 
@@ -84,7 +84,7 @@ function addOnclickEventOnHexagon(canvas, map, elements) {
 
         elements.forEach(function (element) {
             if (hexagonCoordinate.x == element.x && hexagonCoordinate.y == element.y && hexagonCoordinate.z == element.z) {
-                showAvailableMovement(map, elements, element);
+                showAvailableMovements(map, elements, element);
             }
         });
 
@@ -101,7 +101,7 @@ function pixelToHexagonCoordinate(x, y) {
     let q = (Math.sqrt(3) / 3 * x - 1 / 3 * y) / (HEXAGON_SIZE / 2);
     let r = (2 / 3 * y) / (HEXAGON_SIZE / 2);
 
-    return roundHexagonCoordinate(createCubeCoordinate(q, -q-r, r));
+    return roundHexagonCoordinate(createCubeCoordinate(q, -q - r, r));
 }
 
 /**
@@ -152,17 +152,17 @@ function createCubeCoordinate(x, y, z) {
  * @param {*} hexagon 
  * @param {*} movement_points 
  */
-function showAvailableMovement(map, elements, hexagon, movement_points=1) {
+function showAvailableMovements(map, elements, hexagon, movementPoints = 1) {
 
-    if ( CLICK == 0 ){
-        let hexagons = [];
-        
-        for (let i=0; i < elements.length; i++){
-            if ( isReachable(elements[i], hexagon, movement_points)) {
-                hexagons.push(i);
-            }
-        }
-        
+    if (CLICK == 0) {
+        let hexagons = getReachableHexagons(map, hexagon, movementPoints);
+
+        // for (let i=0; i < elements.length; i++){
+        //     if ( isReachable(elements[i], hexagon, movement_points)) {
+        //         hexagons.push(i);
+        //     }
+        // }
+
         map.setHexagonsAs(hexagons, "available");
         CLICK = 1;
     } else {
@@ -173,7 +173,7 @@ function showAvailableMovement(map, elements, hexagon, movement_points=1) {
 
 
 // function isReachable(element, origin, movement_points){
-    
+
 //     if (element.x >= origin.x - movement_points && element.x <= origin.x + movement_points){
 //         if (element.y >= origin.y - movement_points && element.y <= origin.y + movement_points){
 //             if (element.z >= origin.z - movement_points && element.z <= origin.z + movement_points){
@@ -194,33 +194,40 @@ function showAvailableMovement(map, elements, hexagon, movement_points=1) {
  * @param {Object} Hexagon 
  * @param {Number} movement_points 
  */
-function isReachable(start, movementPoints){
+function getReachableHexagons(map, start, movementPoints) {
+
     let visited = [];
-    visited.push([start,0]);
     let change = true;
 
-    while(change){
+    visited.push([start, 0]);
+
+    console.log(visited);
+
+    while (change) {
+
         change = false;
-        for(let hex of visited){
-            let neigh = neighbors(hex[0]);
-            for(let neighbor of neigh){
-                if(neighbor!=null){
+
+        for (let hex of visited) {
+            
+            let neigh = neighbors(map, hex[0]);
+
+            for (let neighbor of neigh) {
+                if (neighbor != null) {
 
                     let data = getHexagonDataset(neighbor);
                     let type = d3.select(`.hexagon[data-scale="${data.scale}"][data-x="${data.x}"][data-y="${data.y}"][data-z="${data.z}"]`).attr("data-type");
-                    let dist = hex[1]+distFromName(type);
+                    let dist = hex[1] + distFromName(type);
 
                     let ind = -1;
-                    for(let test of visited)
-                        if(test[0].isEqualNode(neighbor))
+                    for (let test of visited)
+                        if (test[0].isEqualNode(neighbor))
                             ind = visited.indexOf(test);
 
-                    if(ind==-1 && dist<=movementPoints){
-                        visited.push([neighbor,dist]);
+                    if (ind == -1 && dist <= movementPoints) {
+                        visited.push([neighbor, dist]);
                         change = true;
-                    }
-                    else if(ind!=-1 && dist<visited[ind][1]){
-                        visited[ind]=[neighbor,dist];
+                    } else if (ind != -1 && dist < visited[ind][1]) {
+                        visited[ind] = [neighbor, dist];
                         change = true;
                     }
                 }
@@ -228,21 +235,33 @@ function isReachable(start, movementPoints){
         }
     }
     reachableSort(visited);
+    console.log(visited);
     return visited;
 }
 
-function reachableSort(T){
-    for(let i = T.length-1; i >= 0; i--){
-        for(let j = 0; j < i; j++){
-            if(T[j+1][1] < T[j][1]){
+function reachableSort(T) {
+    for (let i = T.length - 1; i >= 0; i--) {
+        for (let j = 0; j < i; j++) {
+            if (T[j + 1][1] < T[j][1]) {
                 let ech = T[j];
-                T[j]=T[j+1];
-                T[j+1]=ech;
+                T[j] = T[j + 1];
+                T[j + 1] = ech;
             }
         }
     }
 }
 
+function neighbors(map, hexagon) {
+    map.getNeighbors(hexagon);
+    // return [
+    //     d3.select(`.hexagon[data-scale="${data.scale}"][data-x="${data.x-1}"][data-y="${data.y}"][data-z="${data.z+1}"]`).node(),
+    //     d3.select(`.hexagon[data-scale="${data.scale}"][data-x="${data.x-1}"][data-y="${data.y+1}"][data-z="${data.z}"]`).node(),
+    //     d3.select(`.hexagon[data-scale="${data.scale}"][data-x="${data.x}"][data-y="${data.y+1}"][data-z="${data.z-1}"]`).node(),
+    //     d3.select(`.hexagon[data-scale="${data.scale}"][data-x="${data.x}"][data-y="${data.y-1}"][data-z="${data.z+1}"]`).node(),
+    //     d3.select(`.hexagon[data-scale="${data.scale}"][data-x="${data.x+1}"][data-y="${data.y}"][data-z="${data.z-1}"]`).node(),
+    //     d3.select(`.hexagon[data-scale="${data.scale}"][data-x="${data.x+1}"][data-y="${data.y-1}"][data-z="${data.z}"]`).node()
+    // ];
+}
 
 // // ________ ONLOAD ________
 // window.onload = start;
@@ -621,7 +640,7 @@ function reachableSort(T){
 // }
 
 
- 
+
 /**
  * MEMO
  * https://www.youtube.com/watch?v=3EMxBkqC4z0;
