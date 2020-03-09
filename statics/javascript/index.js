@@ -59,7 +59,7 @@ $().ready( function () {
 /**
  * Switch the maps
  */
-function switchMap() {
+function switchMap(){
     game.switch(foregroundMap, undergroundMap);
 }
 

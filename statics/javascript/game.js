@@ -39,6 +39,7 @@ class Game{
 
     switch(foregroundMap, undergroundMap){
 
+        
         if ( foregroundMap.getActualPosition() == 1 ){
             
             d3.select(`#${foregroundMap.type}-map`).transition().styles(undergroundStyles);
@@ -47,6 +48,7 @@ class Game{
             d3.select(`#${undergroundMap.type}-map`).transition().styles(foregroundStyles);
             undergroundMap.setActualPosition(1);
 
+            foregroundCanvas.parentNode.insertBefore(foregroundCanvas,foregroundCanvas.parentNode.firstChild);
         } else {
 
             d3.select(`#${undergroundMap.type}-map`).transition().styles(undergroundStyles);
@@ -54,6 +56,8 @@ class Game{
             
             d3.select(`#${foregroundMap.type}-map`).transition().styles(foregroundStyles);
             foregroundMap.setActualPosition(1);
+
+            undergroundCanvas.parentNode.insertBefore(undergroundCanvas,undergroundCanvas.parentNode.firstChild);
         }
     }
 }
