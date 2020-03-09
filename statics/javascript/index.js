@@ -162,6 +162,7 @@ function showAvailableMovement(map, elements, hexagon, movement_points=1) {
                 hexagons.push(i);
             }
         }
+        
         map.setHexagonsAs(hexagons, "available");
         CLICK = 1;
     } else {
@@ -170,28 +171,78 @@ function showAvailableMovement(map, elements, hexagon, movement_points=1) {
     }
 }
 
+
+// function isReachable(element, origin, movement_points){
+    
+//     if (element.x >= origin.x - movement_points && element.x <= origin.x + movement_points){
+//         if (element.y >= origin.y - movement_points && element.y <= origin.y + movement_points){
+//             if (element.z >= origin.z - movement_points && element.z <= origin.z + movement_points){
+//                 if ( element != origin ){
+//                     return true;
+//                 } else {
+//                     return false;
+//                 }
+//             }
+//         }
+//     } else {
+//         return false;
+//     }
+// }
+
 /**
- * 
- * @param {Object} element 
- * @param {Object} origin 
+ * Return all reachable hexagon
+ * @param {Object} Hexagon 
  * @param {Number} movement_points 
  */
-function isReachable(element, origin, movement_points){
+function isReachable(start, movementPoints){
+    let visited = [];
+    visited.push([start,0]);
+    let change = true;
 
-    if (element.x >= origin.x - movement_points && element.x <= origin.x + movement_points){
-        if (element.y >= origin.y - movement_points && element.y <= origin.y + movement_points){
-            if (element.z >= origin.z - movement_points && element.z <= origin.z + movement_points){
-                if ( element != origin ){
-                    return true;
-                } else {
-                    return false;
+    while(change){
+        change = false;
+        for(let hex of visited){
+            let neigh = neighbors(hex[0]);
+            for(let neighbor of neigh){
+                if(neighbor!=null){
+
+                    let data = getHexagonDataset(neighbor);
+                    let type = d3.select(`.hexagon[data-scale="${data.scale}"][data-x="${data.x}"][data-y="${data.y}"][data-z="${data.z}"]`).attr("data-type");
+                    let dist = hex[1]+distFromName(type);
+
+                    let ind = -1;
+                    for(let test of visited)
+                        if(test[0].isEqualNode(neighbor))
+                            ind = visited.indexOf(test);
+
+                    if(ind==-1 && dist<=movementPoints){
+                        visited.push([neighbor,dist]);
+                        change = true;
+                    }
+                    else if(ind!=-1 && dist<visited[ind][1]){
+                        visited[ind]=[neighbor,dist];
+                        change = true;
+                    }
                 }
             }
         }
-    } else {
-        return false;
+    }
+    reachableSort(visited);
+    return visited;
+}
+
+function reachableSort(T){
+    for(let i = T.length-1; i >= 0; i--){
+        for(let j = 0; j < i; j++){
+            if(T[j+1][1] < T[j][1]){
+                let ech = T[j];
+                T[j]=T[j+1];
+                T[j+1]=ech;
+            }
+        }
     }
 }
+
 
 // // ________ ONLOAD ________
 // window.onload = start;
