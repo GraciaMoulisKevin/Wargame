@@ -90,6 +90,22 @@ export default class Manager {
         this.systems[systemName].disable();
     }
 
+    public isSystemEnabled(systemName: string) {
+        return this.systems[systemName].isEnabled();
+    }
+
+    public pauseSystem(systemName: string) {
+        this.systems[systemName].pause();
+    }
+
+    public resumeSystem(systemName: string) {
+        this.systems[systemName].resume();
+    }
+
+    public getSystemsNames(): string[] {
+        return Object.keys(this.systems);
+    }
+
     public update(): void {
         for(const system of Object.keys(this.systems)) {
             this.systems[system].update();
