@@ -135,7 +135,7 @@ function roundHexagonCoordinate(data) {
 
 /**
  * 
- * @param {Number} x 
+ * @param {Number} x showAvailableMovements(map, elements, element);
  * @param {Number} y 
  * @param {Number} z
  */
@@ -155,8 +155,9 @@ function createCubeCoordinate(x, y, z) {
 function showAvailableMovements(map, elements, hexagon, movementPoints = 1) {
 
     if (CLICK == 0) {
-        let hexagons = getReachableHexagons(map, hexagon, movementPoints);
+        let hexagons = map.getNeighbors(hexagon);
 
+        // let hexagons = getReachableHexagons(map, hexagon, movementPoints);
         // for (let i=0; i < elements.length; i++){
         //     if ( isReachable(elements[i], hexagon, movement_points)) {
         //         hexagons.push(i);
@@ -202,6 +203,8 @@ function getReachableHexagons(map, start, movementPoints) {
     visited.push([start, 0]);
 
     console.log(visited);
+
+    map.getNeighbors(hexagon);
 
     while (change) {
 
@@ -249,18 +252,6 @@ function reachableSort(T) {
             }
         }
     }
-}
-
-function neighbors(map, hexagon) {
-    map.getNeighbors(hexagon);
-    // return [
-    //     d3.select(`.hexagon[data-scale="${data.scale}"][data-x="${data.x-1}"][data-y="${data.y}"][data-z="${data.z+1}"]`).node(),
-    //     d3.select(`.hexagon[data-scale="${data.scale}"][data-x="${data.x-1}"][data-y="${data.y+1}"][data-z="${data.z}"]`).node(),
-    //     d3.select(`.hexagon[data-scale="${data.scale}"][data-x="${data.x}"][data-y="${data.y+1}"][data-z="${data.z-1}"]`).node(),
-    //     d3.select(`.hexagon[data-scale="${data.scale}"][data-x="${data.x}"][data-y="${data.y-1}"][data-z="${data.z+1}"]`).node(),
-    //     d3.select(`.hexagon[data-scale="${data.scale}"][data-x="${data.x+1}"][data-y="${data.y}"][data-z="${data.z-1}"]`).node(),
-    //     d3.select(`.hexagon[data-scale="${data.scale}"][data-x="${data.x+1}"][data-y="${data.y-1}"][data-z="${data.z}"]`).node()
-    // ];
 }
 
 // // ________ ONLOAD ________

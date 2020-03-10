@@ -36,14 +36,12 @@ class Map{
     getHeight(){return this.mapHeight;}
     getStyles(){ return (this.type == "foreground")? foregroundStyles : undergroundStyles;}
     getHexagons(){return this.hexagons;}
-    getNeighbors(hexagon){
+    getMaxHexagonsOnDiagonal(){ return Math.abs(this.hexagons[0].x * 2)+1;}
+    getIndex(hexagon){
+        let start = 0, middle = Math.floor(this.hexagons.length / 2), end = this.hexagons.length;
 
-        let middle = Math.floor(this.hexagons.length/2);
-        let start = 0;
-        let end = this.hexagons.length;
-
-        while ( start <= end ) {
-            if ( this.hexagons[middle].x < hexagon.x ) {
+        while ( this.hexagons[middle].x != hexagon.x){
+            if (this.hexagons[middle].x < hexagon.x){
                 start = middle+1;
             } else {
                 end = middle-1;
@@ -51,8 +49,25 @@ class Map{
             middle = Math.floor((start + end) / 2);
         }
 
-        console.log(this.hexagons[middle]);
+        while ( this.hexagons[middle].y != hexagon.y ){
+            if ( this.hexagons[middle].y < hexagon.y ){
+                middle++;
+            } else {
+                middle--;
+            }
+        }
 
+        return middle;
+    }
+    getNeighbors(hexagon){
+
+        let index = this.getIndex(hexagon);
+        console.log(index);
+        let max = (hexagon.x < 0)? this.getMaxHexagonsOnDiagonal() + hexagon.x : this.getMaxHexagonsOnDiagonal() - hexagon.x;
+        console.log(max);
+        let neighbors = [index-max, index-max+1, index-1, index+1, index+max, index+max+1];
+
+        return neighbors;
     }
     // SET METHOD
     setWidth(width){return this.mapWidth = width;}
@@ -61,6 +76,7 @@ class Map{
     setScale(scale){this.scale = scale;}
     setActualPosition(position){this.actualPosition = position;}
     setHexagonsAs(indexes, type){
+        console.log(indexes);
         this.hexagonsAvailable = indexes;
         for (let i=0; i < indexes.length; i++){
             this.hexagons[indexes[i]].setType(type);
