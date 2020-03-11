@@ -156,14 +156,6 @@ function showAvailableMovements(map, elements, hexagon, movementPoints = 1) {
 
     if (CLICK == 0) {
         let hexagons = map.getNeighbors(hexagon);
-
-        // let hexagons = getReachableHexagons(map, hexagon, movementPoints);
-        // for (let i=0; i < elements.length; i++){
-        //     if ( isReachable(elements[i], hexagon, movement_points)) {
-        //         hexagons.push(i);
-        //     }
-        // }
-
         map.setHexagonsAs(hexagons, "available");
         CLICK = 1;
     } else {

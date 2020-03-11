@@ -62,11 +62,24 @@ class Map{
     getNeighbors(hexagon){
 
         let index = this.getIndex(hexagon);
-        console.log(index);
         let max = (hexagon.x < 0)? this.getMaxHexagonsOnDiagonal() + hexagon.x : this.getMaxHexagonsOnDiagonal() - hexagon.x;
-        console.log(max);
-        let neighbors = [index-max, index-max+1, index-1, index+1, index+max, index+max+1];
+        let neighbors;
 
+        
+        if ( hexagon.x < 0 ){
+            neighbors = [index-max, index-max+1, index-1, index+1, index+max, index+max+1];
+        } else if ( hexagon.x == 0 ){
+            neighbors = [index-max, index-max+1, index-1, index+1, index+max-1, index+max];
+        } else {
+            neighbors = [index-max-1, index-max, index-1, index+1, index+max-1, index+max];
+        }
+
+        for (let i=0; i < neighbors.length; i++){
+            if ( neighbors[i] < 0 || neighbors[i] >= this.hexagons.length){
+                neighbors.splice(i, 1);
+                i--;
+            }
+        }
         return neighbors;
     }
     // SET METHOD
@@ -76,16 +89,17 @@ class Map{
     setScale(scale){this.scale = scale;}
     setActualPosition(position){this.actualPosition = position;}
     setHexagonsAs(indexes, type){
-        console.log(indexes);
         this.hexagonsAvailable = indexes;
         for (let i=0; i < indexes.length; i++){
-            this.hexagons[indexes[i]].setType(type);
+            if ( indexes[i] >= 0 && indexes[i] < this.hexagons.length ){
+                this.hexagons[indexes[i]].setType(type);
+            }
         }
     }
     restoreHexagonsType(){
         for (let i=0; i < this.hexagonsAvailable.length; i++){
             this.hexagons[this.hexagonsAvailable[i]].setType(this.hexagons[this.hexagonsAvailable[i]].getSaveType());
-        }  
+        }
     }
 
     // ADD METHOD
