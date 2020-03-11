@@ -5,6 +5,7 @@ import MenuSystem from "./src/MenuSystem";
 import Components from './src/Components/';
 import RenderSystem from "./src/Systems/RenderSystem";
 import VelocitySystem from "./src/Systems/VelocitySystem";
+import GrowthSystem from "./src/Systems/GrowthSystem";
 
 const socket = io();
 const game: Game = new Game();
@@ -13,7 +14,7 @@ window.addEventListener('load', function () {
 
     registerComponents();
 
-    const testEntityId = game.manager.createEntity(['Renderable', 'Position', 'Velocity']);
+    const testEntityId = game.manager.createEntity(['Renderable', 'Position', 'Velocity', 'Shape']);
     game.manager.setComponentDataForEntities([testEntityId], 'Velocity', {x: 0.5, y: 0.2});
 
     game.manager.registerSystem('RenderSystem', new RenderSystem(game));
@@ -22,7 +23,10 @@ window.addEventListener('load', function () {
     game.manager.registerSystem('VelocitySystem', new VelocitySystem(game));
     game.manager.enableSystem('VelocitySystem');
 
-    game.manager.getSystemsNames().forEach(name => $('systemselection').append(`<option>${name}</option>`))
+    game.manager.registerSystem('GrowthSystem', new GrowthSystem(game));
+    //game.manager.enableSystem('GrowthSystem');
+
+    game.manager.getSystemsNames().forEach(name => $('#systemselection').append($(`<option>`, {value: name, text: name})));
 
     game.start(socket);
 

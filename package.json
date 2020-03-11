@@ -26,5 +26,8 @@
     "express": "^4.17.1",
     "socket.io": "^2.3.0",
     "watchify": "^3.11.1"
+  },
+  "dependencies": {
+    "@types/jquery": "^3.3.33"
   }
 }

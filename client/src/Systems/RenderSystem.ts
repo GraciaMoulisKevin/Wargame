@@ -24,16 +24,19 @@ export default class RenderSystem extends System{
     }
 
     protected onUpdate() {
-        const entities = this.game.manager.getEntitiesByComponents(['Renderable', 'Position']);
+        const entities = this.game.manager.getEntitiesByComponents(['Renderable', 'Position', 'Shape']);
 
         this.foregroundCtx.clearRect(0,0,this.foregroundCanvas.width,this.foregroundCanvas.height);
         for(const entityId of entities) {
             const positionState = this.game.manager.getComponentDataByEntity(entityId, 'Position');
+            const shapeState = this.game.manager.getComponentDataByEntity(entityId, 'Shape');
+
+            if(shapeState.type !== 'circle') continue;
 
             this.foregroundCtx.save();
             this.foregroundCtx.beginPath();
             this.foregroundCtx.translate(positionState.x,positionState.y);
-            this.foregroundCtx.arc(75, 75, 50, 0, Math.PI * 2, true);  // Cercle extérieur
+            this.foregroundCtx.arc(75, 75, shapeState.radius, 0, Math.PI * 2, true);  // Cercle extérieur
             this.foregroundCtx.fillStyle = this.getRandomColor();
             this.foregroundCtx.fill();
             this.foregroundCtx.restore();

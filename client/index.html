@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <link rel="stylesheet" type="text/css" href="client/style.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <title>Un titre</title>
 </head>
 
 <body>
-    <select id="systemselection"></select>
-    <button type="button" id="stopbutton">stop</button>
+<div class="input-group my-2 ml-2" style="width: 20%">
+    <select class="form-control" id="systemselection"></select>
+    <div class="input-group-append">
+        <button class="btn btn-primary" type="button" id="stopbutton">Toggle</button>
+    </div>
+</div>
     <div id="map">
         <canvas id="underground-map"></canvas>
         <canvas id="foreground-map" width="1440" height="1000"></canvas>
