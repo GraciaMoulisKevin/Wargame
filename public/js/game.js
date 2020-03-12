@@ -39,6 +39,7 @@ class Game{
 
     switch(foregroundMap, undergroundMap){
 
+        
         if ( foregroundMap.getActualPosition() == 1 ){
             
             d3.select(`#${foregroundMap.type}-map`).transition().styles(undergroundStyles);
