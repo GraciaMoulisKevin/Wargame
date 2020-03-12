@@ -82,6 +82,29 @@ class Map{
         }
         return neighbors;
     }
+    getMovementPointRequire(hexagon){
+        let type = hexagon.getSaveType();
+        switch(type){
+            case "grass":
+                return 1;
+            case "forest":
+                return 2;
+            case "sand":
+                return 2;
+            case "snow":
+                return 2;
+            case "urban":
+                return 1;
+            case "volcano":
+                return 4;
+            case "water":
+                return 3;
+            case "mountain":
+                return 4;
+        }
+        return 999;
+    }
+
     // SET METHOD
     setWidth(width){return this.mapWidth = width;}
     setHeight(height){return this.mapHeight = height;}

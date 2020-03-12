@@ -172,7 +172,6 @@ function showAvailableMovements(map, elements, hexagon, movementPoints=2) {
  */
 function getReachableHexagons(map, hexagon, movementPoints) {
 
-    // visited => [ [indexHexagon, dist],  ... ]
     let visited = [];
     let change = true;
 
@@ -182,30 +181,32 @@ function getReachableHexagons(map, hexagon, movementPoints) {
 
         change = false;
 
-        for (let hex of visited) {
+        // for each hexagon of visited
+        for (let hexagonVisited of visited) {
             
-            let neigh = map.getNeighbors(hexagon);
+            let neighbors = map.getNeighbors(hexagon);
 
-            for (let neighbor of neigh) {
+            // for each neighbors
+            for (let neighbor of neighbors) {
 
-                let dist = hex[1] + distFromName(map.getHexagon(neighbor).getSaveType());
-                let ind = -1;
+                let distance = hexagonVisited[1] + map.getMovementPointRequire(map.getHexagon(neighbor));
+                let index = -1;
 
                 // Pour chaque élément visité
                 for (let element of visited){
 
                     // si l'indexe de l'élement et le même que celui du voisin actuellement lu
                     if ( element[0] == neighbor ){
-                        ind = visited.indexOf(element);
+                        index = visited.indexOf(element);
                     }
                 }
 
                 //si on a pas trouvé le voisin dans visited et access => rajout
-                if (ind == -1 && dist <= movementPoints) {
-                    visited.push([neighbor, dist]);
+                if (index == -1 && distance <= movementPoints) {
+                    visited.push([neighbor, distance]);
                     change = true;
-                } else if (ind != -1 && dist < visited[ind][1]) {
-                    visited[ind] = [neighbor, dist];
+                } else if (index != -1 && distance < visited[index][1]) {
+                    visited[index] = [neighbor, distance];
                     change = true;
                 }
             }
@@ -228,7 +229,7 @@ function reachableSort(T) {
     }
 }
 
-function distFromName(name){
+function getMovementPointOfHexagon(name){
     switch(name){
         case "grass":
             return 1;
