@@ -90,16 +90,15 @@ class Map{
     setActualPosition(position){this.actualPosition = position;}
     setHexagonsAs(indexes, type){
         this.hexagonsAvailable = indexes;
-        for (let i=0; i < indexes.length; i++){
-            if ( indexes[0][i] >= 0 && indexes[0][i] < this.hexagons.length ){
-                console.log()
-                this.hexagons[indexes[0][i]].setType(type);
+        for (let i=1; i < indexes.length; i++){
+            if ( indexes[i][0] >= 0 && indexes[i][0] < this.hexagons.length ){
+                this.hexagons[indexes[i][0]].setType(type);
             }
         }
     }
     restoreHexagonsType(){
         for (let i=0; i < this.hexagonsAvailable.length; i++){
-            this.hexagons[this.hexagonsAvailable[i]].setType(this.hexagons[this.hexagonsAvailable[i]].getSaveType());
+            this.hexagons[this.hexagonsAvailable[i][0]].setType(this.hexagons[this.hexagonsAvailable[i][0]].getSaveType());
         }
     }
 

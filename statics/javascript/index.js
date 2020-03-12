@@ -152,7 +152,7 @@ function createCubeCoordinate(x, y, z) {
  * @param {*} hexagon 
  * @param {*} movement_points 
  */
-function showAvailableMovements(map, elements, hexagon, movementPoints=1) {
+function showAvailableMovements(map, elements, hexagon, movementPoints=2) {
 
     if (CLICK == 0) {
         let hexagons = getReachableHexagons(map, hexagon, movementPoints);
@@ -188,8 +188,6 @@ function getReachableHexagons(map, hexagon, movementPoints) {
 
             for (let neighbor of neigh) {
 
-                console.log("voisin: " + neighbor);
-
                 let dist = hex[1] + distFromName(map.getHexagon(neighbor).getSaveType());
                 let ind = -1;
 
@@ -198,7 +196,6 @@ function getReachableHexagons(map, hexagon, movementPoints) {
 
                     // si l'indexe de l'élement et le même que celui du voisin actuellement lu
                     if ( element[0] == neighbor ){
-                        console.log("je t'ai déjà vu toi");
                         ind = visited.indexOf(element);
                     }
                 }
@@ -236,7 +233,7 @@ function distFromName(name){
         case "grass":
             return 1;
         case "forest":
-            return 600;
+            return 2;
         case "sand":
             return 2;
         case "snow":
@@ -244,11 +241,11 @@ function distFromName(name){
         case "urban":
             return 1;
         case "volcano":
-            return 6;
+            return 4;
         case "water":
             return 3;
         case "mountain":
-            return 5;
+            return 4;
     }
     return 999999999;
 }
