@@ -35,6 +35,7 @@ class Map{
     getWidth(){return this.mapWidth;}
     getHeight(){return this.mapHeight;}
     getStyles(){ return (this.type == "foreground")? foregroundStyles : undergroundStyles;}
+    getHexagon(index){ return this.hexagons[index]; }
     getHexagons(){return this.hexagons;}
     getMaxHexagonsOnDiagonal(){ return Math.abs(this.hexagons[0].x * 2)+1;}
     getIndex(hexagon){
@@ -65,7 +66,6 @@ class Map{
         let max = (hexagon.x < 0)? this.getMaxHexagonsOnDiagonal() + hexagon.x : this.getMaxHexagonsOnDiagonal() - hexagon.x;
         let neighbors;
 
-        
         if ( hexagon.x < 0 ){
             neighbors = [index-max, index-max+1, index-1, index+1, index+max, index+max+1];
         } else if ( hexagon.x == 0 ){
@@ -91,8 +91,9 @@ class Map{
     setHexagonsAs(indexes, type){
         this.hexagonsAvailable = indexes;
         for (let i=0; i < indexes.length; i++){
-            if ( indexes[i] >= 0 && indexes[i] < this.hexagons.length ){
-                this.hexagons[indexes[i]].setType(type);
+            if ( indexes[0][i] >= 0 && indexes[0][i] < this.hexagons.length ){
+                console.log()
+                this.hexagons[indexes[0][i]].setType(type);
             }
         }
     }
