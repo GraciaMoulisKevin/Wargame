@@ -192,16 +192,16 @@ function getReachableHexagons(map, hexagon, movementPoints) {
                 let distance = hexagonVisited[1] + map.getMovementPointRequire(map.getHexagon(neighbor));
                 let index = -1;
 
-                // Pour chaque élément visité
+                // For each element of visited
                 for (let element of visited){
 
-                    // si l'indexe de l'élement et le même que celui du voisin actuellement lu
+                    // If we already visited this element
                     if ( element[0] == neighbor ){
                         index = visited.indexOf(element);
                     }
                 }
 
-                //si on a pas trouvé le voisin dans visited et access => rajout
+                // if we don't found this neighbors in visited and he is accessible then we add it to visited
                 if (index == -1 && distance <= movementPoints) {
                     visited.push([neighbor, distance]);
                     change = true;
