@@ -35,6 +35,7 @@ class Map{
     getWidth(){return this.mapWidth;}
     getHeight(){return this.mapHeight;}
     getStyles(){ return (this.type == "foreground")? foregroundStyles : undergroundStyles;}
+    getHexagon(index){ return this.hexagons[index]; }
     getHexagons(){return this.hexagons;}
     getMaxHexagonsOnDiagonal(){ return Math.abs(this.hexagons[0].x * 2)+1;}
     getIndex(hexagon){
@@ -65,7 +66,6 @@ class Map{
         let max = (hexagon.x < 0)? this.getMaxHexagonsOnDiagonal() + hexagon.x : this.getMaxHexagonsOnDiagonal() - hexagon.x;
         let neighbors;
 
-        
         if ( hexagon.x < 0 ){
             neighbors = [index-max, index-max+1, index-1, index+1, index+max, index+max+1];
         } else if ( hexagon.x == 0 ){
@@ -82,6 +82,29 @@ class Map{
         }
         return neighbors;
     }
+    getMovementPointRequire(hexagon){
+        let type = hexagon.getSaveType();
+        switch(type){
+            case "grass":
+                return 1;
+            case "forest":
+                return 2;
+            case "sand":
+                return 2;
+            case "snow":
+                return 2;
+            case "urban":
+                return 1;
+            case "volcano":
+                return 4;
+            case "water":
+                return 3;
+            case "mountain":
+                return 4;
+        }
+        return 999;
+    }
+
     // SET METHOD
     setWidth(width){return this.mapWidth = width;}
     setHeight(height){return this.mapHeight = height;}
@@ -90,15 +113,15 @@ class Map{
     setActualPosition(position){this.actualPosition = position;}
     setHexagonsAs(indexes, type){
         this.hexagonsAvailable = indexes;
-        for (let i=0; i < indexes.length; i++){
-            if ( indexes[i] >= 0 && indexes[i] < this.hexagons.length ){
-                this.hexagons[indexes[i]].setType(type);
+        for (let i=1; i < indexes.length; i++){
+            if ( indexes[i][0] >= 0 && indexes[i][0] < this.hexagons.length ){
+                this.hexagons[indexes[i][0]].setType(type);
             }
         }
     }
     restoreHexagonsType(){
         for (let i=0; i < this.hexagonsAvailable.length; i++){
-            this.hexagons[this.hexagonsAvailable[i]].setType(this.hexagons[this.hexagonsAvailable[i]].getSaveType());
+            this.hexagons[this.hexagonsAvailable[i][0]].setType(this.hexagons[this.hexagonsAvailable[i][0]].getSaveType());
         }
     }
 

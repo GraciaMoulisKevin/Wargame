@@ -152,10 +152,10 @@ function createCubeCoordinate(x, y, z) {
  * @param {*} hexagon 
  * @param {*} movement_points 
  */
-function showAvailableMovements(map, elements, hexagon, movementPoints = 1) {
+function showAvailableMovements(map, elements, hexagon, movementPoints=2) {
 
     if (CLICK == 0) {
-        let hexagons = map.getNeighbors(hexagon);
+        let hexagons = getReachableHexagons(map, hexagon, movementPoints);
         map.setHexagonsAs(hexagons, "available");
         CLICK = 1;
     } else {
@@ -164,73 +164,56 @@ function showAvailableMovements(map, elements, hexagon, movementPoints = 1) {
     }
 }
 
-
-// function isReachable(element, origin, movement_points){
-
-//     if (element.x >= origin.x - movement_points && element.x <= origin.x + movement_points){
-//         if (element.y >= origin.y - movement_points && element.y <= origin.y + movement_points){
-//             if (element.z >= origin.z - movement_points && element.z <= origin.z + movement_points){
-//                 if ( element != origin ){
-//                     return true;
-//                 } else {
-//                     return false;
-//                 }
-//             }
-//         }
-//     } else {
-//         return false;
-//     }
-// }
-
 /**
  * Return all reachable hexagon
- * @param {Object} Hexagon 
- * @param {Number} movement_points 
+ * @param {Object} map 
+ * @param {Object} hexagon 
+ * @param {Number} movementPoints 
  */
-function getReachableHexagons(map, start, movementPoints) {
+function getReachableHexagons(map, hexagon, movementPoints) {
 
     let visited = [];
     let change = true;
 
-    visited.push([start, 0]);
-
-    console.log(visited);
-
-    map.getNeighbors(hexagon);
+    visited.push([map.getIndex(hexagon), 0]);
 
     while (change) {
 
         change = false;
 
-        for (let hex of visited) {
+        // for each hexagon of visited
+        for (let hexagonVisited of visited) {
             
-            let neigh = neighbors(map, hex[0]);
+            let neighbors = map.getNeighbors(hexagon);
 
-            for (let neighbor of neigh) {
-                if (neighbor != null) {
+            // for each neighbors
+            for (let neighbor of neighbors) {
 
-                    let data = getHexagonDataset(neighbor);
-                    let type = d3.select(`.hexagon[data-scale="${data.scale}"][data-x="${data.x}"][data-y="${data.y}"][data-z="${data.z}"]`).attr("data-type");
-                    let dist = hex[1] + distFromName(type);
+                let distance = hexagonVisited[1] + map.getMovementPointRequire(map.getHexagon(neighbor));
+                let index = -1;
 
-                    let ind = -1;
-                    for (let test of visited)
-                        if (test[0].isEqualNode(neighbor))
-                            ind = visited.indexOf(test);
+                // For each element of visited
+                for (let element of visited){
 
-                    if (ind == -1 && dist <= movementPoints) {
-                        visited.push([neighbor, dist]);
-                        change = true;
-                    } else if (ind != -1 && dist < visited[ind][1]) {
-                        visited[ind] = [neighbor, dist];
-                        change = true;
+                    // If we already visited this element
+                    if ( element[0] == neighbor ){
+                        index = visited.indexOf(element);
                     }
+                }
+
+                // if we don't found this neighbors in visited and he is accessible then we add it to visited
+                if (index == -1 && distance <= movementPoints) {
+                    visited.push([neighbor, distance]);
+                    change = true;
+                } else if (index != -1 && distance < visited[index][1]) {
+                    visited[index] = [neighbor, distance];
+                    change = true;
                 }
             }
         }
     }
+
     reachableSort(visited);
-    console.log(visited);
     return visited;
 }
 
@@ -244,6 +227,28 @@ function reachableSort(T) {
             }
         }
     }
+}
+
+function getMovementPointOfHexagon(name){
+    switch(name){
+        case "grass":
+            return 1;
+        case "forest":
+            return 2;
+        case "sand":
+            return 2;
+        case "snow":
+            return 2;
+        case "urban":
+            return 1;
+        case "volcano":
+            return 4;
+        case "water":
+            return 3;
+        case "mountain":
+            return 4;
+    }
+    return 999999999;
 }
 
 // // ________ ONLOAD ________
