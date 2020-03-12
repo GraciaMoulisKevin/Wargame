@@ -16,6 +16,11 @@ export default class GrowthSystem extends System {
 
             if(shapeState.type === 'circle') {
                 shapeState.radius += 0.2;
+                if(shapeState.radius >= 20) {
+                    this.game.manager.eventHandler.callEvents(['CircleTooBig'], {
+                        entityId: entityId
+                    });
+                }
             }
         }
     }

@@ -6,6 +6,7 @@ import Components from './src/Components/';
 import RenderSystem from "./src/Systems/RenderSystem";
 import VelocitySystem from "./src/Systems/VelocitySystem";
 import GrowthSystem from "./src/Systems/GrowthSystem";
+import MapManager from "./src/MapManager";
 
 const socket = io();
 const game: Game = new Game();
@@ -26,11 +27,33 @@ window.addEventListener('load', function () {
     game.manager.registerSystem('GrowthSystem', new GrowthSystem(game));
     //game.manager.enableSystem('GrowthSystem');
 
+    const mapManager = new MapManager(game);
+    $.getJSON('client/src/ressources/maps/level1.json', function (result) {
+        mapManager.createMap(result);
+    });
+
     game.manager.getSystemsNames().forEach(name => $('#systemselection').append($(`<option>`, {value: name, text: name})));
 
     game.start(socket);
 
+    game.manager.eventHandler.registerListener('quandLaPageEstOuverteDepuis2sec', function () {
+        console.log('oui');
+    });
+
+    game.manager.eventHandler.registerListener('quandLaPageEstOuverteDepuis2sec', function () {
+        console.log('caca');
+    });
+
+    game.manager.eventHandler.registerListener('CircleTooBig', function (eventData) {
+        const shapeState = game.manager.getComponentDataByEntity(eventData.entityId, 'Shape')['radius'] = 5;
+    });
+
+    setTimeout(function () {
+        game.manager.eventHandler.callEvents(['quandLaPageEstOuverteDepuis2sec']);
+    }, 2000);
+
 });
+
 
 function registerComponents() {
     for(const component of Components) {
