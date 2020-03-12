@@ -4,6 +4,7 @@ import spriteComponent from './Sprite';
 import velocityComponent from './Velocity';
 import renderableComponent from './Renderable';
 import shapeComponent from './Shape';
+import mapTileComponent from './MapTile';
 
 export default [
     positionComponent,
@@ -11,5 +12,6 @@ export default [
     spriteComponent,
     velocityComponent,
     renderableComponent,
-    shapeComponent
+    shapeComponent,
+    mapTileComponent
 ];

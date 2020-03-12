@@ -7,6 +7,7 @@ import RenderSystem from "./src/Systems/RenderSystem";
 import VelocitySystem from "./src/Systems/VelocitySystem";
 import GrowthSystem from "./src/Systems/GrowthSystem";
 import MapManager from "./src/MapManager";
+import TextureManager from "./src/TextureManager";
 
 const socket = io();
 const game: Game = new Game();
@@ -40,10 +41,6 @@ window.addEventListener('load', function () {
         console.log('oui');
     });
 
-    game.manager.eventHandler.registerListener('quandLaPageEstOuverteDepuis2sec', function () {
-        console.log('caca');
-    });
-
     game.manager.eventHandler.registerListener('CircleTooBig', function (eventData) {
         const shapeState = game.manager.getComponentDataByEntity(eventData.entityId, 'Shape')['radius'] = 5;
     });
@@ -51,6 +48,17 @@ window.addEventListener('load', function () {
     setTimeout(function () {
         game.manager.eventHandler.callEvents(['quandLaPageEstOuverteDepuis2sec']);
     }, 2000);
+
+    TextureManager.addTexture('MAP_TILE_available', '/client/src/ressources/textures/map-tiles/available.png');
+    TextureManager.addTexture('MAP_TILE_forest', '/client/src/ressources/textures/map-tiles/forest.png');
+    TextureManager.addTexture('MAP_TILE_grass', '/client/src/ressources/textures/map-tiles/grass.png');
+    TextureManager.addTexture('MAP_TILE_mountain', '/client/src/ressources/textures/map-tiles/mountain.png');
+    TextureManager.addTexture('MAP_TILE_sand', '/client/src/ressources/textures/map-tiles/sand.png');
+    TextureManager.addTexture('MAP_TILE_snow', '/client/src/ressources/textures/map-tiles/snow.png');
+    TextureManager.addTexture('MAP_TILE_unavailable', '/client/src/ressources/textures/map-tiles/unavailable.png');
+    TextureManager.addTexture('MAP_TILE_urban', '/client/src/ressources/textures/map-tiles/urban.png');
+    TextureManager.addTexture('MAP_TILE_volcano', '/client/src/ressources/textures/map-tiles/volcano.png');
+    TextureManager.addTexture('MAP_TILE_water', '/client/src/ressources/textures/map-tiles/water.png');
 
 });
 

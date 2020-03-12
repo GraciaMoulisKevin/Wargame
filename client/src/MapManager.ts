@@ -29,6 +29,26 @@ export default class MapManager {
         let layers = [];
         for(const layer of mapDefinition.layers) {
             layers.push(layer.name);
+
+            for(const tile of layer.tiles) {
+                const tileId = this.game.manager.createEntity(['Renderable', 'MapTile', 'Position']);
+
+                this.game.manager.setComponentDataForEntities([tileId], 'MapTile', {
+                    mapId: mapId,
+                    layer: layer.name,
+                    x: tile.x,
+                    y: tile.y,
+                    z: tile.z,
+                    type: tile.type
+                });
+
+                const center = this.getCenterCoordinateOfHexagons(tile.x, tile.y, tile.z, mapDefinition);
+
+                this.game.manager.setComponentDataForEntities([tileId], 'Position', {
+                    x: center.x,
+                    y: center.y,
+                });
+            }
         }
 
         this.game.manager.setComponentDataForEntities([mapId], 'Map', {
@@ -38,9 +58,21 @@ export default class MapManager {
             layers: layers
         });
 
-        console.log(this.game.manager.getComponentDataByEntity(mapId, 'Map'));
-
         return mapId;
+    }
+
+    private getCenterCoordinateOfHexagons(x, y, z, mapDefinition: MapDefinition): {x: number, y: number} {
+
+        let x_spacing = (Math.sqrt(3) / 2) * mapDefinition.tile_size / 2; // size of the inscribed circle
+        let z_spacing = (3 / 4) * mapDefinition.tile_size;
+
+        let x_center = mapDefinition.width / 2 + (x * x_spacing) + (-y * x_spacing);
+        let y_center = mapDefinition.height / 2 + (z * z_spacing);
+
+        return {
+            x: x_center,
+            y: y_center
+        };
     }
 
 }
