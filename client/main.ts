@@ -2,6 +2,10 @@ import * as io from 'socket.io-client';
 import * as d3 from 'd3';
 import Game from "../ecs/Game";
 import MenuSystem from "./src/MenuSystem";
+import Components from './src/Components/';
+import RenderSystem from "./src/Systems/RenderSystem";
+import VelocitySystem from "./src/Systems/VelocitySystem";
+import GrowthSystem from "./src/Systems/GrowthSystem";
 
 const socket = io();
 const game: Game = new Game();
@@ -10,35 +14,35 @@ window.addEventListener('load', function () {
 
     registerComponents();
 
+    const testEntityId = game.manager.createEntity(['Renderable', 'Position', 'Velocity', 'Shape']);
+    game.manager.setComponentDataForEntities([testEntityId], 'Velocity', {x: 0.5, y: 0.2});
+
+    game.manager.registerSystem('RenderSystem', new RenderSystem(game));
+    game.manager.enableSystem('RenderSystem');
+
+    game.manager.registerSystem('VelocitySystem', new VelocitySystem(game));
+    game.manager.enableSystem('VelocitySystem');
+
+    game.manager.registerSystem('GrowthSystem', new GrowthSystem(game));
+    //game.manager.enableSystem('GrowthSystem');
+
+    game.manager.getSystemsNames().forEach(name => $('#systemselection').append($(`<option>`, {value: name, text: name})));
+
     game.start(socket);
 
 });
 
 function registerComponents() {
-    const componentsToAdd: {name, state}[] = [];
-
-    componentsToAdd.push({
-        name: 'Transform',
-        state: {
-            x: 0,
-            y: 0,
-            z: 0,
-            width: 0,
-            height: 0,
-            angle: 0
-        }
-    });
-
-    componentsToAdd.push({
-        name: 'TerrainTile',
-        state: {
-
-        }
-    });
-
-    for(const component of componentsToAdd) {
+    for(const component of Components) {
         game.manager.registerComponent(component.name, component.state);
     }
+}
+
+document.getElementById('stopbutton').onclick = function () {
+    if(game.manager.isSystemEnabled($('#systemselection').find(":selected").text()))
+        game.manager.pauseSystem($('#systemselection').find(":selected").text());
+    else
+        game.manager.resumeSystem($('#systemselection').find(":selected").text());
 }
 
 

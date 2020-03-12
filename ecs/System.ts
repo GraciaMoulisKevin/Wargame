@@ -34,4 +34,16 @@ export default abstract class System {
         this.onDisable();
     }
 
+    public pause() : void {
+        this.isActive = false;
+    }
+
+    public resume() : void {
+        this.isActive = true;
+    }
+
+    public isEnabled() : boolean {
+        return this.isActive;
+    }
+
 }
