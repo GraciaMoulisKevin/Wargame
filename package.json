@@ -26,5 +26,9 @@
     "express": "^4.17.1",
     "socket.io": "^2.3.0",
     "watchify": "^3.11.1"
+  },
+  "dependencies": {
+    "nodemon": "^2.0.2",
+    "typescript": "^3.8.2"
   }
 }

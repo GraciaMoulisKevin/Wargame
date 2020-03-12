@@ -39,6 +39,11 @@ cd Wargame/
 npm install
 ```
 
+## Compile Typescript
+```bash
+npx tsc *.ts
+```
+
 ## Lancer l'environnement de développement
 ```bash
 npm run dev
