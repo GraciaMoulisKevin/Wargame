@@ -65,7 +65,9 @@ class Map{
         let index = this.getIndex(hexagon);
         let max = (hexagon.x < 0)? this.getMaxHexagonsOnDiagonal() + hexagon.x : this.getMaxHexagonsOnDiagonal() - hexagon.x;
         let neighbors;
-
+        console.log(max);
+        console.log(this.getMaxHexagonsOnDiagonal());
+        
         if ( hexagon.x < 0 ){
             neighbors = [index-max, index-max+1, index-1, index+1, index+max, index+max+1];
         } else if ( hexagon.x == 0 ){
@@ -74,12 +76,19 @@ class Map{
             neighbors = [index-max-1, index-max, index-1, index+1, index+max-1, index+max];
         }
 
+        if (max == index+1){
+            neighbors.splice(0, 1);
+            neighbors.splice(3, 1);
+        }
+
         for (let i=0; i < neighbors.length; i++){
             if ( neighbors[i] < 0 || neighbors[i] >= this.hexagons.length){
                 neighbors.splice(i, 1);
                 i--;
             }
         }
+
+        console.log(neighbors);
         return neighbors;
     }
     getMovementPointRequire(hexagon){
