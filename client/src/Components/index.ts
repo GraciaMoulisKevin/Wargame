@@ -5,6 +5,7 @@ import velocityComponent from './Velocity';
 import renderableComponent from './Renderable';
 import shapeComponent from './Shape';
 import mapTileComponent from './MapTile';
+import healthComponent from './Health';
 
 export default [
     positionComponent,
@@ -13,5 +14,6 @@ export default [
     velocityComponent,
     renderableComponent,
     shapeComponent,
-    mapTileComponent
+    mapTileComponent,
+    healthComponent
 ];

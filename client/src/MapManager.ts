@@ -12,7 +12,7 @@ interface MapDefinition {
             z: number,
             type: string
         }]
-    }[]
+    }
 }
 
 export default class MapManager {
