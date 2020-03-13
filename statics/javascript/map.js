@@ -63,22 +63,32 @@ class Map{
     getNeighbors(hexagon){
 
         let index = this.getIndex(hexagon);
-        let max = (hexagon.x < 0)? this.getMaxHexagonsOnDiagonal() + hexagon.x : this.getMaxHexagonsOnDiagonal() - hexagon.x;
-        let neighbors;
-        console.log(max);
-        console.log(this.getMaxHexagonsOnDiagonal());
-        
-        if ( hexagon.x < 0 ){
+        let max = this.getMaxHexagonsOnDiagonal() - Math.abs(hexagon.x);
+        let neighbors = [];
+        let data = this.getTopAndBot(hexagon.x);
+
+        if (index == data[1].top){
+            if (hexagon.x == 0){
+                neighbors = [data[2].top, index-1, data[0].top];
+            } else if (hexagon.x < 0){
+                neighbors = [data[2].top, index-1, data[0].top-1, data[0].top];
+            } else {
+                neighbors = [data[0].top-1, data[0].top, index-1, data[2].top];
+            }
+        } else if (index == data[1].bot){
+            if (hexagon.x == 0){
+                neighbors = [data[0].bot, index+1, data[2].bot];
+            } else if (hexagon.x < 0){
+                neighbors = [data[2].bot, index+1, data[0].bot, data[0].bot+1];
+            } else {
+                neighbors = [data[0].bot, data[0].bot+1, index+1, data[2].bot];
+            }
+        } else if (hexagon.x < 0){
             neighbors = [index-max, index-max+1, index-1, index+1, index+max, index+max+1];
-        } else if ( hexagon.x == 0 ){
+        } else if (hexagon.x == 0){
             neighbors = [index-max, index-max+1, index-1, index+1, index+max-1, index+max];
         } else {
             neighbors = [index-max-1, index-max, index-1, index+1, index+max-1, index+max];
-        }
-
-        if (max == index+1){
-            neighbors.splice(0, 1);
-            neighbors.splice(3, 1);
         }
 
         for (let i=0; i < neighbors.length; i++){
@@ -88,8 +98,44 @@ class Map{
             }
         }
 
-        console.log(neighbors);
         return neighbors;
+    }
+    /**
+     * Return array of three object. Each object contain the top and bottom hexagon index of x-1, x and x+1 position
+     * @param x
+     * @returns {[]}
+     */
+    getTopAndBot(x) {
+        let centerIndex = Math.floor(this.hexagons.length/2);
+        let top = centerIndex + (this.getMaxHexagonsOnDiagonal()-1)/2;
+        let bot = centerIndex - (this.getMaxHexagonsOnDiagonal()-1)/2;
+        let temp = [];
+
+        if (x == 0){
+            temp.push({top: top - this.getMaxHexagonsOnDiagonal(), bot: bot - this.getMaxHexagonsOnDiagonal() + 1});
+            temp.push({top: top, bot: bot});
+            temp.push({top: top + this.getMaxHexagonsOnDiagonal() - 1, bot: bot + this.getMaxHexagonsOnDiagonal()});
+        } else {
+            if ( Math.abs(x) == 1 ){
+                temp.push({top: top, bot: bot});
+            }
+            let i = 0;
+            while (i <= Math.abs(x) + 1) {
+                if (x < 0) {
+                    top -= this.getMaxHexagonsOnDiagonal() - i;
+                    bot -= this.getMaxHexagonsOnDiagonal() - 1 - i;
+                } else {
+                    top += this.getMaxHexagonsOnDiagonal() - 1 - i;
+                    bot += this.getMaxHexagonsOnDiagonal() - i;
+                }
+
+                if (i == (Math.abs(x)) - 2 || i == (Math.abs(x)) - 1 || i == (Math.abs(x))) {
+                    temp.push({top: top, bot: bot});
+                }
+                i++;
+            }
+        }
+        return temp;
     }
     getMovementPointRequire(hexagon){
         let type = hexagon.getSaveType();
@@ -136,7 +182,7 @@ class Map{
 
     // ADD METHOD
     addAttrs(){d3.select(`#${this.type}-map`).attrs({ "width": this.mapWidth, "height": this.mapHeight});}
-    addStyles(){d3.select(`#${this.type}-map`).styles(this.getStyles());}
+    addStyles(){this.d3.select(`#${this.type}-map`).styles(this.getStyles());}
 
     // BUILD MAP
     buildMap(){
