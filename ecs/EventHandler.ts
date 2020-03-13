@@ -9,12 +9,15 @@ export default class EventHandler {
            this.listeners[event] = [];
        }
 
-        this.listeners[event].push(cb);
+       this.listeners[event].push(cb);
     }
 
     public callEvents(events: [string], eventData?: {}) {
         events.forEach(event => {
-           this.listeners[event].forEach(cb => cb(eventData));
+            if(this.listeners[event])
+                this.listeners[event].forEach(cb => cb(eventData));
+            else
+                console.error(`Event ${event} has any callback.`);
         });
     }
 

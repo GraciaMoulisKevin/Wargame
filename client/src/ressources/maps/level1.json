@@ -1,7 +1,7 @@
 {
   "width": 1440,
   "height": 1000,
-  "hexagon_size": 80,
+  "tile_size": 80,
   "layers": [
     {
       "name": "foreground",
