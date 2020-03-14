@@ -7,10 +7,11 @@
  * https://codesandbox.io/s/z2pqr9620m
  */
 
-MAP_WIDTH = 1440;
-MAP_HEIGHT = 1000;
-HEXAGON_SIZE = 80;
-CLICK = 0;
+const MAP_WIDTH = 1440;
+const MAP_HEIGHT = 1000;
+const HEXAGON_SIZE = 80;
+let CLICK = 0;
+let PREVIOUS_CLICK_HEXAGON;
 
 //CANVAS
 let foregroundCanvas = document.getElementById("foreground-map");
@@ -38,7 +39,7 @@ $().ready(function () {
     let lastTime = 0;
 
     function gameLoop(timestamp) {
-        let deltaTime = timestamp - lastTime;
+        // let deltaTime = timestamp - lastTime;
         lastTime = timestamp;
 
         //DRAW MAP
@@ -50,8 +51,8 @@ $().ready(function () {
 
     requestAnimationFrame(gameLoop);
 
-    onclickHandler(foregroundCanvas, foregroundMap, foregroundMap.getHexagons());
-    onclickHandler(undergroundCanvas, undergroundMap, undergroundMap.getHexagons());
+    listenerHandler(foregroundCanvas, foregroundMap, foregroundMap.getHexagons());
+    listenerHandler(undergroundCanvas, undergroundMap, undergroundMap.getHexagons());
 
 });
 
@@ -123,53 +124,65 @@ function showAvailableMovements(canvas, map, elements, hexagon, movementPoints) 
  * Manage onclick event on an hexagon
  * @param canvas
  * @param map
- * @param elements
+ * @param hexagons
  */
-function onclickHandler(canvas, map, elements, movementPoints=2) {
+function listenerHandler(canvas, map, hexagons, movementPoints=2) {
 
+    // Add onclick event
     canvas.addEventListener('click', function (event) {
-        //removeOnmouseoverHandler(canvas);
 
-        let cursor = getCursorCoordinateOnCanvas(canvas, event);
-        let hexagonCoordinate = pixelToHexagonCoordinate(cursor.x , cursor.y); //get cube coordinate of the hexagon clicked
-
-        if ( CLICK == 0 ) {
-            elements.forEach(function (element) {
-                if (hexagonCoordinate.x == element.x && hexagonCoordinate.y == element.y && hexagonCoordinate.z == element.z) {
-                    showAvailableMovements(canvas, map, elements, element, movementPoints);
+        // Get hexagon where we clicked
+        let cursor = getCursorCoordinateOnCanvas(event, canvas);
+        let hexagonCoordinate = pixelToHexagonCoordinate(cursor.x, cursor.y); //get cube coordinate of the hexagon clicked
+        let getClickedHexagon = function () {
+            let hexagon;
+            hexagons.forEach(function (element) {
+                if (hexagonCoordinate.x === element.x && hexagonCoordinate.y === element.y && hexagonCoordinate.z === element.z) {
+                    hexagon = element;
                 }
             });
-            CLICK = 1;
-        } else if (CLICK == 1){
-            onmouseoverHandler(canvas);
-            map.restoreHexagonsType();
-            CLICK = 0;
+            if (!hexagon){
+                throw "Can't find hexagon !";
+            } else {
+                return hexagon;
+            }
+        };
+
+        try{
+            let clickedHexagon = getClickedHexagon();
+
+            //FIRST TIME CLICK
+            if (CLICK === 0) {
+                PREVIOUS_CLICK_HEXAGON = clickedHexagon;
+                showAvailableMovements(canvas, map, hexagons, clickedHexagon, movementPoints);
+                CLICK = 1;
+            }
+
+            //SECOND TIME OR MORE CLICK
+            else {
+
+                //CLICK ON SAME HEXAGON TWICE
+                if (PREVIOUS_CLICK_HEXAGON === clickedHexagon) {
+                    console.log("clicked on same hex");
+                    map.restoreHexagonsType();
+                    CLICK = 0;
+                }
+
+                //PATHFINDER
+                else if (CLICK === 1) {
+                    try {
+                        let path = pathfinder(map, PREVIOUS_CLICK_HEXAGON, clickedHexagon, movementPoints);
+                        map.restoreHexagonsType();
+                        CLICK = 0;
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
+            }
+        } catch (e) {
+            console.error(e);
         }
-
-    }, false);
-}
-
-function onmouseoverHandler(canvas){
-    console.log("heu lalo ?")
-    canvas.addEventListener('mousemove', function(){
-        console.log("coucou les enfants !!");
     });
-}
-
-function removeOnmouseoverHandler(canvas){
-    console.log("je veux pas");
-    canvas.removeEventListener('mousemove',  test);
-}
-
-function test(event, map, canvas, hexagon, elements, movementPoints){
-    // let cursor = getCursorCoordinateOnCanvas(canvas, event);
-    // let hexagonCoordinate = pixelToHexagonCoordinate(cursor.x, cursor.y);
-    // elements.forEach(function (element) {
-    //     if (hexagonCoordinate.x == element.x && hexagonCoordinate.y == element.y && hexagonCoordinate.z == element.z) {
-    //         pathfinder(map, hexagon, element, movementPoints);
-    //     }
-    // });
-    console.log("bonsoir");
 }
 
 /**
@@ -180,50 +193,58 @@ function test(event, map, canvas, hexagon, elements, movementPoints){
  */
 function pathfinder(map, hexagonA, hexagonB, movementPoints){
 
-    let visited = getReachableHexagons(map, hexagonA, movementPoints);
+    let hexagons = map.getHexagonsAvailable();
     let path = [];
+    //
+    // path.push({x: data.x, y: data.y, z: data.z });
 
-    path.push({x: data.x, y: data.y, z: data.z });
+    // let index = -1;
+    // for (let test of hexagons) {
+    //     if (test[0].isEqualNode(hexagonB)) {
+    //         index = hexagons.indexOf(test);
+    //     }
+    // }
 
-    let index = -1;
-    for(let test of visited)
-        if(test[0].isEqualNode(hexagonB))
-            index = visited.indexOf(test);
+    // if(index != -1){
+    //     let lastDist = hexagons[index][1];
+    //     let lastNode = hexagons[index][0];
+    //
+    //     while(lastDist>0){
+    //         let neighList = neighbors(lastNode);
+    //         let i = 0;
+    //
+    //         while(i<hexagons.length){
+    //             for(let neigh of neighList){
+    //                 if(neigh!=null){
+    //                     if(i<hexagons.length && hexagons[i][0].isEqualNode(neigh)){
+    //
+    //                         lastDist = hexagons[i][1];
+    //                         lastNode = hexagons[i][0];
+    //                         i = hexagons.length;
+    //                         data = getHexagonDataset(lastNode);
+    //                         path.unshift({
+    //                             "x": data.x,
+    //                             "y": data.y,
+    //                             "z": data.z
+    //                         });
+    //                         d3.select(`.${data.scale}-hexagon[data-x="${data.x}"][data-y="${data.y}"][data-z="${data.z}"]`).classed("pathfinder", true);
+    //                     }
+    //                 }
+    //             }
+    //             i++;
+    //         }
+    //     }
+    // }
+    // else
+    //     d3.select(`.${data.scale}-hexagon[data-x="${data.x}"][data-y="${data.y}"][data-z="${data.z}"]`).classed("pathfinder-unavailable", true);
+    //
+    // return path;
 
-    if(index!=-1){
-        let lastDist = visited[index][1];
-        let lastNode = visited[index][0];
-
-        while(lastDist>0){
-            let neighList = neighbors(lastNode);
-            let i = 0;
-
-            while(i<visited.length){
-                for(let neigh of neighList){
-                    if(neigh!=null){
-                        if(i<visited.length && visited[i][0].isEqualNode(neigh)){
-
-                            lastDist = visited[i][1];
-                            lastNode = visited[i][0];
-                            i = visited.length;
-                            data = getHexagonDataset(lastNode);
-                            path.unshift({
-                                "x": data.x,
-                                "y": data.y,
-                                "z": data.z
-                            });
-                            d3.select(`.${data.scale}-hexagon[data-x="${data.x}"][data-y="${data.y}"][data-z="${data.z}"]`).classed("pathfinder", true);
-                        }
-                    }
-                }
-                i++;
-            }
-        }
+    if (path){
+        return path;
+    } else {
+        throw "Can't find a path !";
     }
-    else
-        d3.select(`.${data.scale}-hexagon[data-x="${data.x}"][data-y="${data.y}"][data-z="${data.z}"]`).classed("pathfinder-unavailable", true);
-
-    return path;
 }
 
 /* #_______ SIMPLE FUNCTION _______# */
@@ -275,7 +296,8 @@ function createCubeCoordinate(x, y, z) {
  * @param event
  * @returns {{x: number, y: number}}
  */
-function getCursorCoordinateOnCanvas(canvas, event){
+function getCursorCoordinateOnCanvas(event, canvas){
+
     //pointer position onclick
     let cursor_x = event.pageX;
     let cursor_y = event.pageY;
