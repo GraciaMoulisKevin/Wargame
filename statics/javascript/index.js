@@ -50,118 +50,16 @@ $().ready(function () {
 
     requestAnimationFrame(gameLoop);
 
-    addOnclickEventOnHexagon(foregroundCanvas, foregroundMap, foregroundMap.getHexagons());
-    addOnclickEventOnHexagon(undergroundCanvas, undergroundMap, undergroundMap.getHexagons());
+    onclickHandler(foregroundCanvas, foregroundMap, foregroundMap.getHexagons());
+    onclickHandler(undergroundCanvas, undergroundMap, undergroundMap.getHexagons());
 
 });
 
 /**
- * Switch the maps
- */
-function switchMap() {
-    game.switch(foregroundMap, undergroundMap);
-}
-
-/**
- * Manage onclick event on an hexagon
- * @param canvas
- * @param map
- * @param elements
- */
-function addOnclickEventOnHexagon(canvas, map, elements) {
-
-    canvas.addEventListener('click', function (event) {
-        //pointer position onclick
-        let cursor_x = event.pageX;
-        let cursor_y = event.pageY;
-
-        //offset modifiers
-        let x = cursor_x - canvas.offsetLeft;
-        let y = cursor_y - canvas.offsetTop;
-
-        //get cube coordinate of the hexagon clicked
-        let hexagonCoordinate = pixelToHexagonCoordinate(x - MAP_WIDTH / 2, y - MAP_HEIGHT / 2);
-
-        //THIS SHOULD BE FOR UNIT
-        if ( CLICK === 0 ) {
-            elements.forEach(function (element) {
-                if (hexagonCoordinate.x == element.x && hexagonCoordinate.y == element.y && hexagonCoordinate.z == element.z) {
-                    showAvailableMovements(map, elements, element);
-                }
-            });
-        } else {
-            map.restoreHexagonsType();
-            CLICK = 0;
-        }
-
-    }, false);
-}
-
-/**
- * Get the cube hexagon coordinate (x, y, z) where we clicked
- * @param {Number} x 
- * @param {Number} y 
- */
-function pixelToHexagonCoordinate(x, y) {
-
-    let q = (Math.sqrt(3) / 3 * x - 1 / 3 * y) / (HEXAGON_SIZE / 2);
-    let r = (2 / 3 * y) / (HEXAGON_SIZE / 2);
-
-    return roundHexagonCoordinate(createCubeCoordinate(q, -q - r, r));
-}
-
-/**
- * round data to get proper coordinate
- * @param {Object} data
- */
-function roundHexagonCoordinate(data) {
-
-    let x = Math.round(data.x);
-    let y = Math.round(data.y);
-    let z = Math.round(data.z);
-
-    let x_diff = Math.abs(x - data.x);
-    let y_diff = Math.abs(y - data.y);
-    let z_diff = Math.abs(z - data.z);
-
-    if ((x_diff >= y_diff) && (x_diff >= z_diff)) {
-        x = -y - z;
-    } else if (y_diff >= z_diff) {
-        y = -x - z;
-    } else {
-        z = -x - y;
-    }
-    return { "x": x,  "y": y,  "z": z };
-}
-
-/**
- * Create a simple object of coordinate
- * @param {Number} x
- * @param {Number} y 
- * @param {Number} z
- */
-function createCubeCoordinate(x, y, z) {
-    return { "x": x,  "y": y,  "z": z };
-}
-
-/**
- * Show all available movements on the map
- * @param {Object} map
- * @param {Object} elements
- * @param {Object} hexagon
- * @param movementPoints
- */
-function showAvailableMovements(map, elements, hexagon, movementPoints=2) {
-    let hexagons = getReachableHexagons(map, hexagon, movementPoints);
-    map.setHexagonsAs(hexagons, "available");
-    CLICK = 1;
-}
-
-/**
  * Return all reachable hexagon
  * @param {Class} map
- * @param {Object} hexagon 
- * @param {Number} movementPoints 
+ * @param {Object} hexagon
+ * @param {Number} movementPoints
  */
 function getReachableHexagons(map, hexagon, movementPoints) {
 
@@ -171,13 +69,12 @@ function getReachableHexagons(map, hexagon, movementPoints) {
     visited.push([map.getIndex(hexagon), 0]);
 
     while (change) {
-
         change = false;
 
         // for each hexagon of visited
         for (let hexagonVisited of visited) {
-            
-            let neighbors = map.getNeighbors(hexagon);
+
+            let neighbors = map.getNeighbors(map.getHexagon(hexagonVisited[0]));
 
             // for each neighbors
             for (let neighbor of neighbors) {
@@ -209,35 +106,84 @@ function getReachableHexagons(map, hexagon, movementPoints) {
     return visited;
 }
 
-function reachableSort(T) {
-    for (let i = T.length - 1; i >= 0; i--) {
-        for (let j = 0; j < i; j++) {
-            if (T[j + 1][1] < T[j][1]) {
-                let ech = T[j];
-                T[j] = T[j + 1];
-                T[j + 1] = ech;
-            }
-        }
-    }
+/**
+ * Show all available movements on the map
+ * @param {Object} canvas
+ * @param {Object} map
+ * @param {Object} elements
+ * @param {Object} hexagon
+ * @param movementPoints
+ */
+function showAvailableMovements(canvas, map, elements, hexagon, movementPoints) {
+    let hexagons = getReachableHexagons(map, hexagon, movementPoints);
+    map.setHexagonsAs(hexagons, "available");
 }
 
 /**
- * Create a path from idA to idB
+ * Manage onclick event on an hexagon
+ * @param canvas
+ * @param map
+ * @param elements
+ */
+function onclickHandler(canvas, map, elements, movementPoints=2) {
+
+    canvas.addEventListener('click', function (event) {
+        //removeOnmouseoverHandler(canvas);
+
+        let cursor = getCursorCoordinateOnCanvas(canvas, event);
+        let hexagonCoordinate = pixelToHexagonCoordinate(cursor.x , cursor.y); //get cube coordinate of the hexagon clicked
+
+        if ( CLICK == 0 ) {
+            elements.forEach(function (element) {
+                if (hexagonCoordinate.x == element.x && hexagonCoordinate.y == element.y && hexagonCoordinate.z == element.z) {
+                    showAvailableMovements(canvas, map, elements, element, movementPoints);
+                }
+            });
+            CLICK = 1;
+        } else if (CLICK == 1){
+            onmouseoverHandler(canvas);
+            map.restoreHexagonsType();
+            CLICK = 0;
+        }
+
+    }, false);
+}
+
+function onmouseoverHandler(canvas){
+    console.log("heu lalo ?")
+    canvas.addEventListener('mousemove', function(){
+        console.log("coucou les enfants !!");
+    });
+}
+
+function removeOnmouseoverHandler(canvas){
+    console.log("je veux pas");
+    canvas.removeEventListener('mousemove',  test);
+}
+
+function test(event, map, canvas, hexagon, elements, movementPoints){
+    // let cursor = getCursorCoordinateOnCanvas(canvas, event);
+    // let hexagonCoordinate = pixelToHexagonCoordinate(cursor.x, cursor.y);
+    // elements.forEach(function (element) {
+    //     if (hexagonCoordinate.x == element.x && hexagonCoordinate.y == element.y && hexagonCoordinate.z == element.z) {
+    //         pathfinder(map, hexagon, element, movementPoints);
+    //     }
+    // });
+    console.log("bonsoir");
+}
+
+/**
+ * Create a path
+ * @param {Object} map
  * @param {Object} hexagonA
  * @param {Object} hexagonB
  */
-function pathfinder(hexagonA,hexagonB){
+function pathfinder(map, hexagonA, hexagonB, movementPoints){
 
-    let visited = getReachableHexagons(hexagonA,MOVEMENT_POINTS);
+    let visited = getReachableHexagons(map, hexagonA, movementPoints);
     let path = [];
-    let data = getHexagonDataset(hexagonB);
 
-    path.push({
-        "x": data.x,
-        "y": data.y,
-        "z": data.z
-    });
-    d3.select(`.${data.scale}-hexagon[data-x="${data.x}"][data-y="${data.y}"][data-z="${data.z}"]`).classed("pathfinder", true);
+    path.push({x: data.x, y: data.y, z: data.z });
 
     let index = -1;
     for(let test of visited)
@@ -280,34 +226,91 @@ function pathfinder(hexagonA,hexagonB){
     return path;
 }
 
-// // ________ ONCLICK MANAGER ________
+/* #_______ SIMPLE FUNCTION _______# */
 
-// /**
-//  * Manage onclick event on an hexagon
-//  * @param {Array} elements 
-//  */
-// function addOnclickEventOnHexagon(elements) {
+/**
+ * Switch the maps
+ */
+function switchMap() {
+    game.switch(foregroundMap, undergroundMap);
+}
 
-//     //get the canvas and is offset(Left/Top)
-//     let canvas = document.getElementById('foreground-map');
+/**
+ * round data to get proper coordinate
+ * @param {Object} data
+ */
+function roundHexagonCoordinate(data) {
 
-//     canvas.addEventListener('click', function (event) {
+    let x = Math.round(data.x);
+    let y = Math.round(data.y);
+    let z = Math.round(data.z);
 
-//         //pointer position onclick
-//         let cursor_x = event.pageX;
-//         let cursor_y = event.pageY;
-//         //offset modifiers
-//         let x = cursor_x + canvas.offsetLeft;
-//         let y = cursor_y - canvas.offsetTop;
-//         //get cube coordinate of the hexagon clicked
-//         let hexagon_coordinate = pixelToHexagonCoordinate(x - WIDTH / 2, y - HEIGHT / 2);
-//         elements.forEach(function (element) {
-//             if (hexagon_coordinate.x == element.x && hexagon_coordinate.y == element.y && hexagon_coordinate.z == element.z) {
-//                 showAvailableMovement(elements, element);
-//             }
-//         });
-//     }, false);
-// }
+    let x_diff = Math.abs(x - data.x);
+    let y_diff = Math.abs(y - data.y);
+    let z_diff = Math.abs(z - data.z);
+
+    if ((x_diff >= y_diff) && (x_diff >= z_diff)) {
+        x = -y - z;
+    } else if (y_diff >= z_diff) {
+        y = -x - z;
+    } else {
+        z = -x - y;
+    }
+    return { "x": x,  "y": y,  "z": z };
+}
+
+/**
+ * Create a simple object of coordinate
+ * @param {Number} x
+ * @param {Number} y
+ * @param {Number} z
+ */
+function createCubeCoordinate(x, y, z) {
+    return { "x": x,  "y": y,  "z": z };
+}
+
+/**
+ * Return correct necessary coordinate on canvas by adding offsets and parameters of the canvas
+ * @param canvas
+ * @param event
+ * @returns {{x: number, y: number}}
+ */
+function getCursorCoordinateOnCanvas(canvas, event){
+    //pointer position onclick
+    let cursor_x = event.pageX;
+    let cursor_y = event.pageY;
+
+    //offset modifiers
+    let x = cursor_x - canvas.offsetLeft;
+    let y = cursor_y - canvas.offsetTop;
+
+    return {x: x-(canvas.width/2), y: y-(canvas.height/2)};
+}
+
+/**
+ * Get the cube hexagon coordinate (x, y, z) where we clicked
+ * @param {Number} x
+ * @param {Number} y
+ */
+function pixelToHexagonCoordinate(x, y) {
+
+    let q = (Math.sqrt(3) / 3 * x - 1 / 3 * y) / (HEXAGON_SIZE / 2);
+    let r = (2 / 3 * y) / (HEXAGON_SIZE / 2);
+
+    return roundHexagonCoordinate(createCubeCoordinate(q, -q - r, r));
+}
+
+function reachableSort(T) {
+    for (let i = T.length - 1; i >= 0; i--) {
+        for (let j = 0; j < i; j++) {
+            if (T[j + 1][1] < T[j][1]) {
+                let ech = T[j];
+                T[j] = T[j + 1];
+                T[j + 1] = ech;
+            }
+        }
+    }
+}
 
 /**
  * MEMO

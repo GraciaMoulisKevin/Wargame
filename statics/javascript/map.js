@@ -37,6 +37,7 @@ class Map{
     getStyles(){ return (this.type == "foreground")? foregroundStyles : undergroundStyles;}
     getHexagon(index){ return this.hexagons[index]; }
     getHexagons(){return this.hexagons;}
+    getHexagonsAvailable(){return this.hexagonsAvailable;}
     getMaxHexagonsOnDiagonal(){ return Math.abs(this.hexagons[0].x * 2)+1;}
     getIndex(hexagon){
         let start = 0, middle = Math.floor(this.hexagons.length / 2), end = this.hexagons.length;
@@ -182,7 +183,7 @@ class Map{
 
     // ADD METHOD
     addAttrs(){d3.select(`#${this.type}-map`).attrs({ "width": this.mapWidth, "height": this.mapHeight});}
-    addStyles(){this.d3.select(`#${this.type}-map`).styles(this.getStyles());}
+    addStyles(){d3.select(`#${this.type}-map`).styles(this.getStyles());}
 
     // BUILD MAP
     buildMap(){
