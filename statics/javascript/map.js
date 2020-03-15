@@ -162,16 +162,15 @@ class Map{
     }
 
     // SET METHOD
-    setWidth(width){return this.mapWidth = width;}
-    setHeight(height){return this.mapHeight = height;}
     setType(type){this.type = type;}
-    setScale(scale){this.scale = scale;}
     setActualPosition(position){this.actualPosition = position;}
+    setHexagonAvailable(array){
+        this.hexagonsAvailable = array;
+    }
     setHexagonsAs(indexes, type){
-        this.hexagonsAvailable = indexes;
         for (let i=1; i < indexes.length; i++){
-            if ( indexes[i][0] >= 0 && indexes[i][0] < this.hexagons.length ){
-                this.hexagons[indexes[i][0]].setType(type);
+            if ( indexes[i] >= 0 && indexes[i] < this.hexagons.length ){
+                this.hexagons[indexes[i]].setType(type);
             }
         }
     }
@@ -190,10 +189,11 @@ class Map{
         this.hexagons = buildLevel(this, this.level, this.type);
     }
 
-    draw(ctx){
-        [...this.hexagons, ...this.gameObject].forEach(element => {
-            element.draw(ctx);
-        });
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.center.x, this.center.y);
+        ctx.drawImage(this.getImage(), -this.size / 2, -this.size / 2, this.size, this.size);
+        ctx.restore();
     }
 
 }

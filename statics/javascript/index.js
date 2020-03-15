@@ -51,8 +51,8 @@ $().ready(function () {
 
     requestAnimationFrame(gameLoop);
 
-    listenerHandler(foregroundCanvas, foregroundMap, foregroundMap.getHexagons());
-    listenerHandler(undergroundCanvas, undergroundMap, undergroundMap.getHexagons());
+    listenerHandler(foregroundCanvas, foregroundMap);
+    listenerHandler(undergroundCanvas, undergroundMap);
 
 });
 
@@ -117,16 +117,22 @@ function getReachableHexagons(map, hexagon, movementPoints) {
  */
 function showAvailableMovements(canvas, map, elements, hexagon, movementPoints) {
     let hexagons = getReachableHexagons(map, hexagon, movementPoints);
-    map.setHexagonsAs(hexagons, "available");
+    map.setHexagonAvailable(hexagons);
+    let indexes = []
+    for(let i=0; i < hexagons.length; i++){
+        indexes.push(hexagons[i][0]);
+    }
+    map.setHexagonsAs(indexes, "available");
 }
 
 /**
  * Manage onclick event on an hexagon
  * @param canvas
  * @param map
- * @param hexagons
  */
-function listenerHandler(canvas, map, hexagons, movementPoints=2) {
+function listenerHandler(canvas, map, movementPoints=2) {
+
+    let hexagons = map.getHexagons();
 
     // Add onclick event
     canvas.addEventListener('click', function (event) {
@@ -163,7 +169,6 @@ function listenerHandler(canvas, map, hexagons, movementPoints=2) {
 
                 //CLICK ON SAME HEXAGON TWICE
                 if (PREVIOUS_CLICK_HEXAGON === clickedHexagon) {
-                    console.log("clicked on same hex");
                     map.restoreHexagonsType();
                     CLICK = 0;
                 }
@@ -173,6 +178,7 @@ function listenerHandler(canvas, map, hexagons, movementPoints=2) {
                     try {
                         let path = pathfinder(map, PREVIOUS_CLICK_HEXAGON, clickedHexagon, movementPoints);
                         map.restoreHexagonsType();
+                        map.setHexagonsAs(path, "unavailable");
                         CLICK = 0;
                     } catch (e) {
                         console.error(e);
@@ -195,56 +201,47 @@ function pathfinder(map, hexagonA, hexagonB, movementPoints){
 
     let hexagons = map.getHexagonsAvailable();
     let path = [];
-    //
-    // path.push({x: data.x, y: data.y, z: data.z });
 
-    // let index = -1;
-    // for (let test of hexagons) {
-    //     if (test[0].isEqualNode(hexagonB)) {
-    //         index = hexagons.indexOf(test);
-    //     }
-    // }
+    path.push(map.getIndex(hexagonB));
 
-    // if(index != -1){
-    //     let lastDist = hexagons[index][1];
-    //     let lastNode = hexagons[index][0];
-    //
-    //     while(lastDist>0){
-    //         let neighList = neighbors(lastNode);
-    //         let i = 0;
-    //
-    //         while(i<hexagons.length){
-    //             for(let neigh of neighList){
-    //                 if(neigh!=null){
-    //                     if(i<hexagons.length && hexagons[i][0].isEqualNode(neigh)){
-    //
-    //                         lastDist = hexagons[i][1];
-    //                         lastNode = hexagons[i][0];
-    //                         i = hexagons.length;
-    //                         data = getHexagonDataset(lastNode);
-    //                         path.unshift({
-    //                             "x": data.x,
-    //                             "y": data.y,
-    //                             "z": data.z
-    //                         });
-    //                         d3.select(`.${data.scale}-hexagon[data-x="${data.x}"][data-y="${data.y}"][data-z="${data.z}"]`).classed("pathfinder", true);
-    //                     }
-    //                 }
-    //             }
-    //             i++;
-    //         }
-    //     }
-    // }
-    // else
-    //     d3.select(`.${data.scale}-hexagon[data-x="${data.x}"][data-y="${data.y}"][data-z="${data.z}"]`).classed("pathfinder-unavailable", true);
-    //
-    // return path;
+    let index = -1;
 
-    if (path){
-        return path;
-    } else {
-        throw "Can't find a path !";
+    // Check if hexagonB is reachable
+    for (let hexagon of hexagons) {
+        if (hexagon[0] == map.getIndex(hexagonB)) {
+            index = hexagons.indexOf(hexagon);
+        }
     }
+
+    if(index != -1){
+        let lastNode = hexagons[index][0];
+        let lastDist = hexagons[index][1];
+
+        while(lastDist > 0){
+            let neighbors = map.getNeighbors(map.getHexagon(lastNode));
+            let i = 0;
+
+            while(i < hexagons.length){
+                for(let neighbor of neighbors){
+                    if(i < hexagons.length && hexagons[i][0] == neighbor){
+
+                        lastDist = hexagons[i][1];
+                        lastNode = hexagons[i][0];
+                        i = hexagons.length;
+                        path.unshift(lastNode);
+                    }
+                }
+                i++;
+            }
+        }
+    }
+    else {
+        throw "Can't find a path !";
+        path = null;
+    }
+
+    console.log(path);
+    return path
 }
 
 /* #_______ SIMPLE FUNCTION _______# */
