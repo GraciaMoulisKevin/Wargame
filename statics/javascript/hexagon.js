@@ -46,11 +46,6 @@ class Hexagon {
     // SET METHOD
     setType(type){this.type = type;}
 
-    // FUNCTION
-    isCorrectCoordinate(x, y, z) {return ((x + y + z) == 0);}
-    
-    degreeToRadian(deg) {return Math.PI * deg / 180;}
-
     draw(ctx) {
         ctx.save();
         ctx.translate(this.center.x, this.center.y);

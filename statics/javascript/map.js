@@ -24,7 +24,7 @@ class Map{
         this.type = type;
         this.actualPosition = (this.type == "foreground")? 1 : 0; 
 
-        this.hexagonsAvailable = [];
+        this.indexesOfModifiedHexagon = [];
 
         this.addAttrs();
         this.addStyles();
@@ -37,7 +37,6 @@ class Map{
     getStyles(){ return (this.type == "foreground")? foregroundStyles : undergroundStyles;}
     getHexagon(index){ return this.hexagons[index]; }
     getHexagons(){return this.hexagons;}
-    getHexagonsAvailable(){return this.hexagonsAvailable;}
     getMaxHexagonsOnDiagonal(){ return Math.abs(this.hexagons[0].x * 2)+1;}
     getIndex(hexagon){
         let start = 0, middle = Math.floor(this.hexagons.length / 2), end = this.hexagons.length;
@@ -164,36 +163,38 @@ class Map{
     // SET METHOD
     setType(type){this.type = type;}
     setActualPosition(position){this.actualPosition = position;}
-    setHexagonAvailable(array){
-        this.hexagonsAvailable = array;
-    }
-    setHexagonsAs(indexes, type){
+    setHexagonsAs(indexes, type, timer){
+        this.indexesOfModifiedHexagon = indexes;
         for (let i=1; i < indexes.length; i++){
             if ( indexes[i] >= 0 && indexes[i] < this.hexagons.length ){
                 this.hexagons[indexes[i]].setType(type);
             }
         }
+        if (timer != null){
+            setTimeout(this.restoreHexagonsType.bind(this), timer);
+        }
     }
     restoreHexagonsType(){
-        for (let i=0; i < this.hexagonsAvailable.length; i++){
-            this.hexagons[this.hexagonsAvailable[i][0]].setType(this.hexagons[this.hexagonsAvailable[i][0]].getSaveType());
+        for(let indexes of this.indexesOfModifiedHexagon){
+            this.hexagons[indexes].setType(this.hexagons[indexes].getSaveType());
         }
     }
 
     // ADD METHOD
     addAttrs(){d3.select(`#${this.type}-map`).attrs({ "width": this.mapWidth, "height": this.mapHeight});}
     addStyles(){d3.select(`#${this.type}-map`).styles(this.getStyles());}
-
+    addGameObject(unit){
+        this.gameObject.push(unit);
+    }
     // BUILD MAP
     buildMap(){
         this.hexagons = buildLevel(this, this.level, this.type);
     }
 
-    draw(ctx) {
-        ctx.save();
-        ctx.translate(this.center.x, this.center.y);
-        ctx.drawImage(this.getImage(), -this.size / 2, -this.size / 2, this.size, this.size);
-        ctx.restore();
+    draw(ctx){
+        [...this.hexagons, ...this.gameObject].forEach(element => {
+            element.draw(ctx);
+        });
     }
 
 }
