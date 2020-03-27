@@ -8,11 +8,16 @@ import VelocitySystem from "./src/Systems/VelocitySystem";
 import GrowthSystem from "./src/Systems/GrowthSystem";
 import MapManager from "./src/MapManager";
 import TextureManager from "./src/TextureManager";
+import ClientListener from "./src/Listeners/ClientListener";
+import MouseService from "./src/Services/MouseService";
 
 const socket = io();
 const game: Game = new Game();
 
 window.addEventListener('load', function () {
+
+
+    game.registerService('MouseService', new MouseService(game));
 
     registerComponents();
 
@@ -59,6 +64,8 @@ window.addEventListener('load', function () {
     TextureManager.addTexture('MAP_TILE_urban', '/client/src/ressources/textures/map-tiles/urban.png');
     TextureManager.addTexture('MAP_TILE_volcano', '/client/src/ressources/textures/map-tiles/volcano.png');
     TextureManager.addTexture('MAP_TILE_water', '/client/src/ressources/textures/map-tiles/water.png');
+
+    new ClientListener(game).register();
 
 });
 

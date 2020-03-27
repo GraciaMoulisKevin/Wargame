@@ -9,4 +9,19 @@
 
 canvas{
     position: absolute;
+    cursor: pointer;
+}
+
+.foreground {
+    left: 100px;
+    top: 100px;
+    opacity: 1;
+    transform: scale(1,1);
+}
+
+.background {
+    left: -250px;
+    top: 50px;
+    opacity: 0.2;
+    transform: scale(0.7,0.7);
 }

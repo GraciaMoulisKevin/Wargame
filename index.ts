@@ -2,7 +2,7 @@ import * as express from 'express';
 import * as socketIO from 'socket.io';
 import Game from "./ecs/Game";
 import LocationSystem from "./server/Systems/LocationSystem";
-import TestListeners from "./server/Listeners/TestListeners";
+import ClientListener from "./client/src/Listeners/ClientListener";
 
 const app = express();
 
@@ -31,7 +31,6 @@ const server = app.listen(3000, () => {
     game.manager.registerSystem('LocationSystem', new LocationSystem(game));
     game.manager.enableSystem('LocationSystem');
 
-    new TestListeners().register(game);
 
     game.start(io);
 });

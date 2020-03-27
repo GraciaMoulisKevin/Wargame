@@ -1,5 +1,7 @@
 import System from "../../../ecs/System";
 import TextureManager from "../TextureManager";
+import MouseService from "../Services/MouseService";
+import MapTileUtils from "../Utils/MapTileUtils";
 
 
 export default class RenderSystem extends System{
@@ -8,6 +10,8 @@ export default class RenderSystem extends System{
     private foregroundCtx;
     private undergroundCanvas;
     private undergroundCtx;
+
+    private mouseService: MouseService = this.game.getService('MouseService');
 
     protected onDisable() {
     }
@@ -62,11 +66,16 @@ export default class RenderSystem extends System{
         const mapTileState = this.game.manager.getComponentDataByEntity(entityId, 'MapTile');
         const mapState = this.game.manager.getComponentDataByEntity(mapTileState.mapId, 'Map');
 
-        if(mapTileState.layer === 'underground') return;
-
         const ctx = mapTileState.layer === 'foreground' ? this.foregroundCtx : this.undergroundCtx;
+        const mousePosition = this.mouseService.getMousePosition();
+        if(mousePosition) {
+            const mouseMapTilePosition = MapTileUtils.getHexagonCoordinatesByPixels(mousePosition, mapState.tile_size);
+            if (mouseMapTilePosition.x === mapTileState.x && mouseMapTilePosition.y === mapTileState.y && mouseMapTilePosition.z === mapTileState.z) {
+                ctx.filter = 'brightness(125%)';
+            }
+        }
         ctx.translate(positionState.x, positionState.y);
-        ctx.drawImage(TextureManager.textures['MAP_TILE_'+mapTileState.type], -mapState.tile_size / 2, -mapState.tile_size / 2, mapState.tile_size, mapState.tile_size);
+        ctx.drawImage(TextureManager.textures['MAP_TILE_'+mapTileState.type], -mapState.tile_size / 2, -mapState.tile_size / 2, mapState.tile_size+2, mapState.tile_size+2);
     }
 
 }

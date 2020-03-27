@@ -65,10 +65,35 @@ export default class Manager {
         return true;
     }
 
-    public getEntitiesByComponents(components: string[]): number[] {
+    /*
+    query : {
+        Component: {
+
+        }
+    }
+     */
+    public getEntitiesByComponents(components: string[], query?: object): number[] {
         let entities = [];
         for(const index in this.componentsData[components[0]]) {
-            if(this.hasEntityComponents(+index, components)) entities.push(+index);
+            if(this.hasEntityComponents(+index, components)) {
+                let select = true;
+                if(query) {
+                    for(const key of Object.keys(query)) {
+                        if(this.hasEntityComponents(+index, [key]))  {
+                            const entityComponent = this.getComponentDataByEntity(+index, key);
+                            const queryComponent = query[key];
+                            for(const compKey of Object.keys(queryComponent)) {
+                                if(entityComponent[compKey] !== queryComponent[compKey]) {
+                                    select = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if(!select) break;
+                    }
+                }
+                if(select) entities.push(+index);
+            }
         }
 
         return entities;

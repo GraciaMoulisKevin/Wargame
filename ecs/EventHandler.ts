@@ -12,6 +12,12 @@ export default class EventHandler {
        this.listeners[event].push(cb);
     }
 
+    public registerListeners(events: object) {
+        for(const event of Object.keys(events)) {
+            this.registerListener(event, events[event]);
+        }
+    }
+
     public callEvents(events: [string], eventData?: {}) {
         events.forEach(event => {
             if(this.listeners[event])

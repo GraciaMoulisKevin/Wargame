@@ -24,7 +24,7 @@ export default class LocationSystem extends System {
             locationState['y'] += locationState['test_y'];
 
             if(locationState['x'] !== baseLocation.x || locationState['y'] !== baseLocation.y) {
-                this.game.manager.eventHandler.callEvents(['EntityMoves'], {entityId: entityId, baseLocation: baseLocation, newLocation:locationState});
+                //this.game.manager.eventHandler.callEvents(['EntityMoves'], {entityId: entityId, baseLocation: baseLocation, newLocation:locationState});
             }
         }
 
