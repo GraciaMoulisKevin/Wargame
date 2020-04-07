@@ -1,8 +1,8 @@
 /**
  * Author : Canta Thomas
- * 
+ *
  * Git Repository : https://github.com/GraciaMoulisKevin/Wargame
- * 
+ *
  * Copyright : 2020 Ⓒ
  */
 
@@ -10,7 +10,7 @@ const foregroundStyles = { left: "100px", top: "100px", opacity: 1, transform: "
 const undergroundStyles = { left: "-250px", top: "50px", opacity: 0.2, transform: "scale(0.7,0.7)" };
 
 class Map{
-    
+
     constructor(game, level, type){
         this.game = game;
 
@@ -22,7 +22,7 @@ class Map{
         this.level = level;
 
         this.type = type;
-        this.actualPosition = (this.type == "foreground")? 1 : 0; 
+        this.actualPosition = (this.type == "foreground")? 1 : 0;
 
         this.indexesOfModifiedHexagon = [];
 
@@ -159,6 +159,14 @@ class Map{
         }
         return 999;
     }
+    getUnitsOnHexagon(hexagon){
+        let center = hexagon.getCenterCoordinateOfHexagons();
+        console.log(center);
+        for (let elements of this.gameObject){
+            console.log(elements);
+        }
+        return 1;
+    }
 
     // SET METHOD
     setType(type){this.type = type;}
@@ -186,9 +194,20 @@ class Map{
     addGameObject(unit){
         this.gameObject.push(unit);
     }
+
     // BUILD MAP
-    buildMap(){
-        this.hexagons = buildLevel(this, this.level, this.type);
+    async buildMap(){
+        try {
+            const data = await d3.json(`/statics/data/${this.level}`);
+
+            let hexagonSize = data.hexagon.size;
+
+            for (let hexagon of data[this.type]) {
+                this.hexagons.push(new Hexagon(this, hexagon.x, hexagon.y, hexagon.z, hexagon.type, hexagonSize));
+            }
+        } catch(e){
+            throw new Error("An error occurred while reading data !");
+        }
     }
 
     draw(ctx){

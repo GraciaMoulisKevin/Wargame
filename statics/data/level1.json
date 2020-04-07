@@ -1,7 +1,16 @@
 {
-    "width": 1440,
-    "height": 1000,
-    "hexagon_size": 80,
+    "name" : "level1",
+    "map": {
+        "width" : 1440,
+        "height" : 1000
+    },
+    "hexagon" : {
+        "size": 80
+    },
+    "unit": {
+        "width":  30,
+        "height": 42
+    },
     "foreground": 
         [
             { "x": -7, "y": 0, "z": 7, "type": "urban"},

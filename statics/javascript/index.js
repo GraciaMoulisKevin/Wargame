@@ -6,10 +6,10 @@
  * Copyright : 2020 Ⓒ
  * https://codesandbox.io/s/z2pqr9620m
  */
-
-const MAP_WIDTH = 1440;
-const MAP_HEIGHT = 1000;
-const HEXAGON_SIZE = 80;
+const GAME_LEVEL = 0;
+const MAP = { width : 0, height : 0};
+const UNIT = {width : 0, height : 0};
+const HEXAGON = {size : 0};
 
 let CLICK = 0;
 let PREVIOUS_CLICK_HEXAGON;
@@ -24,45 +24,7 @@ let foregroundCtx = foregroundCanvas.getContext("2d");
 let undergroundCtx = undergroundCanvas.getContext("2d");
 
 //GAME
-let game = new Game(MAP_WIDTH, MAP_HEIGHT, 0);
-
-//ADD MAPS
-let foregroundMap = game.addMap("foreground");
-let undergroundMap = game.addMap("underground");
-
-/**
- * MAIN FUNCTION
- */
-$().ready(function () {
-
-    undergroundMap.buildMap();
-    foregroundMap.buildMap();
-
-    let unitTest = new Unit("soldier", 730, 510);
-    foregroundMap.addGameObject(unitTest);
-
-    let unitTest2 = new Unit("soldier", 730, 510);
-    undergroundMap.addGameObject(unitTest2);
-
-    let lastTime = 0;
-
-    function gameLoop(timestamp) {
-        // let deltaTime = timestamp - lastTime;
-        lastTime = timestamp;
-
-        //DRAW MAP
-        foregroundMap.draw(foregroundCtx);
-        undergroundMap.draw(undergroundCtx);
-
-        requestAnimationFrame(gameLoop)
-    }
-
-    requestAnimationFrame(gameLoop);
-
-    listenerHandler(foregroundCanvas, foregroundMap);
-    listenerHandler(undergroundCanvas, undergroundMap);
-
-});
+let game, foregroundMap, undergroundMap;
 
 /**
  * Manage onclick event on an hexagon
@@ -120,9 +82,9 @@ function listenerHandler(canvas, map, movementPoints=2) {
                 //PATHFINDER
                 else if (CLICK === 1) {
                     try {
-                        map.restoreHexagonsType();
                         let path = pathfinder(map, PREVIOUS_CLICK_HEXAGON, clickedHexagon, movementPoints);
-                        map.setHexagonsAs(path, "unavailable", 1500);
+                        map.restoreHexagonsType();
+                        map.setHexagonsAs(path, "unavailable", 500);
                         CLICK = 0;
                     } catch (e) {
                         console.error(e);
@@ -326,8 +288,8 @@ function getCursorCoordinateOnCanvas(event, canvas){
  */
 function pixelToHexagonCoordinate(x, y) {
 
-    let q = (Math.sqrt(3) / 3 * x - 1 / 3 * y) / (HEXAGON_SIZE / 2);
-    let r = (2 / 3 * y) / (HEXAGON_SIZE / 2);
+    let q = (Math.sqrt(3) / 3 * x - 1 / 3 * y) / (HEXAGON.size / 2);
+    let r = (2 / 3 * y) / (HEXAGON.size / 2);
 
     return roundHexagonCoordinate(createCubeCoordinate(q, -q - r, r));
 }
@@ -358,6 +320,84 @@ function getIndexesOfReachableHexagons(){
         indexes.push(hexagon[0]);
     }
     return indexes;
+}
+
+/**
+ * Get axial coordinates representing the center of an hexagon
+ * @param {Number} x
+ * @param {Number} y
+ * @param {Number} z
+ */
+function getCenterCoordinate(map, x, y, z) {
+
+    let x_spacing = (Math.sqrt(3) / 2) * HEXAGON.size / 2; // size of the inscribed circle
+    let z_spacing = (3 / 4) * HEXAGON.size;
+
+    let x_center = map.getWidth() / 2 + (x * x_spacing) + (-y * x_spacing);
+    let y_center = map.getHeight() / 2 + (z * z_spacing);
+
+    return { "x": x_center, "y": y_center };
+}
+
+
+/**
+ * MAIN FUNCTION
+ */
+$().ready(async function () {
+
+    await initialize();
+
+    let lastTime = 0;
+
+    function update(timestamp) {
+        // let deltaTime = timestamp - lastTime;
+        lastTime = timestamp;
+
+        //DRAW MAP
+        foregroundMap.draw(foregroundCtx);
+        undergroundMap.draw(undergroundCtx);
+
+        requestAnimationFrame(update)
+    }
+
+    requestAnimationFrame(update);
+
+    listenerHandler(foregroundCanvas, foregroundMap);
+    listenerHandler(undergroundCanvas, undergroundMap);
+
+});
+
+async function initialize(){
+
+    // INITIALIZE JSON DATA
+    const data = await d3.json(`/statics/data/level${GAME_LEVEL+1}.json`);
+
+    MAP.width = data.map.width;
+    MAP.height = data.map.height;
+
+    HEXAGON.size = data.hexagon.size;
+
+    UNIT.width = data.unit.width;
+    UNIT.height = data.unit.height;
+
+    //GAME
+    game = new Game(MAP.width, MAP.height, GAME_LEVEL);
+
+    //ADD & BUILD MAPS
+    foregroundMap = game.addMap("foreground");
+    undergroundMap = game.addMap("underground");
+
+    undergroundMap.buildMap();
+    foregroundMap.buildMap();
+
+    // ADD & BUILD STARTED UNITS
+    let unitTest = new Unit(foregroundMap, 0, 0, 0, "soldier", UNIT.width, UNIT.height);
+    foregroundMap.addGameObject(unitTest);
+
+    let unitTest2 = new Unit(undergroundMap, 0, 0, 0, "soldier", UNIT.width, UNIT.height);
+    undergroundMap.addGameObject(unitTest2);
+
+    return 1;
 }
 
 /**
