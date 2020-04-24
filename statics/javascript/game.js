@@ -7,8 +7,8 @@
  */
 
 const levels = {
-    LEVEL1 : "level1.json",
-    LEVEL2 : "level2.json"
+    LEVEL1 : "level0.json",
+    LEVEL2 : "level1.json"
 }
 
 class Game{
@@ -18,7 +18,7 @@ class Game{
         this.gameHeight = gameHeight;
 
         this.levels = [levels.LEVEL1, levels.LEVEL2];
-        this.currentLevel = level;
+        this.currentLevel = level; // if we asked level 1 we need to get this.levels[0]
     }
 
     getWidth(){

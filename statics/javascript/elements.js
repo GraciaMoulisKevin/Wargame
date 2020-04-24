@@ -17,6 +17,13 @@ class Elements{
         this.type = type;
     }
 
+    setCoordinate(x, y, z){
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+    
+
     getImage(){
         return document.getElementById("asset-" + this.type);
     }

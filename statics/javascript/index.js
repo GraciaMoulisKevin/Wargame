@@ -4,15 +4,17 @@
  * Git Repository : https://github.com/GraciaMoulisKevin/Wargame
  * 
  * Copyright : 2020 Ⓒ
- * https://codesandbox.io/s/z2pqr9620m
  */
+
 const GAME_LEVEL = 0;
 const MAP = { width : 0, height : 0};
-const UNIT = {width : 0, height : 0};
-const HEXAGON = {size : 0};
+const UNIT = { width : 0, height : 0 };
+const HEXAGON = { size : 0 };
+const MOVEMENT_POINT = 3; // watch listenerHandler
 
 let CLICK = 0;
-let PREVIOUS_CLICK_HEXAGON;
+let PREVIOUS_HEXAGON_CLICKED;
+let PREVIOUS_UNIT_CLICKED;
 let REACHABLEHEXAGONS = [];
 
 //CANVAS
@@ -31,7 +33,7 @@ let game, foregroundMap, undergroundMap;
  * @param canvas
  * @param map
  */
-function listenerHandler(canvas, map, movementPoints=2) {
+function listenerHandler(canvas, map, movementPoints) {
 
     let hexagons = map.getHexagons();
 
@@ -57,14 +59,18 @@ function listenerHandler(canvas, map, movementPoints=2) {
 
         try{
             let clickedHexagon = getClickedHexagon();
-
+            console.log(clickedHexagon);
             //FIRST TIME CLICK
             if (CLICK === 0) {
-                PREVIOUS_CLICK_HEXAGON = clickedHexagon;
+                PREVIOUS_HEXAGON_CLICKED = clickedHexagon;
                 try{
-                    REACHABLEHEXAGONS = getReachableHexagons(map, clickedHexagon, movementPoints);
-                    showAvailableMovements(canvas, map);
-                    CLICK = 1;
+                    let unit = map.getUnitsOnHexagon(clickedHexagon);
+                    if (unit){
+                        PREVIOUS_UNIT_CLICKED = unit;
+                        REACHABLEHEXAGONS = getReachableHexagons(map, clickedHexagon, movementPoints);
+                        showAvailableMovements(canvas, map);
+                        CLICK = 1;
+                    }
                 } catch (e) {
                     alert(e);
                 }
@@ -73,22 +79,26 @@ function listenerHandler(canvas, map, movementPoints=2) {
 
             //SECOND TIME OR MORE CLICK
             else {
-                //CLICK ON SAME HEXAGON TWICE
-                if (PREVIOUS_CLICK_HEXAGON === clickedHexagon) {
+            
+                if (PREVIOUS_HEXAGON_CLICKED === clickedHexagon) {
                     map.restoreHexagonsType();
                     CLICK = 0;
                 }
 
                 //PATHFINDER
                 else if (CLICK === 1) {
-                    try {
-                        let path = pathfinder(map, PREVIOUS_CLICK_HEXAGON, clickedHexagon, movementPoints);
-                        map.restoreHexagonsType();
-                        map.setHexagonsAs(path, "unavailable", 500);
-                        CLICK = 0;
-                    } catch (e) {
-                        console.error(e);
-                    }
+                    if ( PREVIOUS_HEXAGON_CLICKED.map === clickedHexagon.map ){ 
+                        try {
+                            let path = pathfinder(map, PREVIOUS_HEXAGON_CLICKED, clickedHexagon, movementPoints);
+                            map.addMovement(PREVIOUS_UNIT_CLICKED, path);
+                            map.restoreHexagonsType();
+                            CLICK = 0;
+                        } catch (e) {
+                            console.error(e);
+                        }
+                    } else{
+                        // go under the map;
+                    }                     
                 }
             }
         } catch (e) {
@@ -215,7 +225,6 @@ function pathfinder(map, hexagonA, hexagonB, movementPoints){
         path = null;
     }
 
-    console.log(path);
     return path
 }
 
@@ -336,9 +345,15 @@ function getCenterCoordinate(map, x, y, z) {
     let x_center = map.getWidth() / 2 + (x * x_spacing) + (-y * x_spacing);
     let y_center = map.getHeight() / 2 + (z * z_spacing);
 
-    return { "x": x_center, "y": y_center };
+    return { "x": Math.floor(x_center), "y": Math.floor(y_center) };
 }
 
+/**
+ * Return true if all movements have been done and then the player is ready to 
+ */
+function isReady(){
+    return ( foregroundMap.getMovements().length === 0 && undergroundMap.getMovements().length === 0 )
+}
 
 /**
  * MAIN FUNCTION
@@ -350,8 +365,12 @@ $().ready(async function () {
     let lastTime = 0;
 
     function update(timestamp) {
-        // let deltaTime = timestamp - lastTime;
+        let deltaTime = timestamp - lastTime;
         lastTime = timestamp;
+
+        //UPDATE MAPS
+        foregroundMap.update(deltaTime);
+        undergroundMap.update(deltaTime);
 
         //DRAW MAP
         foregroundMap.draw(foregroundCtx);
@@ -362,15 +381,19 @@ $().ready(async function () {
 
     requestAnimationFrame(update);
 
-    listenerHandler(foregroundCanvas, foregroundMap);
-    listenerHandler(undergroundCanvas, undergroundMap);
+    listenerHandler(foregroundCanvas, foregroundMap, MOVEMENT_POINT);
+    listenerHandler(undergroundCanvas, undergroundMap, MOVEMENT_POINT);
 
 });
 
+/**
+ * Game initializer
+ * @returns {Promise<number>}
+ */
 async function initialize(){
 
     // INITIALIZE JSON DATA
-    const data = await d3.json(`/statics/data/level${GAME_LEVEL+1}.json`);
+    const data = await d3.json(`/statics/data/level${GAME_LEVEL}.json`);
 
     MAP.width = data.map.width;
     MAP.height = data.map.height;
@@ -387,27 +410,8 @@ async function initialize(){
     foregroundMap = game.addMap("foreground");
     undergroundMap = game.addMap("underground");
 
-    undergroundMap.buildMap();
-    foregroundMap.buildMap();
-
-    // ADD & BUILD STARTED UNITS
-    let unitTest = new Unit(foregroundMap, 0, 0, 0, "soldier", UNIT.width, UNIT.height);
-    foregroundMap.addGameObject(unitTest);
-
-    let unitTest2 = new Unit(undergroundMap, 0, 0, 0, "soldier", UNIT.width, UNIT.height);
-    undergroundMap.addGameObject(unitTest2);
+    await foregroundMap.buildMap();
+    await undergroundMap.buildMap();
 
     return 1;
 }
-
-/**
- * MEMO
- * https://www.youtube.com/watch?v=3EMxBkqC4z0;
- * https://jsfiddle.net/BmeKr/ EVENT LISTENER ON CLICK OF CANVAS
- *
-//https://editor.method.ac/
-//https://i.pinimg.com/originals/ae/2e/3b/ae2e3be46e63253f38e6e0d21ed574e1.png
-//https://img.itch.zone/aW1hZ2UvMTA5MTYwLzEyMDY4MjYucG5n/original/7SEYHd.png
-//https://img.itch.zone/aW1hZ2UvMjM3NjUwLzExMzExNDIucG5n/original/693xiv.png
-//https://opengameart.org/sites/default/files/Preview_100.png
- */
