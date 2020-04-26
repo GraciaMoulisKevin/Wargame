@@ -7,13 +7,8 @@
  */
 
 const levels = {
-<<<<<<< HEAD:public/js/game.js
-    LEVEL1 : "../data/level1.json",
-    LEVEL2 : "../data/level2.json"
-=======
-    LEVEL1 : "level0.json",
-    LEVEL2 : "level1.json"
->>>>>>> origin/Thomas:statics/javascript/game.js
+    LEVEL1 : "../public/data/level1.json",
+    LEVEL2 : "../public/data/level2.json"
 }
 
 class Game{

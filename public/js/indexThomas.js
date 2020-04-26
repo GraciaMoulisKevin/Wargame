@@ -406,7 +406,7 @@ $().ready(async function () {
 async function initialize(){
 
     // INITIALIZE JSON DATA
-    const data = await d3.json(`/statics/data/level${GAME_LEVEL}.json`);
+    const data = await d3.json(`../public/data/level${GAME_LEVEL}.json`);
 
     MAP.width = data.map.width;
     MAP.height = data.map.height;

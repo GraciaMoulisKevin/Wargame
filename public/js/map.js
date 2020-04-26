@@ -374,14 +374,14 @@ class Map {
     // BUILD MAP
     async buildMap() {
         try {
-            const data = await d3.json(`/statics/data/${this.level}`);
+            const data = await d3.json(`../data/${this.level}`);
 
             let hexagonSize = data.hexagon.size;
-
+            
             for (let hexagon of data[this.type]) {
                 this.hexagons.push(new Hexagon(this, hexagon.x, hexagon.y, hexagon.z, hexagon.type, hexagonSize));
             }
-
+            
             for ( let unit of data["unit"]["spawner"][this.type] ){
                 this.addGameObject( new Unit( this, unit.x, unit.y, unit.z, unit.type, UNIT.width, UNIT.height, unit.player ) )
             }

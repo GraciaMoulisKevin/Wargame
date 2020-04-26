@@ -2,10 +2,12 @@
 <html>
 <head>
     <title>Dordighol Room</title>
+    
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">    
+    
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>        
     <link rel="stylesheet" href="../public/styles/styles.css">
-
+    
 </head>
 <body>
 
@@ -17,12 +19,20 @@
         <img id="asset-mountain" src="../public/images/mountain.png">
         <img id="asset-sand" src="../public/images/sand.png">
         <img id="asset-snow" src="../public/images/snow.png">
-        <img id="asset-urban" src="../public/images/urban.png">
+        <img id="asset-urban" src="../public/images/urban2.png">
         <img id="asset-volcano" src="../public/images/volcano.png">
         <img id="asset-water" src="../public/images/water.png">
         <img id="asset-void" src="../public/images/mountain.png">
+        <img id="asset-stone" src="../public/images/stone.png">
+        <img id="asset-iron" src="../public/images/iron.png">
+        <img id="asset-gold" src="../public/images/gold.png">
+        <img id="asset-diamond" src="../public/images/diamond.png">
         <img id="asset-available" src="../public/images/available.png">
         <img id="asset-unavailable" src="../public/images/unavailable.png">
+        <img id="asset-soldier1" src="../public/images/soldier1.png">
+        <img id="asset-soldier2" src="../public/images/soldier2.png">
+        <img id="asset-soldier3" src="../public/images/soldier3.png">
+        <img id="asset-soldier4" src="../public/images/soldier4.png">
 
         <div id="map">
             <canvas id="underground-map"></canvas>
@@ -85,15 +95,17 @@
     <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
-    <script defer src="../public/js/template.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
 
-    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script> -->
-    <script src="https://d3js.org/d3.v5.min.js"></script>
-    <script src="https://d3js.org/d3-selection-multi.v1.min.js"></script>
-    <script src="../public/js/levels.js"></script>
-    <script src="../public/js/hexagon.js"></script>
-    <script src="../public/js/map.js"></script>
-    <script src="../public/js/game.js"></script>
-    <script src="../public/js/indexThomas.js"></script>
+    <script defer src="../public/js/template.js"></script>
+    <script defer src="https://d3js.org/d3.v5.min.js"></script>
+    <script defer src="https://d3js.org/d3-selection-multi.v1.min.js"></script>    
+    <script defer src="../public/js/elements.js"></script>
+    <script defer src="../public/js/unit.js"></script>
+    <script defer src="../public/js/levels.js.old"></script>
+    <script defer src="../public/js/hexagon.js"></script>
+    <script defer src="../public/js/map.js"></script>
+    <script defer src="../public/js/game.js"></script>
+    <script defer src="../public/js/indexThomas.js"></script>
 </body>
 </html>
