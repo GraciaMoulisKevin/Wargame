@@ -1,4 +1,6 @@
-const app = require('express')();
+const express = require('express')
+const app = express();
+const path = require('path');
 const server = require('http').Server(app)
 const io = require('socket.io')(server)
 const port = 3000
@@ -19,6 +21,7 @@ app.use(bodyParser.json());       // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
     extended: true
 }));
+app.use("/public",express.static(__dirname + '/public'));
 
 /**
 * Send index.html to people that join on website root
@@ -26,6 +29,10 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 app.get('/', (req,res) => {
     res.sendFile(__dirname + '/index.html');
 })
+
+// app.get('/public/script.js', (req,res) => {
+//     res.sendFile(path.join(__dirname, '/public/script.js'))
+// })
 
 /**
 * Room manager for direct linking:
@@ -46,17 +53,20 @@ app.get('/room/*', (req,res) => {
 app.post('/', (req,res) => {
     let roomName = req.body.roomName.replace(/[^a-zA-Z0-9]/g, '');
     let roomPath = __dirname + '/room/' + roomName + '.html';
+    if(roomName == ""){
+        res.redirect('/');
+        return;
+    }
     if(fs.existsSync(roomPath)){
         res.redirect('/room/' + roomName);
     } else {
         history[roomName] = [];
         playerList[roomName] = [];        
-        roomData[roomName] = {ready: 0, max:2};
+        roomData[roomName] = {ready: 0, max:2, started:false};
         
         fs.copyFile(template, roomPath , (err) => {
             if(err) throw err;
-            const files = fs.readdirSync(__dirname + '/room/');
-            io.sockets.emit('files',files);
+            updateRoomList();
             res.redirect('/room/' + roomName);
         })
     }
@@ -70,7 +80,16 @@ app.post('/', (req,res) => {
 io.on('connection', function(socket){
     socket.on('wantFiles', function(){
         const files = fs.readdirSync(__dirname + '/room/');
-        socket.emit('files',files);
+        let data = []
+        for(let roomName of files){
+            let room = roomName.slice(0,-5);
+            data.push({
+                roomName: roomName,
+                isReady: roomData[room].started,
+                usersInside: playerList[room].length
+            });
+        }
+        socket.emit('files',data);
     })
     socket.on('room', function(room){
         socket.join(room);
@@ -110,6 +129,7 @@ io.on('connection', function(socket){
         if(isReady(room)){
             socket.emit('breakReady');
         }
+        updateRoomList();
         sendUserList(room);
     })
     socket.on('disconnect', function(reason){
@@ -120,15 +140,24 @@ io.on('connection', function(socket){
             }
             let playerNumber = getPlayerNumber(playerList[disconnectedRoom],socket.id)
             if(playerNumber == undefined) return;
-            playerList[disconnectedRoom].splice(playerNumber, 1);
+            if(playerList[disconnectedRoom].splice(playerNumber, 1)[0].ready){
+                roomData[disconnectedRoom].ready--;
+            }
             if(!hasLeader(playerList[disconnectedRoom]) && playerList[disconnectedRoom][0] != undefined){
                 playerList[disconnectedRoom][0].leader = true;
             }
             sendUserList(disconnectedRoom);
+            if(playerList[disconnectedRoom].length == 0){
+                fs.unlink(__dirname + '/room/' + disconnectedRoom + '.html', (err) => {
+                    if(err) console.log(err);
+                });
+
+            }
         }
+        updateRoomList();
     })
     socket.on('readyUp', function (ready, room){
-        if(roomData[room].ready == roomData[room].max){
+        if(roomData[room].started){
             io.sockets.to(room).emit('breakReady');
             return;
         }
@@ -136,6 +165,7 @@ io.on('connection', function(socket){
             playerList[room][getPlayerNumber(playerList[room],socket.id)].ready = ready;
             sendUserList(room);
             roomData[room].ready++;
+            roomData[room].started = true;
             io.sockets.to(room).emit('breakReady');
             io.sockets.to(room).emit('systemMessage', "Game Start!");
         } else {
@@ -147,6 +177,7 @@ io.on('connection', function(socket){
                 playerList[room][getPlayerNumber(playerList[room],socket.id)].ready = false;
             }
         }
+        updateRoomList();
         sendUserList(room);
     })
 })
@@ -161,10 +192,12 @@ server.listen(port, () => {
     for(let room of files){
         playerList[room] = [];
         history[room] = [];
-        roomData[room] = {ready: 0, max:2};
+        roomData[room] = {ready: 0, max:2,started:false};
     }
-    console.log(`Running on ${port}! with rooms : ${files}`)
+    console.log(`Running on ${port}!`)
 })
+
+
 
 function hasLeader(roomArray){
     let flag = false;
@@ -205,7 +238,7 @@ function sendUserList(room){
     }))
 }
 function isReady(room){
-    if(roomData[room].ready == roomData[room].max){
+    if(roomData[room].started){
         return true;
     } else {
         return false;
@@ -218,4 +251,17 @@ function isAlreadyIn(pseudo,playerArray){
         }
     }
     return false;
+}
+function updateRoomList(){
+    const files = fs.readdirSync(__dirname + '/room/');
+    let data = []
+    for(let roomName of files){
+        let room = roomName.slice(0,-5);
+        data.push({
+            roomName: roomName,
+            isReady: roomData[room].started,
+            usersInside: playerList[room].length
+        });
+    }
+    io.sockets.emit('files',data);
 }

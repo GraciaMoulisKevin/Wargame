@@ -4,18 +4,7 @@
     <title>Dordighol Lobby</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
-    <script>
-        var socket = io();
-        socket.on('connect',function(data){
-            socket.emit('wantFiles');
-        })
-        socket.on('files', function(data) {
-            document.getElementById('roomIndex').innerHTML = null;
-            data.forEach(element => {
-                document.getElementById('roomIndex').innerHTML += "<a class='list-group-item list-group-item-action' href='/room/" + element.slice(0,-5) + "'>" + element.slice(0,-5) + "</a>";
-            });
-        })
-    </script>
+    <script defer src="public/js/index.js"></script>
 </head>
 <body>
     
