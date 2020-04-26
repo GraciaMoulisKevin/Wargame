@@ -59,7 +59,7 @@ function listenerHandler(canvas, map, movementPoints) {
 
         try{
             let clickedHexagon = getClickedHexagon();
-            console.log(clickedHexagon);
+
             //FIRST TIME CLICK
             if (CLICK === 0) {
                 PREVIOUS_HEXAGON_CLICKED = clickedHexagon;
@@ -349,6 +349,14 @@ function getCenterCoordinate(map, x, y, z) {
 }
 
 /**
+ * Get random number between 0 (include) and the max (exclude)
+ * @param {Number} max
+ */
+function getRandomInt(max){
+    return Math.floor(Math.random() * Math.floor(max));
+}
+
+/**
  * Return true if all movements have been done and then the player is ready to 
  */
 function isReady(){
@@ -362,16 +370,21 @@ $().ready(async function () {
 
     await initialize();
 
-    let lastTime = 0;
+    let lastTime = 0,
+        deltaTime = 0,
+        second = 0;
 
     function update(timestamp) {
-        let deltaTime = timestamp - lastTime;
+        deltaTime = timestamp - lastTime;
         lastTime = timestamp;
+        second += deltaTime;
 
         //UPDATE MAPS
-        foregroundMap.update(deltaTime);
-        undergroundMap.update(deltaTime);
+        foregroundMap.update(second);
+        undergroundMap.update(second);
 
+        if ( second >= 1000 ) { second = 0; }
+        
         //DRAW MAP
         foregroundMap.draw(foregroundCtx);
         undergroundMap.draw(undergroundCtx);
