@@ -7,8 +7,13 @@
  */
 
 const levels = {
+<<<<<<< HEAD:public/js/game.js
     LEVEL1 : "../data/level1.json",
     LEVEL2 : "../data/level2.json"
+=======
+    LEVEL1 : "level0.json",
+    LEVEL2 : "level1.json"
+>>>>>>> origin/Thomas:statics/javascript/game.js
 }
 
 class Game{
@@ -18,7 +23,7 @@ class Game{
         this.gameHeight = gameHeight;
 
         this.levels = [levels.LEVEL1, levels.LEVEL2];
-        this.currentLevel = level;
+        this.currentLevel = level; // if we asked level 1 we need to get this.levels[0]
     }
 
     getWidth(){
