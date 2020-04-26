@@ -218,16 +218,27 @@ class Map {
      */
     getUnitsOnHexagon(hexagon) {
 
-        let hexagonCenterCoordinate = getCenterCoordinate(this, hexagon.x, hexagon.y, hexagon.z),
-            unitCenterCoordinate,
-            units = [];
+        // let hexagonCenterCoordinate = getCenterCoordinate(this, hexagon.x, hexagon.y, hexagon.z),
+        //     unitCenterCoordinate,
+        //     units = [];
 
-        for( let unit of this.gameObject ){
-            unitCenterCoordinate = unit.getCenter();
-            if ( unitCenterCoordinate.x == hexagonCenterCoordinate.x && unitCenterCoordinate.y == hexagonCenterCoordinate.y ){
+        // for( let unit of this.gameObject ){
+        //     unitCenterCoordinate = unit.getCenter();
+        //     if ( unitCenterCoordinate.x == hexagonCenterCoordinate.x && unitCenterCoordinate.y == hexagonCenterCoordinate.y ){
+        //         units.push(unit);
+        //     }
+        // }
+
+        let units = [];
+
+        for ( let unit of this.gameObject ){
+            let hexagonCoordinate = hexagon.getCoordinate();
+            let unitCoordinate = unit.getCoordinate();
+            if ( hexagonCoordinate.x == unitCoordinate.x &&  hexagonCoordinate.y == unitCoordinate.y  &&  hexagonCoordinate.z == unitCoordinate.z ){
                 units.push(unit);
             }
         }
+
         if ( units.length == 0 ){
             return null;
         } else if ( units.length == 1 ) {
@@ -289,43 +300,75 @@ class Map {
         while ( this.gameObject[i] != unit ){
             i++;
         }
-        console.log("GameObject trouvé --> ", this.gameObject[i]);
-        console.log("Suppression...");
+        // DEBUG
+        //console.log("GameObject trouvé --> ", this.gameObject[i]);
+        //console.log("Suppression...");
 
         this.gameObject.splice(i,1);
     }
 
-    checkIfBattle(){
+    checkIfBattles(){
         let battles = []
         for ( let hexagon of this.hexagons ){
             let units = this.getUnitsOnHexagon(hexagon);
             if  ( units != null && units.length > 1 ){
                 battles.push(units);
-                this.battleHandler(units);
             }
         }
-        return battles;
+        return battles; 
     }
 
-    battleHandler(units){
+    setBattles(battles){
+        for( let battle of battles ){
+            for ( let unit of battle ){
+
+                // if unit has not been move
+                if ( unit.getState() != 1 ){
+                    unit.setState(1);
+                    switch(unit.getPlayer()){
+                        case 1:
+                            unit.setCenter(unit.getCenterPositionX()-20, unit.getCenterPositionY()-35);
+                            break;
+                        case 2:
+                            unit.setCenter(unit.getCenterPositionX()+20, unit.getCenterPositionY()-35);
+                            break;
+                        case 3:
+                            unit.setCenter(unit.getCenterPositionX()-20, unit.getCenterPositionY()+5);
+                            break;
+                        case 4:
+                            unit.setCenter(unit.getCenterPositionX()+20, unit.getCenterPositionY()+5);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+    }
+
+    battleHandler(battle){
         let i = 0;
-        for ( let unit of units ){
+        for ( let unit of battle ){
             let target = i;
 
-            while ( target == i && unit.getPlayer() == units[target].getPlayer()){
-                target = getRandomInt(units.length);
+            while ( target == i && unit.getPlayer() == battle[target].getPlayer()){
+                target = getRandomInt(battle.length);
             }
 
-            let isKilled = unit.fight( units[target] );
+            let isKilled = unit.fight( battle[target] );
 
             if ( isKilled ){
-                this.removeGameObject( units[target] );
-                units.splice( target, 1 );
-                if ( units.length <= 1 ){
+                this.removeGameObject( battle[target] );
+                battle.splice( target, 1 );
+                if ( battle.length <= 1 ){
                     break;
                 }
             }
             i++;
+        }
+        if ( battle.length == 1 ){
+            battle[0].resetCenterCoordinate();
+            battle[0].setState(0);
         }
     }
     // BUILD MAP
@@ -356,7 +399,15 @@ class Map {
 
     update(deltaTime){
 
-        this.checkIfBattle();
+        let battles = this.checkIfBattles();
+        if ( deltaTime >= 1000 ){
+            if ( battles.length > 0 ){
+                this.setBattles(battles);
+                for ( let battle of battles ){
+                    this.battleHandler(battle);
+                }
+            }
+        }
 
         let i = 0;
         for( let object of this.movements ){

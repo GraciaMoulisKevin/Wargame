@@ -42,6 +42,14 @@ class Unit extends Elements{
         return this.attack;
     }
 
+    getCenterPositionX(){
+        return this.center.x;
+    }
+
+    getCenterPositionY(){
+        return this.center.y;
+    }
+
     getCenter(){
         return this.center;
     }
@@ -54,6 +62,10 @@ class Unit extends Elements{
         return this.state;
     }
 
+    setCenter(x, y){
+        this.center = {x : x, y: y};
+    }
+
     setHealtPoints( healthPoints ){
         this.healthPoints = healthPoints;
     }
@@ -62,13 +74,17 @@ class Unit extends Elements{
         this.state = state;
     }
 
+    resetCenterCoordinate(){
+        this.center = getCenterCoordinate(this.map, this.x, this.y, this.z);
+    }
+    
     fight( unit ){
         let dps = getRandomInt(this.getAttack()+1);
         if ( unit.getHealthPoints() - dps <= 0 ){
-            console.log("Le joueur ", this.getPlayer(), " vient de tuer une unité du joueur ", unit.getPlayer());
+            //console.log("Le joueur ", this.getPlayer(), " vient de tuer une unité du joueur ", unit.getPlayer());
             return 1;
         } else {
-            console.log("je lui inflige", dps, "dégats");
+            //console.log("je lui inflige", dps, "dégats");
             unit.setHealtPoints(unit.getHealthPoints() - dps);
             return 0;
         }
@@ -78,20 +94,38 @@ class Unit extends Elements{
         ctx.save();
         ctx.translate(this.center.x, this.center.y);
         ctx.drawImage(super.getImage(), -this.width/2, -this.height/2, this.width, this.height);
+
+        // constant max health point bar
         ctx.beginPath();
-        ctx.rect(-this.width/2-5, -this.height/2-10, (this.width+10)*((this.getHealthPoints()*5)/100), 5);
+
+        if ( this.getPlayer()%2 == 0 ){
+            ctx.rect(this.width/2+10, -this.height/2+10, 5, this.height-12);
+        } else {
+            ctx.rect(-this.width/2-10, -this.height/2+10, 5, this.height-12);
+        }
         
+        ctx.fillStyle = "lightgray";
+        ctx.lineWidth = "2";
+        ctx.fill();
+        ctx.stroke();
+
+        // realtime health point bar
+        ctx.beginPath();
+        
+        if ( this.getPlayer()%2 == 0 ){
+            ctx.rect(this.width/2+10, -this.height/2+10, 5, (this.height-12)*((this.getHealthPoints()*5)/100));
+        } else {
+            ctx.rect(-this.width/2-10, -this.height/2+10, 5, (this.height-12)*((this.getHealthPoints()*5)/100));
+        }
+
         if ( this.getHealthPoints() > (0.25*this.getMaxHealthPoints())){
             ctx.fillStyle = "lightgreen";
         } else {
             ctx.fillStyle = "red";
         }
-
         ctx.fill();
         ctx.stroke();
-        ctx.rect(-this.width/2-5, -this.height/2-10, this.width+10, 5);
-        ctx.lineWidth = "2";
-        ctx.stroke();
+
         ctx.restore();
     }
 
