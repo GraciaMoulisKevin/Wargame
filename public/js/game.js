@@ -7,8 +7,8 @@
  */
 
 const levels = {
-    LEVEL1 : "../public/data/level1.json",
-    LEVEL2 : "../public/data/level2.json"
+    LEVEL1 : "../public/data/level0.json",
+    LEVEL2 : "../public/data/level1.json"
 }
 
 class Game{
@@ -56,7 +56,7 @@ class Game{
             
             d3.select(`#${foregroundMap.type}-map`).transition().styles(foregroundStyles);
             foregroundMap.setActualPosition(1);
-            
+
             undergroundCanvas.parentNode.insertBefore(undergroundCanvas,undergroundCanvas.parentNode.firstChild);
         }
     }
