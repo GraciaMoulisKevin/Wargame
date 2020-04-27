@@ -41,6 +41,7 @@
             "underground" : 
                 [
                     { "x": -7, "y": 1, "z": 6, "type": "soldier3", "player": 3},
+                    { "x": -7, "y": 0, "z": 7, "type": "soldier4", "player": 4},
                     { "x": -3, "y": 7, "z": -4, "type": "soldier1", "player": 1},
                     { "x": 3, "y": -7, "z": 4, "type": "soldier4", "player": 4},
                     { "x": 7, "y": -1, "z": -6, "type": "soldier2", "player": 2}

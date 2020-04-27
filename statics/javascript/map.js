@@ -217,18 +217,6 @@ class Map {
      * @returns {number|{x: number, y: number}}
      */
     getUnitsOnHexagon(hexagon) {
-
-        // let hexagonCenterCoordinate = getCenterCoordinate(this, hexagon.x, hexagon.y, hexagon.z),
-        //     unitCenterCoordinate,
-        //     units = [];
-
-        // for( let unit of this.gameObject ){
-        //     unitCenterCoordinate = unit.getCenter();
-        //     if ( unitCenterCoordinate.x == hexagonCenterCoordinate.x && unitCenterCoordinate.y == hexagonCenterCoordinate.y ){
-        //         units.push(unit);
-        //     }
-        // }
-
         let units = [];
 
         for ( let unit of this.gameObject ){
@@ -325,6 +313,7 @@ class Map {
                 // if unit has not been move
                 if ( unit.getState() != 1 ){
                     unit.setState(1);
+                    unit.resetCenterCoordinate();
                     switch(unit.getPlayer()){
                         case 1:
                             unit.setCenter(unit.getCenterPositionX()-20, unit.getCenterPositionY()-35);
@@ -371,6 +360,7 @@ class Map {
             battle[0].setState(0);
         }
     }
+
     // BUILD MAP
     async buildMap() {
         try {
@@ -398,11 +388,10 @@ class Map {
     }
 
     update(deltaTime){
-
         let battles = this.checkIfBattles();
-        if ( deltaTime >= 1000 ){
-            if ( battles.length > 0 ){
-                this.setBattles(battles);
+        if ( battles.length > 0 ){
+            this.setBattles(battles);
+            if ( deltaTime >= 1000 ){
                 for ( let battle of battles ){
                     this.battleHandler(battle);
                 }
@@ -411,7 +400,6 @@ class Map {
 
         let i = 0;
         for( let object of this.movements ){
-
             let nextHexagon = this.getHexagon(object[1][0]);
             if ( nextHexagon.x != object[0].x || nextHexagon.y != object[0].y || nextHexagon.z != object[0].z ){
                 object[0].update(deltaTime, nextHexagon);

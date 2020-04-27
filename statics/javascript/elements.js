@@ -21,13 +21,18 @@ class Elements{
         return { x : this.x, y : this.y, z : this.z };
     }
 
+    getImage(){
+        return document.getElementById("asset-" + this.type);
+    }
+
+    setMap(map){
+        this.map = map;
+    }
+    
     setCoordinate(x, y, z){
         this.x = x;
         this.y = y;
         this.z = z;
     }
 
-    getImage(){
-        return document.getElementById("asset-" + this.type);
-    }
 }

@@ -65,16 +65,18 @@ function listenerHandler(canvas, map, movementPoints) {
                 PREVIOUS_HEXAGON_CLICKED = clickedHexagon;
                 try{
                     let unit = map.getUnitsOnHexagon(clickedHexagon);
-                    if (unit){
+                    if (unit && !unit.length){
                         PREVIOUS_UNIT_CLICKED = unit;
                         REACHABLEHEXAGONS = getReachableHexagons(map, clickedHexagon, movementPoints);
                         showAvailableMovements(canvas, map);
                         CLICK = 1;
                     }
                 } catch (e) {
-                    alert(e);
+                    // show a popup to make sure user see he can't move is unit
+                    // DEBUG
+                    // console.error(e)
+                    alert("Aucun chemin possible, tu peux toujours essayer de creuser !");
                 }
-
             }
 
             //SECOND TIME OR MORE CLICK
@@ -90,15 +92,18 @@ function listenerHandler(canvas, map, movementPoints) {
                     if ( PREVIOUS_HEXAGON_CLICKED.map === clickedHexagon.map ){ 
                         try {
                             let path = pathfinder(map, PREVIOUS_HEXAGON_CLICKED, clickedHexagon, movementPoints);
+                            map.restoreHexagonsType(); 
                             map.addMovement(PREVIOUS_UNIT_CLICKED, path);
-                            map.restoreHexagonsType();
                             CLICK = 0;
+                            PREVIOUS_HEXAGON_CLICKED = null;
+                            PREVIOUS_UNIT_CLICKED = null;
                         } catch (e) {
-                            console.error(e);
+                            alert("Aucun chemin possible, tu peux toujours essayer de creuser !");
                         }
-                    } else{
-                        // go under the map;
-                    }                     
+                    } else {
+                        alert("Tu dois sélectionner un hexagon du même terrain !");
+                    }
+                    
                 }
             }
         } catch (e) {
@@ -143,8 +148,24 @@ function getReachableHexagons(map, hexagon, movementPoints) {
                     }
                 }
 
+                let isAlreadyUnitOnHexagon = 0,
+                    units = map.getUnitsOnHexagon(map.getHexagon(neighbor));
+                if ( units && !units.length ){
+                    if ( units.getPlayer() === PREVIOUS_UNIT_CLICKED.getPlayer() ){
+                        isAlreadyUnitOnHexagon = 1;
+                    }
+                }
+                else if ( units && units.length ){
+                    for ( let unit of units ){
+                        if ( unit.getPlayer() === PREVIOUS_UNIT_CLICKED.getPlayer() ){
+                            isAlreadyUnitOnHexagon = 1;
+                            break;
+                        }
+                    }
+                }
+
                 // if we don't found this neighbors in visited and he is accessible then we add it to visited
-                if (index === -1 && distance <= movementPoints) {
+                if (index === -1 && distance <= movementPoints && !isAlreadyUnitOnHexagon) {
                     visited.push([neighbor, distance]);
                     change = true;
                 } else if (index !== -1 && distance < visited[index][1]) {
@@ -159,7 +180,7 @@ function getReachableHexagons(map, hexagon, movementPoints) {
         reachableSort(visited);
         return visited;
     } else {
-        throw "You don't have enough movement points to move here !";
+        throw "You can't move !";
     }
 
 }
@@ -208,7 +229,7 @@ function pathfinder(map, hexagonA, hexagonB, movementPoints){
 
             while(i < REACHABLEHEXAGONS.length){
                 for(let neighbor of neighbors){
-                    if(i < REACHABLEHEXAGONS.length && REACHABLEHEXAGONS[i][0] == neighbor){
+                    if(i < REACHABLEHEXAGONS.length && REACHABLEHEXAGONS[i][0] === neighbor){
 
                         lastDist = REACHABLEHEXAGONS[i][1];
                         lastNode = REACHABLEHEXAGONS[i][0];
@@ -228,6 +249,58 @@ function pathfinder(map, hexagonA, hexagonB, movementPoints){
     return path
 }
 
+/**
+ * Check if a unit can dig on a another map
+ * @param {Object} map 
+ * @param {Object} newmap 
+ * @param {Object} hexagon 
+ * @param {Object} unit 
+ */
+function canDig(newMap, hexagon, unit){
+    let isUnitsOnNewMap = newMap.getUnitsOnHexagon(hexagon);
+
+    if ( isUnitsOnNewMap == null ){
+        return true;
+    }
+    if (isUnitsOnNewMap.length == null) {
+        if ( isUnitsOnNewMap.getPlayer() != unit.getPlayer()){
+            return true;
+        }
+        return false;
+    } else {
+        for ( let unitbis of isUnitsOnNewMap){
+            if ( unitbis.getPlayer() == unit.getPlayer()){
+                return false;
+            }
+        }
+        return true;
+    }
+}
+
+function dig(){
+    if ( PREVIOUS_HEXAGON_CLICKED != null && PREVIOUS_UNIT_CLICKED != null ){
+        let actualMap = PREVIOUS_HEXAGON_CLICKED.map
+            newMap = ( actualMap.type == "foreground" )? undergroundMap : foregroundMap;
+        
+        if ( canDig( newMap, PREVIOUS_HEXAGON_CLICKED, PREVIOUS_UNIT_CLICKED ) ){
+            actualMap.removeGameObject(PREVIOUS_UNIT_CLICKED);
+            PREVIOUS_UNIT_CLICKED.setMap(newMap);
+            newMap.addGameObject(PREVIOUS_UNIT_CLICKED);
+            PREVIOUS_HEXAGON_CLICKED.map.restoreHexagonsType(); 
+            CLICK = 0;
+        } else {
+            alert("Impossible de creuser ici !");
+        }
+    } else {
+        alert("Pour creuser tu dois selectionnier une unitée !");
+    }
+}
+
+// function dig(map, newMap, unit){
+//     map.removeGameObject(unit);
+//     unit.setMap(newmap);
+//     newMap.addGameObject(unit);
+// }
 /* #_______ SIMPLE FUNCTION _______# */
 
 /**

@@ -21,6 +21,8 @@ class Unit extends Elements{
 
         this.maxHealthPoints = 20;
         this.healthPoints = 20;
+        this.previousHealthPoints = 20;
+
         this.attack = 2;
 
         /**
@@ -36,6 +38,10 @@ class Unit extends Elements{
 
     getMaxHealthPoints(){
         return this.maxHealthPoints;
+    }
+
+    getPreviousHealthPoints(){
+        return this.previousHealthPoints;
     }
 
     getAttack(){
@@ -67,7 +73,12 @@ class Unit extends Elements{
     }
 
     setHealtPoints( healthPoints ){
+        this.setPreviousHealthPoints(this.getHealthPoints());
         this.healthPoints = healthPoints;
+    }
+
+    setPreviousHealthPoints( healthPoints ){
+        this.previousHealthPoints = healthPoints;
     }
 
     setState( state ){
@@ -126,11 +137,18 @@ class Unit extends Elements{
         ctx.fill();
         ctx.stroke();
 
+        if ( this.getState() == 1 ){
+            let healthPointsLoose = this.getPreviousHealthPoints() - this.getHealthPoints(),
+                damageImage = document.getElementById("asset-damage" + healthPointsLoose);
+
+                ctx.drawImage(damageImage, -8, -2, 16, 20);
+        }
         ctx.restore();
+        
     }
 
     update(deltaTime, nextHexagon) {
-        if ( this.state == 0 ){
+        if ( this.getState() == 0 ){
             if ( this.center.y < nextHexagon.center.y ){
                 this.center.y += speed;
             } else if ( this.center.y > nextHexagon.center.y ) {
@@ -146,8 +164,6 @@ class Unit extends Elements{
             if ( this.center.x === nextHexagon.center.x && this.center.y === nextHexagon.center.y ){
                 this.setCoordinate(nextHexagon.x, nextHexagon.y, nextHexagon.z);
             }
-        } else {
-            console.log("j'arrête de bouger car je suis en combat");
         }
     }
 }

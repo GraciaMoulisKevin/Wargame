@@ -27,9 +27,9 @@ class Hexagon extends Elements {
     draw(ctx) {
         ctx.save();
         ctx.translate(this.center.x, this.center.y);
-        if ( this.type === "available" ){
-            ctx.globalAlpha = 0.02;
-        }
+        // if ( this.type === "available" ){
+        //     ctx.globalAlpha = 0.02;
+        // }
         ctx.drawImage(super.getImage(), -this.size / 2, -this.size / 2, this.size, this.size);
         ctx.restore();
     }
