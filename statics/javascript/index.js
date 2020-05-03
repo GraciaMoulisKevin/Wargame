@@ -91,7 +91,7 @@ function listenerHandler(canvas, map, movementPoints) {
                 else if (CLICK === 1) {
                     if ( PREVIOUS_HEXAGON_CLICKED.map === clickedHexagon.map ){ 
                         try {
-                            let path = pathfinder(map, PREVIOUS_HEXAGON_CLICKED, clickedHexagon, movementPoints);
+                            let path = pathfinder(map, clickedHexagon);
                             map.restoreHexagonsType(); 
                             map.addMovement(PREVIOUS_UNIT_CLICKED, path);
                             CLICK = 0;
@@ -201,19 +201,18 @@ function showAvailableMovements(canvas, map) {
 /**
  * Create a path
  * @param {Object} map
- * @param {Object} hexagonA
- * @param {Object} hexagonB
+ * @param {Object} hexagonToReach
  */
-function pathfinder(map, hexagonA, hexagonB, movementPoints){
+function pathfinder(map, hexagonToReach){
 
     let path = [];
-    path.push(map.getIndex(hexagonB));
+    path.push(map.getIndex(hexagonToReach));
 
     let index = -1;
 
-    // Check if hexagonB is reachable
+    // Check if hexagonToReach is reachable
     for (let hexagon of REACHABLEHEXAGONS) {
-        if (hexagon[0] == map.getIndex(hexagonB)) {
+        if (hexagon[0] == map.getIndex(hexagonToReach)) {
             index = REACHABLEHEXAGONS.indexOf(hexagon);
         }
     }
