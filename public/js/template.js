@@ -6,6 +6,8 @@
     let socket = io();
     let roomName = window.location.pathname.slice(6);
     let pseudo = "guest";
+    let playerNumber = null;
+    let gameStarted = false;
     const messageForm = document.getElementById("sendContainer");
     const messageInput = document.getElementById("messageInput");
     const messageContainer = document.getElementById("messageContainer");
@@ -33,7 +35,7 @@
         playerListContainer.innerText = "";
         for(const objUser of data){
             if(objUser.leader){
-                appendUser("♛" + objUser.pseudo, objUser.ready)
+                appendUser("♛ " + objUser.pseudo, objUser.ready)
             } else {
                 appendUser(objUser.pseudo, objUser.ready);
             }
@@ -49,11 +51,16 @@
     })
     socket.on('breakReady',function(){
         $('#readyButton').remove();
+        gameStarted = true;
     })
     socket.on('invalidPseudo', function(bool){
         modalPseudoInvalid(bool);
     })
-    
+    socket.on('playerNumber', function(number){
+        playerNumber = number;
+    })
+
+
     
     messageForm.addEventListener('submit', function(e){
         e.preventDefault();

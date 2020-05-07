@@ -62,7 +62,7 @@ app.post('/', (req,res) => {
     } else {
         history[roomName] = [];
         playerList[roomName] = [];        
-        roomData[roomName] = {ready: 0, max:2, started:false};
+        roomData[roomName] = {ready: 0, max:4, started:false, availableNumbers: [1,2,3,4]};
         
         fs.copyFile(template, roomPath , (err) => {
             if(err) throw err;
@@ -122,9 +122,9 @@ io.on('connection', function(socket){
             socket.emit('invalidPseudo', false);
         }
         if(hasLeader(playerList[room])){
-            playerList[room].push({id: socket.id,pseudo: pseudo, leader: false, ready: false});
+            playerList[room].push({id: socket.id,pseudo: pseudo, leader: false, ready: false, playernumber: null});
         } else {
-            playerList[room].push({id: socket.id,pseudo: pseudo, leader: true, ready: false});
+            playerList[room].push({id: socket.id,pseudo: pseudo, leader: true, ready: false, playernumber: null});
         }
         if(isReady(room)){
             socket.emit('breakReady');
@@ -163,23 +163,31 @@ io.on('connection', function(socket){
         }
         if(ready && roomData[room].ready == roomData[room].max - 1){
             playerList[room][getPlayerNumber(playerList[room],socket.id)].ready = ready;
+            playerList[room][getPlayerNumber(playerList[room],socket.id)].playernumber = getAvailableNumber(roomData[room]);
             sendUserList(room);
             roomData[room].ready++;
             roomData[room].started = true;
+            socket.emit('playerNumber', playerList[room][getPlayerNumber(playerList[room],socket.id)].playernumber);
             io.sockets.to(room).emit('breakReady');
             io.sockets.to(room).emit('systemMessage', "Game Start!");
         } else {
             if(ready){
                 roomData[room].ready++;
                 playerList[room][getPlayerNumber(playerList[room],socket.id)].ready = true;
+                playerList[room][getPlayerNumber(playerList[room],socket.id)].playernumber = getAvailableNumber(roomData[room]);
+                socket.emit('playerNumber', playerList[room][getPlayerNumber(playerList[room],socket.id)].playernumber);
             } else {
                 roomData[room].ready--;
                 playerList[room][getPlayerNumber(playerList[room],socket.id)].ready = false;
+                roomData[room].availableNumbers.unshift(playerList[room][getPlayerNumber(playerList[room],socket.id)].playernumber);
+                playerList[room][getPlayerNumber(playerList[room],socket.id)].playernumber = null;
+                socket.emit('playerNumber', playerList[room][getPlayerNumber(playerList[room],socket.id)].playernumber);
             }
         }
         updateRoomList();
         sendUserList(room);
     })
+
 })
 
 
@@ -192,12 +200,14 @@ server.listen(port, () => {
     for(let room of files){
         playerList[room] = [];
         history[room] = [];
-        roomData[room] = {ready: 0, max:2,started:false};
+        roomData[room] = {ready: 0, max:4,started:false, availableNumbers: [1,2,3,4]};
     }
     console.log(`Running on ${port}!`)
 })
 
-
+function getAvailableNumber(roomData){
+    return roomData.availableNumbers.shift();
+}
 
 function hasLeader(roomArray){
     let flag = false;

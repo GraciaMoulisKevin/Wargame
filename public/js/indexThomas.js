@@ -65,6 +65,9 @@ function listenerHandler(canvas, map, movementPoints) {
                 PREVIOUS_HEXAGON_CLICKED = clickedHexagon;
                 try{
                     let unit = map.getUnitsOnHexagon(clickedHexagon);
+                    if(unit.getPlayer() != playerNumber || gameStarted == false){
+                        return;
+                    }
                     if (unit && !unit.length){
                         PREVIOUS_UNIT_CLICKED = unit;
                         REACHABLEHEXAGONS = getReachableHexagons(map, clickedHexagon, movementPoints);
