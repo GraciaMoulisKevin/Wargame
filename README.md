@@ -43,3 +43,6 @@ npm install
 ```bash
 npx nodemon
 ```
+
+## Attention !
+Le jeu ne commence pas si il n'y a pas 4 joueurs! ( Vous pouvez ouvrir plusieurs onglets pour simuler des joueurs)
